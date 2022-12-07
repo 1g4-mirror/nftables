@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) Red Hat GmbH.  Author: Phil Sutter <phil@nwl.cc>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 (or any
+ * later) as published by the Free Software Foundation.
+ */
+
 #define _GNU_SOURCE
 #include <errno.h>
 #include <stdint.h> /* needed by gmputil.h */
