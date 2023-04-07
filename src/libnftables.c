@@ -56,6 +56,13 @@ static int nft_netlink(struct nft_ctx *nft,
 
 	ret = mnl_batch_talk(&ctx, &err_list, num_cmds);
 	if (ret < 0) {
+		if (ctx.maybe_emsgsize && errno == EMSGSIZE) {
+			netlink_io_error(&ctx, NULL,
+					 "Could not process rule: %s\n"
+					 "Please, rise /proc/sys/net/core/wmem_max on the host namespace. Hint: %d bytes",
+					 strerror(errno), round_pow_2(ctx.maybe_emsgsize));
+			goto out;
+		}
 		netlink_io_error(&ctx, NULL,
 				 "Could not process rule: %s", strerror(errno));
 		goto out;

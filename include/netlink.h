@@ -78,6 +78,7 @@ struct netlink_ctx {
 	const void		*data;
 	uint32_t		seqnum;
 	struct nftnl_batch	*batch;
+	int			maybe_emsgsize;
 };
 
 extern struct nftnl_expr *alloc_nft_expr(const char *name);

@@ -244,9 +244,10 @@ void mnl_err_list_free(struct mnl_err *err)
 	xfree(err);
 }
 
-static void mnl_set_sndbuffer(const struct mnl_socket *nl,
-			      struct nftnl_batch *batch)
+static void mnl_set_sndbuffer(struct netlink_ctx *ctx)
 {
+	struct mnl_socket *nl = ctx->nft->nf_sock;
+	struct nftnl_batch *batch = ctx->batch;
 	socklen_t len = sizeof(int);
 	int sndnlbuffsiz = 0;
 	int newbuffsiz;
@@ -259,9 +260,15 @@ static void mnl_set_sndbuffer(const struct mnl_socket *nl,
 		return;
 
 	/* Rise sender buffer length to avoid hitting -EMSGSIZE */
+	setsockopt(mnl_socket_get_fd(nl), SOL_SOCKET, SO_SNDBUF,
+		   &newbuffsiz, sizeof(socklen_t));
+
+	/* unpriviledged containers check for CAP_NET_ADMIN on the init_user_ns. */
 	if (setsockopt(mnl_socket_get_fd(nl), SOL_SOCKET, SO_SNDBUFFORCE,
-		       &newbuffsiz, sizeof(socklen_t)) < 0)
-		return;
+		       &newbuffsiz, sizeof(socklen_t)) < 0) {
+		if (errno == EPERM)
+			ctx->maybe_emsgsize = newbuffsiz;
+	}
 }
 
 static unsigned int nlsndbufsiz;
@@ -408,7 +415,7 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list,
 		.nl_ctx = ctx,
 	};
 
-	mnl_set_sndbuffer(ctx->nft->nf_sock, ctx->batch);
+	mnl_set_sndbuffer(ctx);
 
 	mnl_nft_batch_to_msg(ctx, &msg, &snl, iov, iov_len);
 
