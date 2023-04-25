@@ -698,31 +698,49 @@ err:
  */
 
 struct nft_dev {
-	const char	*ifname;
-	struct location	*location;
+	const char		*ifname;
+	const struct location	*location;
 };
+
+static void nft_dev_add(struct nft_dev *dev_array, const struct expr *expr, int i)
+{
+	unsigned int ifname_len;
+	char ifname[IFNAMSIZ];
+
+	ifname_len = div_round_up(expr->len, BITS_PER_BYTE);
+	memset(ifname, 0, sizeof(ifname));
+	mpz_export_data(ifname, expr->value, BYTEORDER_HOST_ENDIAN, ifname_len);
+	dev_array[i].ifname = xstrdup(ifname);
+	dev_array[i].location = &expr->location;
+}
 
 static struct nft_dev *nft_dev_array(const struct expr *dev_expr, int *num_devs)
 {
 	struct nft_dev *dev_array;
-	unsigned int ifname_len;
-	char ifname[IFNAMSIZ];
 	int i = 0, len = 1;
 	struct expr *expr;
 
-	list_for_each_entry(expr, &dev_expr->expressions, list)
+	switch (dev_expr->etype) {
+	case EXPR_SET:
+	case EXPR_LIST:
+		list_for_each_entry(expr, &dev_expr->expressions, list)
+			len++;
+
+		dev_array = xmalloc(sizeof(struct nft_dev) * len);
+
+		list_for_each_entry(expr, &dev_expr->expressions, list) {
+			nft_dev_add(dev_array, expr, i);
+			i++;
+		}
+		break;
+	case EXPR_VALUE:
 		len++;
-
-	dev_array = xmalloc(sizeof(struct nft_dev) * len);
-
-	list_for_each_entry(expr, &dev_expr->expressions, list) {
-		ifname_len = div_round_up(expr->len, BITS_PER_BYTE);
-		memset(ifname, 0, sizeof(ifname));
-		mpz_export_data(ifname, expr->value, BYTEORDER_HOST_ENDIAN,
-				ifname_len);
-		dev_array[i].ifname = xstrdup(ifname);
-		dev_array[i].location = &expr->location;
+		dev_array = xmalloc(sizeof(struct nft_dev) * len);
+		nft_dev_add(dev_array, dev_expr, i);
 		i++;
+		break;
+	default:
+		assert(0);
 	}
 
 	dev_array[i].ifname = NULL;
