@@ -4713,7 +4713,7 @@ ct_obj_type		:	HELPER		{ $$ = NFT_OBJECT_CT_HELPER; }
 			;
 
 ct_cmd_type		:	HELPERS		{ $$ = CMD_OBJ_CT_HELPERS; }
-			|	TIMEOUT		{ $$ = CMD_OBJ_CT_TIMEOUT; }
+			|	TIMEOUT		{ $$ = CMD_OBJ_CT_TIMEOUTS; }
 			|	EXPECTATION	{ $$ = CMD_OBJ_CT_EXPECT; }
 			;
 

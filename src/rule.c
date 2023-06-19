@@ -2564,6 +2564,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CT_HELPERS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_CT_HELPER);
 	case CMD_OBJ_CT_TIMEOUT:
+	case CMD_OBJ_CT_TIMEOUTS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_CT_TIMEOUT);
 	case CMD_OBJ_CT_EXPECT:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_CT_EXPECT);
