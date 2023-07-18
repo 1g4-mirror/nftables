@@ -108,25 +108,6 @@ AC_DEFINE([HAVE_LIBJANSSON], [1], [Define if you have libjansson])
 ])
 AM_CONDITIONAL([BUILD_JSON], [test "x$with_json" != xno])
 
-AC_ARG_ENABLE(python,
-       AS_HELP_STRING([--enable-python], [Enable python]),,[enable_python=check]
-       )
-
-AC_ARG_WITH([python_bin],
-            [AS_HELP_STRING([--with-python-bin], [Specify Python binary to use])],
-	    [PYTHON_BIN="$withval"], [AC_PATH_PROGS(PYTHON_BIN, python python2 python2.7 python3)]
-	   )
-
-AS_IF([test "x$PYTHON_BIN" = "x"], [
-	AS_IF([test "x$enable_python" = "xyes"], [AC_MSG_ERROR([Python asked but not found])],
-	[test "x$enable_python" = "xcheck"], [
-		AC_MSG_WARN([Python not found, continuing anyway])
-		enable_python=no
-	])
-])
-
-AM_CONDITIONAL([HAVE_PYTHON], [test "$enable_python" != "no"])
-
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\
@@ -157,10 +138,3 @@ nft configuration:
   enable man page:              ${enable_man_doc}
   libxtables support:		${with_xtables}
   json output support:          ${with_json}"
-
-AS_IF([test "$enable_python" != "no"], [
-	echo "  enable Python:		yes (with $PYTHON_BIN)"
-	], [
-	echo "  enable Python:		no"
-	]
-	)

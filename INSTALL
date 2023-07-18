@@ -81,6 +81,13 @@ Installation instructions for nftables
  Run "make" to compile nftables, "make install" to install it in the
  configured paths.
 
+ Python support
+ ==============
+
+ CPython bindings are available for nftables under the py/ folder.
+
+ setup.py is provided to install it.
+
  Source code
  ===========
 
