@@ -5762,6 +5762,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SECMARKS:
 	case CMD_OBJ_SYNPROXYS:
 	case CMD_OBJ_CT_TIMEOUTS:
+	case CMD_OBJ_CT_EXPECTATIONS:
 		if (cmd->handle.table.name == NULL)
 			return 0;
 		if (!table_cache_find(&ctx->nft->cache.table_cache,

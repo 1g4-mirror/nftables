@@ -4714,7 +4714,7 @@ ct_obj_type		:	HELPER		{ $$ = NFT_OBJECT_CT_HELPER; }
 
 ct_cmd_type		:	HELPERS		{ $$ = CMD_OBJ_CT_HELPERS; }
 			|	TIMEOUT		{ $$ = CMD_OBJ_CT_TIMEOUTS; }
-			|	EXPECTATION	{ $$ = CMD_OBJ_CT_EXPECT; }
+			|	EXPECTATION	{ $$ = CMD_OBJ_CT_EXPECTATIONS; }
 			;
 
 ct_l4protoname		:	TCP	close_scope_tcp	{ $$ = IPPROTO_TCP; }
