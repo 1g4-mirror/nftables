@@ -1,1 +1,1 @@
-EXTRA_DIST = setup.py src
+EXTRA_DIST = setup.cfg setup.py src
