@@ -86,7 +86,8 @@ Installation instructions for nftables
 
  CPython bindings are available for nftables under the py/ folder.
 
- setup.py is provided to install it.
+ A pyproject.toml config file and legacy setup.py script are provided to install
+ it.
 
  Source code
  ===========
