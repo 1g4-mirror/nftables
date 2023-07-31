@@ -10,7 +10,7 @@ setup(name='nftables',
       url='https://netfilter.org/projects/nftables/index.html',
       packages=['nftables'],
       provides=['nftables'],
-      package_dir={'nftables':'.'},
+      package_dir={'nftables':'src'},
       package_data={'nftables':['schema.json']},
       classifiers=[
           'Development Status :: 4 - Beta',
