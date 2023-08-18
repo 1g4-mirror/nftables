@@ -74,6 +74,8 @@ class Nftables:
         is requested from the library and buffering of output and error streams
         is turned on.
         """
+        self.__ctx = None
+
         lib = cdll.LoadLibrary(sofile)
 
         ### API function definitions
@@ -150,7 +152,9 @@ class Nftables:
         self.nft_ctx_buffer_error(self.__ctx)
 
     def __del__(self):
-        self.nft_ctx_free(self.__ctx)
+        if self.__ctx is not None:
+            self.nft_ctx_free(self.__ctx)
+            self.__ctx = None
 
     def __get_output_flag(self, name):
         flag = self.output_flags[name]
