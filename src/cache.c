@@ -208,6 +208,10 @@ static unsigned int evaluate_cache_list(struct nft_ctx *nft, struct cmd *cmd,
 			filter->list.family = cmd->handle.family;
 			filter->list.table = cmd->handle.table.name;
 			filter->list.chain = cmd->handle.chain.name;
+			/* implicit terse listing to fetch content of anonymous
+			 * sets only when chain name is specified.
+			 */
+			flags |= NFT_CACHE_TERSE;
 		}
 		flags |= NFT_CACHE_FULL;
 		break;
