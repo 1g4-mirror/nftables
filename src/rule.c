@@ -871,7 +871,7 @@ struct prio_tag {
 	const char *str;
 };
 
-const static struct prio_tag std_prios[] = {
+static const struct prio_tag std_prios[] = {
 	{ NF_IP_PRI_RAW,      "raw" },
 	{ NF_IP_PRI_MANGLE,   "mangle" },
 	{ NF_IP_PRI_NAT_DST,  "dstnat" },
@@ -880,7 +880,7 @@ const static struct prio_tag std_prios[] = {
 	{ NF_IP_PRI_NAT_SRC,  "srcnat" },
 };
 
-const static struct prio_tag bridge_std_prios[] = {
+static const struct prio_tag bridge_std_prios[] = {
 	{ NF_BR_PRI_NAT_DST_BRIDGED,  "dstnat" },
 	{ NF_BR_PRI_FILTER_BRIDGED,   "filter" },
 	{ NF_BR_PRI_NAT_DST_OTHER,    "out" },
