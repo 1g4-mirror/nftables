@@ -1527,7 +1527,7 @@ def main():
 
     if os.getuid() != 0:
         print("You need to be root to run this, sorry")
-        return
+        return 77
 
     if not args.no_netns and not spawn_netns():
         print_warning("cannot run in own namespace, connectivity might break")
@@ -1546,11 +1546,11 @@ def main():
     if check_lib_path and not os.path.exists(args.library):
         print("The nftables library at '%s' does not exist. "
               "You need to build the project." % args.library)
-        return
+        return 99
 
     if args.enable_schema and not args.enable_json:
         print_error("Option --schema requires option --json")
-        return
+        return 99
 
     global nftables
     nftables = Nftables(sofile = args.library)
@@ -1563,7 +1563,7 @@ def main():
         print_info("Log will be available at %s" % LOGFILE)
     except IOError:
         print_error("Cannot open log file %s" % LOGFILE)
-        return
+        return 99
 
     file_list = []
     if args.filenames:
@@ -1609,5 +1609,7 @@ def main():
                 print("%d test files, %d files passed, %d unit tests, " % (test_files, files_ok, tests))
                 print("%d error, %d warning" % (errors, warnings))
 
+    return errors != 0
+
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -12,18 +12,15 @@ err() {
 	echo "$*" >&2
 }
 
-die() {
-	err "$*"
-	exit 1
-}
-
 if [ "$(id -u)" != "0" ] ; then
-	die "this requires root!"
+	err "this requires root!"
+	exit 77
 fi
 
 testdir=$(mktemp -d)
 if [ ! -d $testdir ]; then
-	die "Failed to create test directory"
+	err "Failed to create test directory"
+	exit 99
 fi
 trap 'rm -rf $testdir; $nft flush ruleset' EXIT
 
