@@ -154,6 +154,11 @@ AC_CONFIG_COMMANDS([nftversion.h], [
 # so have 'make' call date and pass the value to every 'gcc' call
 AC_SUBST([MAKE_STAMP], ["\$(shell date +%s)"])
 
+AC_ARG_ENABLE([distcheck],
+	      AS_HELP_STRING([--enable-distcheck], [Build for distcheck]),
+	      [enable_distcheck=yes], [])
+AM_CONDITIONAL([BUILD_DISTCHECK], [test "x$enable_distcheck" = "xyes"])
+
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\

@@ -23,6 +23,19 @@ nftversion.h
 *.payload.got
 tests/build/tests.log
 
+# make check results
+/test-suite.log
+/tests/build/run-tests.sh.log
+/tests/build/run-tests.sh.trs
+/tests/json_echo/run-test.py.log
+/tests/json_echo/run-test.py.trs
+/tests/monitor/run-tests.sh.log
+/tests/monitor/run-tests.sh.trs
+/tests/py/nft-test.py.log
+/tests/py/nft-test.py.trs
+/tests/shell/run-tests.sh.log
+/tests/shell/run-tests.sh.trs
+
 # Debian package build temporary files
 build-stamp
 

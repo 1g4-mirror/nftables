@@ -23,6 +23,7 @@ libnftables_LIBVERSION = 2:0:1
 ###############################################################################
 
 ACLOCAL_AMFLAGS = -I m4
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-distcheck
 
 EXTRA_DIST =
 BUILT_SOURCES =
@@ -431,3 +432,11 @@ doc_DATA = files/nftables/main.nft
 tools/nftables.service: tools/nftables.service.in ${top_builddir}/config.status
 	${AM_V_GEN}${MKDIR_P} tools
 	${AM_V_at}sed -e 's|@''sbindir''@|${sbindir}|g;s|@''pkgsysconfdir''@|${pkgsysconfdir}|g' <${srcdir}/tools/nftables.service.in >$@
+
+if !BUILD_DISTCHECK
+TESTS = tests/build/run-tests.sh \
+	tests/json_echo/run-test.py \
+	tests/monitor/run-tests.sh \
+	tests/py/nft-test.py \
+	tests/shell/run-tests.sh
+endif
