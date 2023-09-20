@@ -1087,7 +1087,7 @@ static struct expr *concat_expr_parse_udata(const struct nftnl_udata *attr)
 			goto err_free;
 
 		etype = nftnl_udata_get_u32(nest_ud[NFTNL_UDATA_SET_KEY_CONCAT_SUB_TYPE]);
-		ops = expr_ops_by_type(etype);
+		ops = expr_ops_by_type_u32(etype);
 		if (!ops || !ops->parse_udata)
 			goto err_free;
 
@@ -1601,9 +1601,7 @@ void range_expr_value_high(mpz_t rop, const struct expr *expr)
 static const struct expr_ops *__expr_ops_by_type(enum expr_types etype)
 {
 	switch (etype) {
-	case EXPR_INVALID:
-		BUG("Invalid expression ops requested");
-		break;
+	case EXPR_INVALID: break;
 	case EXPR_VERDICT: return &verdict_expr_ops;
 	case EXPR_SYMBOL: return &symbol_expr_ops;
 	case EXPR_VARIABLE: return &variable_expr_ops;
@@ -1635,20 +1633,23 @@ static const struct expr_ops *__expr_ops_by_type(enum expr_types etype)
 	case EXPR_FLAGCMP: return &flagcmp_expr_ops;
 	}
 
-	BUG("Unknown expression type %d\n", etype);
+	return NULL;
 }
 
 const struct expr_ops *expr_ops(const struct expr *e)
 {
-	return __expr_ops_by_type(e->etype);
+	const struct expr_ops *ops;
+
+	ops = __expr_ops_by_type(e->etype);
+	if (!ops)
+		BUG("Unknown expression type %d\n", e->etype);
+
+	return ops;
 }
 
-const struct expr_ops *expr_ops_by_type(uint32_t value)
+const struct expr_ops *expr_ops_by_type_u32(uint32_t value)
 {
-	/* value might come from unreliable source, such as "udata"
-	 * annotation of set keys.  Avoid BUG() assertion.
-	 */
-	if (value == EXPR_INVALID || value > EXPR_MAX)
+	if (value > EXPR_MAX)
 		return NULL;
 
 	return __expr_ops_by_type(value);

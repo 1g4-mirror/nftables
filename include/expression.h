@@ -194,7 +194,7 @@ struct expr_ops {
 };
 
 const struct expr_ops *expr_ops(const struct expr *e);
-const struct expr_ops *expr_ops_by_type(enum expr_types etype);
+const struct expr_ops *expr_ops_by_type_u32(uint32_t value);
 
 /**
  * enum expr_flags
