@@ -2758,3 +2758,63 @@
         "accept": null
     }
 ]
+
+# meta mark set vlan id map { 1 : 0x00000001, 4095 : 0x00004095 }
+[
+    {
+        "mangle": {
+            "key": {
+                "meta": {
+                    "key": "mark"
+                }
+            },
+            "value": {
+                "map": {
+                    "data": {
+                        "set": [
+                            [
+                                1,
+                                1
+                            ],
+                            [
+                                4095,
+                                16533
+                            ]
+                        ]
+                    },
+                    "key": {
+                        "payload": {
+                            "field": "id",
+                            "protocol": "vlan"
+                        }
+                    }
+                }
+            }
+        }
+    }
+]
+
+# meta mark set vlan id map @map1
+[
+    {
+        "mangle": {
+            "key": {
+                "meta": {
+                    "key": "mark"
+                }
+            },
+            "value": {
+                "map": {
+                    "data": "@map1",
+                    "key": {
+                        "payload": {
+                            "field": "id",
+                            "protocol": "vlan"
+                        }
+                    }
+                }
+            }
+        }
+    }
+]
+
