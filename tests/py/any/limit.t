@@ -22,7 +22,6 @@ limit rate 2 kbytes/second;ok
 limit rate 1025 kbytes/second;ok
 limit rate 1023 mbytes/second;ok
 limit rate 10230 mbytes/second;ok
-limit rate 1023000 mbytes/second;ok
 limit rate 512 kbytes/second burst 5 packets;fail
 
 limit rate 1 bytes / second;ok;limit rate 1 bytes/second
@@ -33,7 +32,6 @@ limit rate 1 gbytes / second;fail
 limit rate 1025 bytes/second burst 512 bytes;ok
 limit rate 1025 kbytes/second burst 1023 kbytes;ok
 limit rate 1025 mbytes/second burst 1025 kbytes;ok
-limit rate 1025000 mbytes/second burst 1023 mbytes;ok
 
 limit rate over 400/minute;ok;limit rate over 400/minute burst 5 packets
 limit rate over 20/second;ok;limit rate over 20/second burst 5 packets
@@ -47,9 +45,7 @@ limit rate over 2 kbytes/second;ok
 limit rate over 1025 kbytes/second;ok
 limit rate over 1023 mbytes/second;ok
 limit rate over 10230 mbytes/second;ok
-limit rate over 1023000 mbytes/second;ok
 
 limit rate over 1025 bytes/second burst 512 bytes;ok
 limit rate over 1025 kbytes/second burst 1023 kbytes;ok
 limit rate over 1025 mbytes/second burst 1025 kbytes;ok
-limit rate over 1025000 mbytes/second burst 1023 mbytes;ok

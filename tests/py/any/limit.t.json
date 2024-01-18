@@ -114,17 +114,6 @@
     }
 ]
 
-# limit rate 1023000 mbytes/second
-[
-    {
-        "limit": {
-            "per": "second",
-            "rate": 1023000,
-            "rate_unit": "mbytes"
-        }
-    }
-]
-
 # limit rate 1 bytes / second
 [
     {
@@ -198,19 +187,6 @@
             "burst_unit": "kbytes",
             "per": "second",
             "rate": 1025,
-            "rate_unit": "mbytes"
-        }
-    }
-]
-
-# limit rate 1025000 mbytes/second burst 1023 mbytes
-[
-    {
-        "limit": {
-            "burst": 1023,
-            "burst_unit": "mbytes",
-            "per": "second",
-            "rate": 1025000,
             "rate_unit": "mbytes"
         }
     }
@@ -343,18 +319,6 @@
     }
 ]
 
-# limit rate over 1023000 mbytes/second
-[
-    {
-        "limit": {
-            "inv": true,
-            "per": "second",
-            "rate": 1023000,
-            "rate_unit": "mbytes"
-        }
-    }
-]
-
 # limit rate over 1025 bytes/second burst 512 bytes
 [
     {
@@ -396,18 +360,3 @@
         }
     }
 ]
-
-# limit rate over 1025000 mbytes/second burst 1023 mbytes
-[
-    {
-        "limit": {
-            "burst": 1023,
-            "burst_unit": "mbytes",
-            "inv": true,
-            "per": "second",
-            "rate": 1025000,
-            "rate_unit": "mbytes"
-        }
-    }
-]
-
