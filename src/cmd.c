@@ -29,7 +29,7 @@ static int nft_cmd_enoent_table(struct netlink_ctx *ctx, const struct cmd *cmd,
 	if (!table)
 		return 0;
 
-	netlink_io_error(ctx, loc, "%s; did you mean table ‘%s’ in family %s?",
+	netlink_io_error(ctx, loc, "%s; did you mean table '%s' in family %s?",
 			 strerror(ENOENT), table->handle.table.name,
 			 family2str(table->handle.family));
 	return 1;
@@ -45,7 +45,7 @@ static int table_fuzzy_check(struct netlink_ctx *ctx, const struct cmd *cmd,
 	if (strcmp(cmd->handle.table.name, table->handle.table.name) ||
 	    cmd->handle.family != table->handle.family) {
 		netlink_io_error(ctx, &cmd->handle.table.location,
-				 "%s; did you mean table ‘%s’ in family %s?",
+				 "%s; did you mean table '%s' in family %s?",
 				 strerror(ENOENT), table->handle.table.name,
 				 family2str(table->handle.family));
 		return 1;
@@ -78,7 +78,7 @@ static int nft_cmd_enoent_chain(struct netlink_ctx *ctx, const struct cmd *cmd,
 	if (!chain)
 		return 0;
 
-	netlink_io_error(ctx, loc, "%s; did you mean chain ‘%s’ in table %s ‘%s’?",
+	netlink_io_error(ctx, loc, "%s; did you mean chain '%s' in table %s '%s'?",
 			 strerror(ENOENT), chain->handle.chain.name,
 			 family2str(table->handle.family),
 			 table->handle.table.name);
@@ -108,7 +108,7 @@ static int nft_cmd_enoent_rule(struct netlink_ctx *ctx, const struct cmd *cmd,
 		return 0;
 
 	if (strcmp(cmd->handle.chain.name, chain->handle.chain.name)) {
-		netlink_io_error(ctx, loc, "%s; did you mean chain ‘%s’ in table %s ‘%s’?",
+		netlink_io_error(ctx, loc, "%s; did you mean chain '%s' in table %s '%s'?",
 				 strerror(ENOENT),
 				 chain->handle.chain.name,
 				 family2str(table->handle.family),
@@ -143,7 +143,7 @@ static int nft_cmd_enoent_set(struct netlink_ctx *ctx, const struct cmd *cmd,
 	if (!set)
 		return 0;
 
-	netlink_io_error(ctx, loc, "%s; did you mean %s ‘%s’ in table %s ‘%s’?",
+	netlink_io_error(ctx, loc, "%s; did you mean %s '%s' in table %s '%s'?",
 			 strerror(ENOENT),
 			 set_is_map(set->flags) ? "map" : "set",
 			 set->handle.set.name,
@@ -176,7 +176,7 @@ static int nft_cmd_enoent_obj(struct netlink_ctx *ctx, const struct cmd *cmd,
 	if (!obj)
 		return 0;
 
-	netlink_io_error(ctx, loc, "%s; did you mean obj ‘%s’ in table %s ‘%s’?",
+	netlink_io_error(ctx, loc, "%s; did you mean obj '%s' in table %s '%s'?",
 			 strerror(ENOENT), obj->handle.obj.name,
 			 family2str(obj->handle.family),
 			 table->handle.table.name);
@@ -209,7 +209,7 @@ static int nft_cmd_enoent_flowtable(struct netlink_ctx *ctx,
 	if (!ft)
 		return 0;
 
-	netlink_io_error(ctx, loc, "%s; did you mean flowtable ‘%s’ in table %s ‘%s’?",
+	netlink_io_error(ctx, loc, "%s; did you mean flowtable '%s' in table %s '%s'?",
 			 strerror(ENOENT), ft->handle.flowtable.name,
 			 family2str(ft->handle.family),
 			 table->handle.table.name);

@@ -248,7 +248,7 @@ static int table_not_found(struct eval_ctx *ctx)
 				 "%s", strerror(ENOENT));
 
 	return cmd_error(ctx, &ctx->cmd->handle.table.location,
-			 "%s; did you mean table ‘%s’ in family %s?",
+			 "%s; did you mean table '%s' in family %s?",
 			 strerror(ENOENT), table->handle.table.name,
 			 family2str(table->handle.family));
 }
@@ -264,7 +264,7 @@ static int chain_not_found(struct eval_ctx *ctx)
 				 "%s", strerror(ENOENT));
 
 	return cmd_error(ctx, &ctx->cmd->handle.chain.location,
-			 "%s; did you mean chain ‘%s’ in table %s ‘%s’?",
+			 "%s; did you mean chain '%s' in table %s '%s'?",
 			 strerror(ENOENT), chain->handle.chain.name,
 			 family2str(chain->handle.family),
 			 table->handle.table.name);
@@ -281,7 +281,7 @@ static int set_not_found(struct eval_ctx *ctx, const struct location *loc,
 		return cmd_error(ctx, loc, "%s", strerror(ENOENT));
 
 	return cmd_error(ctx, loc,
-			 "%s; did you mean %s ‘%s’ in table %s ‘%s’?",
+			 "%s; did you mean %s '%s' in table %s '%s'?",
 			 strerror(ENOENT),
 			 set_is_map(set->flags) ? "map" : "set",
 			 set->handle.set.name,
@@ -300,7 +300,7 @@ static int flowtable_not_found(struct eval_ctx *ctx, const struct location *loc,
 		return cmd_error(ctx, loc, "%s", strerror(ENOENT));
 
 	return cmd_error(ctx, loc,
-			"%s; did you mean flowtable ‘%s’ in table %s ‘%s’?",
+			"%s; did you mean flowtable '%s' in table %s '%s'?",
 			strerror(ENOENT), ft->handle.flowtable.name,
 			family2str(ft->handle.family),
 			table->handle.table.name);
@@ -5763,7 +5763,7 @@ static int obj_not_found(struct eval_ctx *ctx, const struct location *loc,
 		return cmd_error(ctx, loc, "%s", strerror(ENOENT));
 
 	return cmd_error(ctx, loc,
-			 "%s; did you mean obj ‘%s’ in table %s ‘%s’?",
+			 "%s; did you mean obj '%s' in table %s '%s'?",
 			 strerror(ENOENT), obj->handle.obj.name,
 				 family2str(obj->handle.family),
 				 table->handle.table.name);
