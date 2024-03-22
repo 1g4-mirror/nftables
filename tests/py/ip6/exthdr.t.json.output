@@ -1,33 +1,3 @@
-# exthdr hbh == exists
-[
-    {
-        "match": {
-            "left": {
-                "exthdr": {
-                    "name": "hbh"
-                }
-            },
-	    "op": "==",
-            "right": true
-        }
-    }
-]
-
-# exthdr hbh == missing
-[
-    {
-        "match": {
-            "left": {
-                "exthdr": {
-                    "name": "hbh"
-                }
-            },
-	    "op": "==",
-            "right": false
-        }
-    }
-]
-
 # exthdr hbh 1
 [
     {
