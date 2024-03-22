@@ -809,6 +809,8 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
                     reason = "Invalid JSON syntax in expected output: %s" % json_expected
                     print_error(reason)
                     return [-1, warning, error, unit_tests]
+                if json_expected == json_input:
+                    print_warning("Recorded JSON output matches input for: %s" % rule[0])
 
     for table in table_list:
         if rule[1].strip() == "ok":
