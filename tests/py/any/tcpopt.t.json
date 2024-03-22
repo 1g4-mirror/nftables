@@ -192,7 +192,7 @@
             "left": {
                 "tcp option": {
                     "field": "left",
-                    "name": "sack"
+                    "name": "sack0"
                 }
             },
             "op": "==",
@@ -272,7 +272,7 @@
             "left": {
                 "tcp option": {
                     "field": "right",
-                    "name": "sack"
+                    "name": "sack0"
                 }
             },
             "op": "==",
