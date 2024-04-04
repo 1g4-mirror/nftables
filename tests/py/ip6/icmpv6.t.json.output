@@ -104,7 +104,7 @@
                 }
             },
             "op": "==",
-            "right": "port-unreachable"
+            "right": 4
         }
     }
 ]
@@ -122,7 +122,7 @@
             "op": "==",
             "right": {
                 "range": [
-                    "addr-unreachable",
+                    3,
                     66
                 ]
             }
@@ -143,8 +143,8 @@
             "op": "==",
             "right": {
                 "set": [
-                    "policy-fail",
-                    "reject-route",
+                    5,
+                    6,
                     7
                 ]
             }

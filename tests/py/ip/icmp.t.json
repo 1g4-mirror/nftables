@@ -459,8 +459,8 @@
             "op": "!=",
             "right": {
                 "set": [
-                    "prot-unreachable",
-                    "frag-needed",
+                    2,
+                    4,
                     33,
                     54,
                     56
@@ -1488,7 +1488,7 @@
                 }
             },
             "op": "==",
-            "right": "host-unreachable"
+            "right": 1
         }
     }
 ]
