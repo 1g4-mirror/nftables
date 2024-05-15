@@ -127,6 +127,19 @@ struct nftnl_obj *netlink_obj_alloc(const struct nlmsghdr *nlh)
 	return nlo;
 }
 
+struct nftnl_flowtable *netlink_flowtable_alloc(const struct nlmsghdr *nlh)
+{
+	struct nftnl_flowtable *nlf;
+
+	nlf = nftnl_flowtable_alloc();
+	if (nlf == NULL)
+		memory_allocation_error();
+	if (nftnl_flowtable_nlmsg_parse(nlh, nlf) < 0)
+		netlink_abi_error();
+
+	return nlf;
+}
+
 static uint32_t netlink_msg2nftnl_of(uint32_t type, uint16_t flags)
 {
 	switch (type) {
@@ -536,6 +549,50 @@ static int netlink_events_obj_cb(const struct nlmsghdr *nlh, int type,
 	}
 	obj_free(obj);
 	nftnl_obj_free(nlo);
+	return MNL_CB_OK;
+}
+
+static int netlink_events_flowtable_cb(const struct nlmsghdr *nlh, int type,
+				       struct netlink_mon_handler *monh)
+{
+	const char *family, *cmd;
+	struct nftnl_flowtable *nlf;
+	struct flowtable *ft;
+
+	nlf = netlink_flowtable_alloc(nlh);
+
+	ft = netlink_delinearize_flowtable(monh->ctx, nlf);
+	if (!ft) {
+		nftnl_flowtable_free(nlf);
+		return MNL_CB_ERROR;
+	}
+	family = family2str(ft->handle.family);
+	cmd = netlink_msg2cmd(type, nlh->nlmsg_flags);
+
+	switch (monh->format) {
+	case NFTNL_OUTPUT_DEFAULT:
+		nft_mon_print(monh, "%s ", cmd);
+
+		switch (type) {
+		case NFT_MSG_NEWFLOWTABLE:
+			flowtable_print_plain(ft, &monh->ctx->nft->output);
+			break;
+		case NFT_MSG_DELFLOWTABLE:
+			nft_mon_print(monh, "flowtable %s %s %s", family,
+				      ft->handle.table.name,
+				      ft->handle.flowtable.name);
+			break;
+		}
+		nft_mon_print(monh, "\n");
+		break;
+	case NFTNL_OUTPUT_JSON:
+		monitor_print_flowtable_json(monh, cmd, ft);
+		if (!nft_output_echo(&monh->ctx->nft->output))
+			nft_mon_print(monh, "\n");
+		break;
+	}
+	flowtable_free(ft);
+	nftnl_flowtable_free(nlf);
 	return MNL_CB_OK;
 }
 
@@ -957,6 +1014,10 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 	case NFT_MSG_NEWOBJ:
 	case NFT_MSG_DELOBJ:
 		ret = netlink_events_obj_cb(nlh, type, monh);
+		break;
+	case NFT_MSG_NEWFLOWTABLE:
+	case NFT_MSG_DELFLOWTABLE:
+		ret = netlink_events_flowtable_cb(nlh, type, monh);
 		break;
 	case NFT_MSG_NEWGEN:
 		ret = netlink_events_newgen_cb(nlh, type, monh);

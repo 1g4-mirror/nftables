@@ -11,6 +11,7 @@ struct nlmsghdr;
 struct rule;
 struct set;
 struct obj;
+struct flowtable;
 struct stmt;
 struct symbol_table;
 struct table;
@@ -112,6 +113,8 @@ void monitor_print_element_json(struct netlink_mon_handler *monh,
 				const char *cmd, struct set *s);
 void monitor_print_obj_json(struct netlink_mon_handler *monh,
 			    const char *cmd, struct obj *o);
+void monitor_print_flowtable_json(struct netlink_mon_handler *monh,
+				  const char *cmd, struct flowtable *ft);
 void monitor_print_rule_json(struct netlink_mon_handler *monh,
 			     const char *cmd, struct rule *r);
 
@@ -248,6 +251,13 @@ static inline void monitor_print_element_json(struct netlink_mon_handler *monh,
 
 static inline void monitor_print_obj_json(struct netlink_mon_handler *monh,
 					  const char *cmd, struct obj *o)
+{
+	/* empty */
+}
+
+static inline void
+monitor_print_flowtable_json(struct netlink_mon_handler *monh,
+			     const char *cmd, struct flowtable *ft)
 {
 	/* empty */
 }

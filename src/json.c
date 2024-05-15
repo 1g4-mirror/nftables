@@ -2122,6 +2122,12 @@ void monitor_print_obj_json(struct netlink_mon_handler *monh,
 	monitor_print_json(monh, cmd, obj_print_json(o));
 }
 
+void monitor_print_flowtable_json(struct netlink_mon_handler *monh,
+				  const char *cmd, struct flowtable *ft)
+{
+	monitor_print_json(monh, cmd, flowtable_print_json(ft));
+}
+
 void monitor_print_rule_json(struct netlink_mon_handler *monh,
 			     const char *cmd, struct rule *r)
 {

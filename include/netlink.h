@@ -89,6 +89,7 @@ extern struct nftnl_table *netlink_table_alloc(const struct nlmsghdr *nlh);
 extern struct nftnl_chain *netlink_chain_alloc(const struct nlmsghdr *nlh);
 extern struct nftnl_set *netlink_set_alloc(const struct nlmsghdr *nlh);
 extern struct nftnl_obj *netlink_obj_alloc(const struct nlmsghdr *nlh);
+extern struct nftnl_flowtable *netlink_flowtable_alloc(const struct nlmsghdr *nlh);
 extern struct nftnl_rule *netlink_rule_alloc(const struct nlmsghdr *nlh);
 
 struct nft_data_linearize {

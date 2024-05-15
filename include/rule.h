@@ -546,6 +546,7 @@ extern struct flowtable *flowtable_lookup_fuzzy(const char *ft_name,
 						const struct table **table);
 
 void flowtable_print(const struct flowtable *n, struct output_ctx *octx);
+void flowtable_print_plain(const struct flowtable *ft, struct output_ctx *octx);
 
 /**
  * enum cmd_ops - command operations

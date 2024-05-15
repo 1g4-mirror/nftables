@@ -4293,6 +4293,7 @@ static int json_echo_error(struct netlink_mon_handler *monh,
 
 static uint64_t handle_from_nlmsg(const struct nlmsghdr *nlh)
 {
+	struct nftnl_flowtable *nlf;
 	struct nftnl_table *nlt;
 	struct nftnl_chain *nlc;
 	struct nftnl_rule *nlr;
@@ -4328,6 +4329,11 @@ static uint64_t handle_from_nlmsg(const struct nlmsghdr *nlh)
 		nlo = netlink_obj_alloc(nlh);
 		handle = nftnl_obj_get_u64(nlo, NFTNL_OBJ_HANDLE);
 		nftnl_obj_free(nlo);
+		break;
+	case NFT_MSG_NEWFLOWTABLE:
+		nlf = netlink_flowtable_alloc(nlh);
+		handle = nftnl_flowtable_get_u64(nlf, NFTNL_FLOWTABLE_HANDLE);
+		nftnl_flowtable_free(nlf);
 		break;
 	}
 	return handle;

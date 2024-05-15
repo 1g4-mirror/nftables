@@ -2317,6 +2317,21 @@ void flowtable_print(const struct flowtable *s, struct output_ctx *octx)
 	do_flowtable_print(s, &opts, octx);
 }
 
+void flowtable_print_plain(const struct flowtable *ft, struct output_ctx *octx)
+{
+	struct print_fmt_options opts = {
+		.tab		= "",
+		.nl		= " ",
+		.table		= ft->handle.table.name,
+		.family		= family2str(ft->handle.family),
+		.stmt_separator = "; ",
+	};
+
+	flowtable_print_declaration(ft, &opts, octx);
+	nft_print(octx, "}");
+}
+
+
 struct flowtable *flowtable_lookup_fuzzy(const char *ft_name,
 					 const struct nft_cache *cache,
 					 const struct table **t)
