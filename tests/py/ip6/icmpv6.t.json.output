@@ -93,68 +93,6 @@
     }
 ]
 
-# icmpv6 code 4
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "code",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": 4
-        }
-    }
-]
-
-# icmpv6 code 3-66
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "code",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": {
-                "range": [
-                    3,
-                    66
-                ]
-            }
-        }
-    }
-]
-
-# icmpv6 code {5, 6, 7} accept
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "code",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": {
-                "set": [
-                    5,
-                    6,
-                    7
-                ]
-            }
-        }
-    },
-    {
-        "accept": null
-    }
-]
-
 # icmpv6 code { 3-66}
 [
     {
