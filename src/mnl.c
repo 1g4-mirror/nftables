@@ -2495,29 +2495,6 @@ static int mnl_nft_dump_nf_netdev(struct netlink_ctx *ctx, int family, int hook,
 	return err;
 }
 
-static int mnl_nft_dump_nf_decnet(struct netlink_ctx *ctx, int family, int hook,
-				  const char *devname, struct list_head *hook_list,
-				  int *ret)
-{
-	int i, err;
-
-	/* show ingress in first place in hook listing. */
-	err = __mnl_nft_dump_nf_hooks(ctx, family, NFPROTO_NETDEV, NF_NETDEV_INGRESS, devname, hook_list);
-	if (err < 0)
-		*ret = err;
-
-#define NF_DN_NUMHOOKS		7
-	for (i = 0; i < NF_DN_NUMHOOKS; i++) {
-		err = __mnl_nft_dump_nf_hooks(ctx, family, family, i, devname, hook_list);
-		if (err < 0) {
-			*ret = err;
-			return err;
-		}
-	}
-
-	return err;
-}
-
 static void release_hook_list(struct list_head *hook_list)
 {
 	struct basehook *hook, *next;
@@ -2540,7 +2517,6 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 		mnl_nft_dump_nf(ctx, NFPROTO_IPV4, hook, devname, &hook_list, &ret);
 		mnl_nft_dump_nf(ctx, NFPROTO_IPV6, hook, devname, &hook_list, &ret);
 		mnl_nft_dump_nf(ctx, NFPROTO_BRIDGE, hook, devname, &hook_list, &ret);
-		mnl_nft_dump_nf_decnet(ctx, NFPROTO_DECNET, hook, devname, &hook_list, &ret);
 		break;
 	case NFPROTO_INET:
 		mnl_nft_dump_nf(ctx, NFPROTO_IPV4, hook, devname, &hook_list, &ret);
@@ -2556,9 +2532,6 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 		break;
 	case NFPROTO_NETDEV:
 		mnl_nft_dump_nf_netdev(ctx, family, hook, devname, &hook_list, &ret);
-		break;
-	case NFPROTO_DECNET:
-		mnl_nft_dump_nf_decnet(ctx, family, hook, devname, &hook_list, &ret);
 		break;
 	}
 
