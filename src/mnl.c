@@ -2307,25 +2307,6 @@ static int dump_nf_hooks(const struct nlmsghdr *nlh, void *_data)
 
 	hook->family = nfg->nfgen_family;
 
-	/* Netdev hooks potentially interfer with this family datapath. */
-	if (hook->family == NFPROTO_NETDEV) {
-		switch (data->family) {
-		case NFPROTO_IPV4:
-		case NFPROTO_IPV6:
-		case NFPROTO_INET:
-		case NFPROTO_BRIDGE:
-			hook->family = data->family;
-			hook->num = NF_INET_INGRESS;
-			break;
-		case NFPROTO_ARP:
-			if (hook->chain_family == NFPROTO_NETDEV) {
-				hook->family = data->family;
-				hook->num = __NF_ARP_INGRESS;
-			}
-			break;
-		}
-	}
-
 	basehook_list_add_tail(hook, data->hook_list);
 
 	return MNL_CB_OK;
@@ -2437,9 +2418,6 @@ static int mnl_nft_dump_nf(struct netlink_ctx *ctx, int family, int hook,
 {
 	int i, err;
 
-	/* show ingress in first place in hook listing. */
-	err = __mnl_nft_dump_nf_hooks(ctx, family, NFPROTO_NETDEV, NF_NETDEV_INGRESS, devname, hook_list);
-
 	for (i = 0; i <= NF_INET_POST_ROUTING; i++) {
 		int tmp;
 
@@ -2480,6 +2458,12 @@ static void release_hook_list(struct list_head *hook_list)
 		basehook_free(hook);
 }
 
+static void warn_if_device(struct nft_ctx *nft, const char *devname)
+{
+	if (devname)
+		nft_print(&nft->output, "# device keyword (%s) unexpected for this family\n", devname);
+}
+
 int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const char *devname)
 {
 	LIST_HEAD(hook_list);
@@ -2490,30 +2474,41 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 	switch (family) {
 	case NFPROTO_UNSPEC:
 		ret = mnl_nft_dump_nf_hooks(ctx, NFPROTO_ARP, hook, NULL);
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_INET, hook, devname);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_INET, hook, NULL);
 		if (tmp == 0)
 			ret = 0;
 		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_BRIDGE, hook, NULL);
 		if (tmp == 0)
 			ret = 0;
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, hook, devname);
-		if (tmp == 0)
-			ret = 0;
+
+		if (devname) {
+			tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, hook, devname);
+			if (tmp == 0)
+				ret = 0;
+		}
 
 		return ret;
 	case NFPROTO_INET:
-		ret = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV4, hook, devname);
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV6, hook, devname);
+		ret = 0;
+		if (devname)
+			ret = __mnl_nft_dump_nf_hooks(ctx, family, NFPROTO_NETDEV,
+						      NF_NETDEV_INGRESS, devname, &hook_list);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV4, hook, NULL);
+		if (tmp == 0)
+			ret = 0;
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV6, hook, NULL);
 		if (tmp == 0)
 			ret = 0;
 
-		return ret;
+		break;
 	case NFPROTO_IPV4:
 	case NFPROTO_IPV6:
 	case NFPROTO_BRIDGE:
+		warn_if_device(ctx->nft, devname);
 		ret = mnl_nft_dump_nf(ctx, family, hook, devname, &hook_list);
 		break;
 	case NFPROTO_ARP:
+		warn_if_device(ctx->nft, devname);
 		ret = mnl_nft_dump_nf_arp(ctx, family, hook, devname, &hook_list);
 		break;
 	case NFPROTO_NETDEV:
