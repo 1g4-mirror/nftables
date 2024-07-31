@@ -2539,12 +2539,8 @@ static int do_list_set(struct netlink_ctx *ctx, struct cmd *cmd,
 static int do_list_hooks(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	const char *devname = cmd->handle.obj.name;
-	int hooknum = -1;
 
-	if (cmd->handle.chain.name)
-		hooknum = cmd->handle.chain_id;
-
-	return mnl_nft_dump_nf_hooks(ctx, cmd->handle.family, hooknum, devname);
+	return mnl_nft_dump_nf_hooks(ctx, cmd->handle.family, devname);
 }
 
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)

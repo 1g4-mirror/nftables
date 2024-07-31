@@ -2413,7 +2413,7 @@ static void print_hooks(struct netlink_ctx *ctx, int family, struct list_head *h
 	fprintf(fp, "}\n");
 }
 
-static int mnl_nft_dump_nf(struct netlink_ctx *ctx, int family, int hook,
+static int mnl_nft_dump_nf(struct netlink_ctx *ctx, int family,
 			   const char *devname, struct list_head *hook_list)
 {
 	int i, err;
@@ -2429,7 +2429,7 @@ static int mnl_nft_dump_nf(struct netlink_ctx *ctx, int family, int hook,
 	return err;
 }
 
-static int mnl_nft_dump_nf_arp(struct netlink_ctx *ctx, int family, int hook,
+static int mnl_nft_dump_nf_arp(struct netlink_ctx *ctx, int family,
 			       const char *devname, struct list_head *hook_list)
 {
 	int err1, err2;
@@ -2440,7 +2440,7 @@ static int mnl_nft_dump_nf_arp(struct netlink_ctx *ctx, int family, int hook,
 	return err1 ? err2 : err1;
 }
 
-static int mnl_nft_dump_nf_netdev(struct netlink_ctx *ctx, int family, int hook,
+static int mnl_nft_dump_nf_netdev(struct netlink_ctx *ctx, int family,
 				  const char *devname, struct list_head *hook_list)
 {
 	int err;
@@ -2464,7 +2464,7 @@ static void warn_if_device(struct nft_ctx *nft, const char *devname)
 		nft_print(&nft->output, "# device keyword (%s) unexpected for this family\n", devname);
 }
 
-int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const char *devname)
+int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, const char *devname)
 {
 	LIST_HEAD(hook_list);
 	int ret = -1, tmp;
@@ -2473,16 +2473,16 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 
 	switch (family) {
 	case NFPROTO_UNSPEC:
-		ret = mnl_nft_dump_nf_hooks(ctx, NFPROTO_ARP, hook, NULL);
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_INET, hook, NULL);
+		ret = mnl_nft_dump_nf_hooks(ctx, NFPROTO_ARP, NULL);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_INET, NULL);
 		if (tmp == 0)
 			ret = 0;
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_BRIDGE, hook, NULL);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_BRIDGE, NULL);
 		if (tmp == 0)
 			ret = 0;
 
 		if (devname) {
-			tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, hook, devname);
+			tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, devname);
 			if (tmp == 0)
 				ret = 0;
 		}
@@ -2493,10 +2493,10 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 		if (devname)
 			ret = __mnl_nft_dump_nf_hooks(ctx, family, NFPROTO_NETDEV,
 						      NF_NETDEV_INGRESS, devname, &hook_list);
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV4, hook, NULL);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV4, NULL);
 		if (tmp == 0)
 			ret = 0;
-		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV6, hook, NULL);
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_IPV6, NULL);
 		if (tmp == 0)
 			ret = 0;
 
@@ -2505,14 +2505,14 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, int hook, const c
 	case NFPROTO_IPV6:
 	case NFPROTO_BRIDGE:
 		warn_if_device(ctx->nft, devname);
-		ret = mnl_nft_dump_nf(ctx, family, hook, devname, &hook_list);
+		ret = mnl_nft_dump_nf(ctx, family, devname, &hook_list);
 		break;
 	case NFPROTO_ARP:
 		warn_if_device(ctx->nft, devname);
-		ret = mnl_nft_dump_nf_arp(ctx, family, hook, devname, &hook_list);
+		ret = mnl_nft_dump_nf_arp(ctx, family, devname, &hook_list);
 		break;
 	case NFPROTO_NETDEV:
-		ret = mnl_nft_dump_nf_netdev(ctx, family, hook, devname, &hook_list);
+		ret = mnl_nft_dump_nf_netdev(ctx, family, devname, &hook_list);
 		break;
 	}
 
