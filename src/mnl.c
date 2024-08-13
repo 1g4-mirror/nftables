@@ -801,6 +801,26 @@ static void nft_dev_array_free(const struct nft_dev *dev_array)
 	free_const(dev_array);
 }
 
+static bool is_wildcard_str(const char *str)
+{
+	size_t len = strlen(str);
+
+	if (len < 1 || str[len - 1] != '*')
+		return false;
+	if (len < 2 || str[len - 2] != '\\')
+		return true;
+	/* XXX: ignore backslash escaping for now */
+	return false;
+}
+
+static void mnl_nft_attr_put_ifname(struct nlmsghdr *nlh, const char *ifname)
+{
+	uint16_t attr = is_wildcard_str(ifname) ?
+			NFTA_DEVICE_PREFIX : NFTA_DEVICE_NAME;
+
+	mnl_attr_put_strz(nlh, attr, ifname);
+}
+
 static void mnl_nft_chain_devs_build(struct nlmsghdr *nlh, struct cmd *cmd)
 {
 	const struct expr *dev_expr = cmd->chain->dev_expr;
@@ -809,14 +829,14 @@ static void mnl_nft_chain_devs_build(struct nlmsghdr *nlh, struct cmd *cmd)
 	int i, num_devs = 0;
 
 	dev_array = nft_dev_array(dev_expr, &num_devs);
-	if (num_devs == 1) {
+	if (num_devs == 1 && !is_wildcard_str(dev_array[0].ifname)) {
 		cmd_add_loc(cmd, nlh, dev_array[0].location);
 		mnl_attr_put_strz(nlh, NFTA_HOOK_DEV, dev_array[0].ifname);
 	} else {
 		nest_dev = mnl_attr_nest_start(nlh, NFTA_HOOK_DEVS);
 		for (i = 0; i < num_devs; i++) {
 			cmd_add_loc(cmd, nlh, dev_array[i].location);
-			mnl_attr_put_strz(nlh, NFTA_DEVICE_NAME, dev_array[i].ifname);
+			mnl_nft_attr_put_ifname(nlh, dev_array[i].ifname);
 		}
 		mnl_attr_nest_end(nlh, nest_dev);
 	}
@@ -2234,7 +2254,7 @@ static void mnl_nft_ft_devs_build(struct nlmsghdr *nlh, struct cmd *cmd)
 	nest_dev = mnl_attr_nest_start(nlh, NFTA_FLOWTABLE_HOOK_DEVS);
 	for (i = 0; i < num_devs; i++) {
 		cmd_add_loc(cmd, nlh, dev_array[i].location);
-		mnl_attr_put_strz(nlh, NFTA_DEVICE_NAME, dev_array[i].ifname);
+		mnl_nft_attr_put_ifname(nlh, dev_array[i].ifname);
 	}
 
 	mnl_attr_nest_end(nlh, nest_dev);
