@@ -617,6 +617,8 @@ int nft_lex(void *, void *, void *);
 %token NAME			"name"
 %token PACKETS			"packets"
 %token BYTES			"bytes"
+%token KBYTES			"kbytes"
+%token MBYTES			"mbytes"
 %token AVGPKT			"avgpkt"
 
 %token LAST			"last"
@@ -774,8 +776,8 @@ int nft_lex(void *, void *, void *);
 %type <prio_spec>		extended_prio_spec prio_spec
 %destructor { expr_free($$.expr); } extended_prio_spec prio_spec
 
-%type <string>			extended_prio_name quota_unit	basehook_device_name
-%destructor { free_const($$); }	extended_prio_name quota_unit	basehook_device_name
+%type <string>			extended_prio_name basehook_device_name
+%destructor { free_const($$); }	extended_prio_name basehook_device_name
 
 %type <expr>			dev_spec
 %destructor { free($$); }	dev_spec
@@ -828,7 +830,7 @@ int nft_lex(void *, void *, void *);
 %type <val>			level_type log_flags log_flags_tcp log_flag_tcp
 %type <stmt>			limit_stmt quota_stmt connlimit_stmt
 %destructor { stmt_free($$); }	limit_stmt quota_stmt connlimit_stmt
-%type <val>			limit_burst_pkts limit_burst_bytes limit_mode limit_bytes time_unit quota_mode
+%type <val>			limit_burst_pkts limit_burst_bytes limit_mode bytes_unit time_unit quota_mode
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
@@ -3596,23 +3598,15 @@ quota_mode		:	OVER		{ $$ = NFT_QUOTA_F_INV; }
 			|	/* empty */	{ $$ = 0; }
 			;
 
-quota_unit		:	BYTES		{ $$ = xstrdup("bytes"); }
-			|	STRING		{ $$ = $1; }
+bytes_unit		:	BYTES		{ $$ = 1; }
+			|	KBYTES		{ $$ = 1024; }
+			|	MBYTES		{ $$ = 1024 * 1024; }
 			;
 
 quota_used		:	/* empty */	{ $$ = 0; }
-			|	USED NUM quota_unit
+			|	USED NUM bytes_unit
 			{
-				struct error_record *erec;
-				uint64_t rate;
-
-				erec = data_unit_parse(&@$, $3, &rate);
-				free_const($3);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
-				$$ = $2 * rate;
+				$$ = $2 * $3;
 			}
 			;
 
@@ -3625,22 +3619,14 @@ quota_stmt_alloc	:	QUOTA
 quota_stmt		:	quota_stmt_alloc quota_args
 			;
 
-quota_args		:	quota_mode NUM quota_unit quota_used
+quota_args		:	quota_mode NUM bytes_unit quota_used
 			{
-				struct error_record *erec;
 				struct quota_stmt *quota;
-				uint64_t rate;
 
 				assert($<stmt>0->type == STMT_QUOTA);
 
-				erec = data_unit_parse(&@$, $3, &rate);
-				free_const($3);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
 				quota = &$<stmt>0->quota;
-				quota->bytes = $2 * rate;
+				quota->bytes = $2 * $3;
 				quota->used = $4;
 				quota->flags = $1;
 			}
@@ -3663,7 +3649,7 @@ limit_rate_pkts		:	NUM     SLASH	time_unit
 			;
 
 limit_burst_bytes	:	/* empty */			{ $$ = 0; }
-			|	BURST	limit_bytes		{ $$ = $2; }
+			|	BURST	NUM	bytes_unit	{ $$ = $2 * $3; }
 			;
 
 limit_rate_bytes	:	NUM     STRING
@@ -3680,26 +3666,10 @@ limit_rate_bytes	:	NUM     STRING
 				$$.rate = rate * $1;
 				$$.unit = unit;
 			}
-			|	limit_bytes SLASH time_unit
+			|	NUM bytes_unit SLASH time_unit
 			{
-				$$.rate = $1;
-				$$.unit = $3;
-			}
-			;
-
-limit_bytes		:	NUM	BYTES		{ $$ = $1; }
-			|	NUM	STRING
-			{
-				struct error_record *erec;
-				uint64_t rate;
-
-				erec = data_unit_parse(&@$, $2, &rate);
-				free_const($2);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
-				$$ = $1 * rate;
+				$$.rate = $1 * $2;
+				$$.unit = $4;
 			}
 			;
 
@@ -4767,21 +4737,12 @@ counter_obj		:	/* empty */
 			}
 			;
 
-quota_config		:	quota_mode NUM quota_unit quota_used
+quota_config		:	quota_mode NUM bytes_unit quota_used
 			{
-				struct error_record *erec;
 				struct quota *quota;
-				uint64_t rate;
-
-				erec = data_unit_parse(&@$, $3, &rate);
-				free_const($3);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
 
 				quota = &$<obj>0->quota;
-				quota->bytes	= $2 * rate;
+				quota->bytes	= $2 * $3;
 				quota->used	= $4;
 				quota->flags	= $1;
 			}

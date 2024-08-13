@@ -1507,8 +1507,8 @@ static struct error_record *time_unit_parse(const struct location *loc,
 	return NULL;
 }
 
-struct error_record *data_unit_parse(const struct location *loc,
-				     const char *str, uint64_t *rate)
+static struct error_record *data_unit_parse(const struct location *loc,
+					    const char *str, uint64_t *rate)
 {
 	if (strcmp(str, "bytes") == 0)
 		*rate = 1ULL;
