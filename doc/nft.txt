@@ -387,12 +387,18 @@ add table inet mytable
 CHAINS
 ------
 [verse]
-{*add* | *create*} *chain* ['family'] 'table' 'chain' [*{ type* 'type' *hook* 'hook' [*device* 'device'] *priority* 'priority' *;* [*policy* 'policy' *;*] [*comment* 'comment' *;*] *}*]
+____
+{*add* | *create*} *chain* ['family'] 'table' 'chain' [*{ type* 'type' *hook* 'hook' ['DEVICE'] *priority* 'priority' *;* [*policy* 'policy' *;*] [*comment* 'comment' *;*] *}*]
 {*delete* | *destroy* | *list* | *flush*} *chain* ['family'] 'table' 'chain'
 *list chains* ['family']
 *delete chain* ['family'] 'table' *handle* 'handle'
 *destroy chain* ['family'] 'table' *handle* 'handle'
 *rename chain* ['family'] 'table' 'chain' 'newname'
+
+'DEVICE' := {*device* 'DEVICE_NAME' | *devices = {* 'DEVICE_LIST' *}*}
+'DEVICE_LIST' := 'DEVICE_NAME' [*,* 'DEVICE_LIST']
+'DEVICE_NAME' := 'string' | 'string'***
+____
 
 Chains are containers for rules. They exist in two kinds, base chains and
 regular chains. A base chain is an entry point for packets from the networking
@@ -436,7 +442,7 @@ further quirks worth noticing:
 
 * The netdev family supports merely two combinations, namely *filter* type with
   *ingress* hook and *filter* type with *egress* hook. Base chains in this
-  family also require the *device* parameter to be present since they exist per
+  family also require the 'DEVICE' parameter to be present since they exist per
   interface only.
 * The arp family supports only the *input* and *output* hooks, both in chains of type
   *filter*.
@@ -449,7 +455,13 @@ further quirks worth noticing:
 The *device* parameter accepts a network interface name as a string, and is
 required when adding a base chain that filters traffic on the ingress or
 egress hooks. Any ingress or egress chains will only filter traffic from the
-interface specified in the *device* parameter.
+interface specified in the *device* parameter. The same base chain may be used
+for multiple devices by using the *devices* parameter instead.
+
+With newer kernels there is also basic support for wildcards in 'DEVICE_NAME'
+by specifying an asterisk suffix. The chain will apply to all interfaces
+matching the given prefix. Use the *list hooks* command to see the current
+status.
 
 The *priority* parameter accepts a signed integer value or a standard priority
 name which specifies the order in which chains with the same *hook* value are
@@ -763,10 +775,15 @@ per element comment field
 FLOWTABLES
 -----------
 [verse]
-{*add* | *create*} *flowtable* ['family'] 'table' 'flowtable' *{ hook* 'hook' *priority* 'priority' *; devices = {* 'device'[*,* ...] *} ; }*
+____
+{*add* | *create*} *flowtable* ['family'] 'table' 'flowtable' *{ hook* 'hook' *priority* 'priority' *; devices = {* 'DEVICE_LIST' *} ; }*
 *list flowtables* ['family'] ['table']
 {*delete* | *destroy* | *list*} *flowtable* ['family'] 'table' 'flowtable'
 *delete* *flowtable* ['family'] 'table' *handle* 'handle'
+
+'DEVICE_LIST' := 'DEVICE_NAME' [*,* 'DEVICE_LIST']
+'DEVICE_NAME' := 'string' | 'string'***
+____
 
 Flowtables allow you to accelerate packet forwarding in software. Flowtables
 entries are represented through a tuple that is composed of the input interface,
@@ -785,6 +802,11 @@ tables. When no address family is specified, ip is used by default.
 The *priority* can be a signed integer or *filter* which stands for 0. Addition
 and subtraction can be used to set relative priority, e.g. filter + 5 equals to
 5.
+
+With newer kernels there is basic support for wildcards in 'DEVICE_LIST' by
+specifying an asterisk suffix. The flowtable will apply to all interfaces
+matching the given prefix. Use the *list hooks* command to see the current
+status.
 
 [horizontal]
 *add*:: Add a new flowtable for the given family with the given name.
