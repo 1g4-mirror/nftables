@@ -171,3 +171,20 @@ char *nft_if_indextoname(unsigned int ifindex, char *name)
 	}
 	return NULL;
 }
+
+const struct iface *iface_cache_get_next_entry(const struct iface *prev)
+{
+	if (!iface_cache_init)
+		iface_cache_update();
+
+	if (list_empty(&iface_list))
+		return NULL;
+
+	if (!prev)
+		return list_first_entry(&iface_list, struct iface, list);
+
+	if (list_is_last(&prev->list, &iface_list))
+		return NULL;
+
+	return list_next_entry(prev, list);
+}

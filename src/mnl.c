@@ -8,6 +8,8 @@
  * Development of this code funded by Astaro AG (http://www.astaro.com/)
  */
 
+#include <iface.h>
+
 #include <libmnl/libmnl.h>
 #include <libnftnl/common.h>
 #include <libnftnl/ruleset.h>
@@ -2159,7 +2161,7 @@ static void basehook_list_add_tail(struct basehook *b, struct list_head *head)
 	list_for_each_entry(hook, head, list) {
 		if (hook->family != b->family)
 			continue;
-		if (hook->num != b->num)
+		if (!basehook_eq(hook, b))
 			continue;
 		if (hook->prio < b->prio)
 			continue;
@@ -2504,11 +2506,9 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, const char *devna
 		if (tmp == 0)
 			ret = 0;
 
-		if (devname) {
-			tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, devname);
-			if (tmp == 0)
-				ret = 0;
-		}
+		tmp = mnl_nft_dump_nf_hooks(ctx, NFPROTO_NETDEV, devname);
+		if (tmp == 0)
+			ret = 0;
 
 		return ret;
 	case NFPROTO_INET:
@@ -2535,7 +2535,23 @@ int mnl_nft_dump_nf_hooks(struct netlink_ctx *ctx, int family, const char *devna
 		ret = mnl_nft_dump_nf_arp(ctx, family, devname, &hook_list);
 		break;
 	case NFPROTO_NETDEV:
-		ret = mnl_nft_dump_nf_netdev(ctx, family, devname, &hook_list);
+		if (devname) {
+			ret = mnl_nft_dump_nf_netdev(ctx, family, devname, &hook_list);
+		} else {
+			const struct iface *iface;
+
+			iface = iface_cache_get_next_entry(NULL);
+			ret = 0;
+
+			while (iface) {
+				tmp = mnl_nft_dump_nf_netdev(ctx, family, iface->name, &hook_list);
+				if (tmp == 0)
+					ret = 0;
+
+				iface = iface_cache_get_next_entry(iface);
+			}
+		}
+
 		break;
 	}
 
