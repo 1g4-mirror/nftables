@@ -769,10 +769,9 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
 
     if rule[1].strip() == "ok":
         payload_expected = None
-        payload_path = None
+        payload_path = "%s.payload" % filename_path
         try:
-            payload_log = open("%s.payload" % filename_path)
-            payload_path = payload_log.name
+            payload_log = open(payload_path)
             payload_expected = payload_find_expected(payload_log, rule[0])
         except:
             payload_log = None
