@@ -1815,10 +1815,8 @@ basehook_spec		:	ruleset_spec
 			}
 			|	ruleset_spec    basehook_device_name
 			{
-				if ($2) {
-					$1.obj.name = $2;
-					$1.obj.location = @2;
-				}
+				$1.obj.name = $2;
+				$1.obj.location = @2;
 				$$ = $1;
 			}
 			;
