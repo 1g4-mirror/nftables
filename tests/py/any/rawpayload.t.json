@@ -204,3 +204,160 @@
     }
 ]
 
+# @ih,58,6 set 0 @ih,86,6 set 0 @ih,170,22 set 0
+[
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 58
+                }
+            },
+            "value": 0
+        }
+    },
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 86
+                }
+            },
+            "value": 0
+        }
+    },
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 22,
+                    "offset": 170
+                }
+            },
+            "value": 0
+        }
+    }
+]
+
+# @ih,58,6 set 0x1 @ih,86,6 set 0x2 @ih,170,22 set 0x3
+[
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 58
+                }
+            },
+            "value": 1
+        }
+    },
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 86
+                }
+            },
+            "value": 2
+        }
+    },
+    {
+        "mangle": {
+            "key": {
+                "payload": {
+                    "base": "ih",
+                    "len": 22,
+                    "offset": 170
+                }
+            },
+            "value": 3
+        }
+    }
+]
+
+# @ih,58,6 0x0 @ih,86,6 0x0 @ih,170,22 0x0
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 58
+                }
+            },
+            "op": "==",
+            "right": 0
+        }
+    },
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "ih",
+                    "len": 6,
+                    "offset": 86
+                }
+            },
+            "op": "==",
+            "right": 0
+        }
+    },
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "ih",
+                    "len": 22,
+                    "offset": 170
+                }
+            },
+            "op": "==",
+            "right": 0
+        }
+    }
+]
+
+# @ih,1,2 0x2
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "ih",
+                    "len": 2,
+                    "offset": 1
+                }
+            },
+            "op": "==",
+            "right": 2
+        }
+    }
+]
+
+# @ih,35,3 0x2
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "ih",
+                    "len": 3,
+                    "offset": 35
+                }
+            },
+            "op": "==",
+            "right": 2
+        }
+    }
+]
+

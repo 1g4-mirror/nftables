@@ -61,3 +61,56 @@ inet test-inet input
   [ payload load 4b @ inner header + 4 => reg 1 ]
   [ cmp eq reg 1 0x00000014 ]
 
+# @ih,58,6 set 0 @ih,86,6 set 0 @ih,170,22 set 0
+inet test-inet input
+  [ payload load 2b @ inner header + 6 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000c0ff ) ^ 0x00000000 ]
+  [ payload write reg 1 => 2b @ inner header + 6 csum_type 0 csum_off 0 csum_flags 0x1 ]
+  [ payload load 2b @ inner header + 10 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x00000ffc ) ^ 0x00000000 ]
+  [ payload write reg 1 => 2b @ inner header + 10 csum_type 0 csum_off 0 csum_flags 0x1 ]
+  [ payload load 4b @ inner header + 20 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000c0ff ) ^ 0x00000000 ]
+  [ payload write reg 1 => 4b @ inner header + 20 csum_type 0 csum_off 0 csum_flags 0x1 ]
+
+# @ih,58,6 set 0x1 @ih,86,6 set 0x2 @ih,170,22 set 0x3
+inet test-inet input
+  [ payload load 2b @ inner header + 6 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000c0ff ) ^ 0x00000100 ]
+  [ payload write reg 1 => 2b @ inner header + 6 csum_type 0 csum_off 0 csum_flags 0x1 ]
+  [ payload load 2b @ inner header + 10 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x00000ffc ) ^ 0x00002000 ]
+  [ payload write reg 1 => 2b @ inner header + 10 csum_type 0 csum_off 0 csum_flags 0x1 ]
+  [ payload load 4b @ inner header + 20 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000c0ff ) ^ 0x03000000 ]
+  [ payload write reg 1 => 4b @ inner header + 20 csum_type 0 csum_off 0 csum_flags 0x1 ]
+
+# @ih,58,6 0x0 @ih,86,6 0x0 @ih,170,22 0x0
+inet test-inet input
+  [ payload load 1b @ inner header + 7 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000003f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000000 ]
+  [ payload load 2b @ inner header + 10 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000f003 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000000 ]
+  [ payload load 3b @ inner header + 21 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x00ffff3f ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000000 ]
+
+# @ih,1,2 0x2
+inet test-inet input
+  [ payload load 1b @ inner header + 0 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x00000060 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000040 ]
+
+# @ih,2,1 0x1
+inet test-inet input
+  [ payload load 1b @ inner header + 0 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x00000020 ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000020 ]
+
+# @ih,35,3 0x2
+inet test-inet input
+  [ payload load 1b @ inner header + 4 => reg 1 ]
+  [ bitwise reg 1 = ( reg 1 & 0x0000001c ) ^ 0x00000000 ]
+  [ cmp eq reg 1 0x00000008 ]
