@@ -21,6 +21,7 @@ meta l4proto tcp @th,16,16 { 22, 23, 80};ok;tcp dport { 22, 23, 80}
 @ll,0,128 0xfedcba987654321001234567890abcde;ok
 
 meta l4proto 91 @th,400,16 0x0 accept;ok
+meta l4proto 91 @th,0,16 0x0 accept;ok
 
 @ih,32,32 0x14000000;ok
 @ih,58,6 set 0 @ih,86,6 set 0 @ih,170,22 set 0;ok;@ih,58,6 set 0x0 @ih,86,6 set 0x0 @ih,170,22 set 0x0

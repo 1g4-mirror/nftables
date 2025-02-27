@@ -187,6 +187,37 @@
     }
 ]
 
+# meta l4proto 91 @th,0,16 0x0 accept
+[
+    {
+        "match": {
+            "left": {
+                "meta": {
+                    "key": "l4proto"
+                }
+            },
+            "op": "==",
+            "right": 91
+        }
+    },
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "base": "th",
+                    "len": 16,
+                    "offset": 0
+                }
+            },
+            "op": "==",
+            "right": 0
+        }
+    },
+    {
+        "accept": null
+    }
+]
+
 # @ih,32,32 0x14000000
 [
     {
