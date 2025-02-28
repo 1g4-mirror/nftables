@@ -3196,20 +3196,13 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 		}
 	}
 
-	if (shift_imm) {
-		struct expr *off, *lshift;
-
-		off = constant_expr_alloc(&payload->location,
-					  expr_basetype(payload),
-					  BYTEORDER_HOST_ENDIAN,
-					  sizeof(shift_imm), &shift_imm);
-
-		lshift = binop_expr_alloc(&payload->location, OP_LSHIFT,
-					  stmt->payload.val, off);
-		lshift->dtype     = payload->dtype;
-		lshift->byteorder = payload->byteorder;
-
-		stmt->payload.val = lshift;
+	switch (stmt->payload.val->etype) {
+	case EXPR_VALUE:
+		if (shift_imm)
+			mpz_lshift_ui(stmt->payload.val->value, shift_imm);
+		break;
+	default:
+		break;
 	}
 
 	masklen = payload_byte_size * BITS_PER_BYTE;
