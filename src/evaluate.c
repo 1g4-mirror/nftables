@@ -3202,7 +3202,8 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 			mpz_lshift_ui(stmt->payload.val->value, shift_imm);
 		break;
 	default:
-		break;
+		return expr_error(ctx->msgs, stmt->payload.val,
+				  "payload statement for this expression is not supported");
 	}
 
 	masklen = payload_byte_size * BITS_PER_BYTE;
