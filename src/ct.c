@@ -449,7 +449,11 @@ struct expr *ct_expr_alloc(const struct location *loc, enum nft_ct_keys key,
 
 	switch (key) {
 	case NFT_CT_SRC:
+	case NFT_CT_SRC_IP:
+	case NFT_CT_SRC_IP6:
 	case NFT_CT_DST:
+	case NFT_CT_DST_IP:
+	case NFT_CT_DST_IP6:
 		expr->ct.base = PROTO_BASE_NETWORK_HDR;
 		break;
 	case NFT_CT_PROTO_SRC:

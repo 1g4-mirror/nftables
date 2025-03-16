@@ -15,3 +15,17 @@ inet test-inet input
   [ ct load dst_ip => reg 1 , dir original ]
   [ cmp eq reg 1 0x04030201 ]
   [ immediate reg 0 accept ]
+
+# meta nfproto ipv4 ct mark 0x00000001
+inet test-inet input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x00000002 ]
+  [ ct load mark => reg 1 ]
+  [ cmp eq reg 1 0x00000001 ]
+
+# meta nfproto ipv6 ct protocol 6
+inet test-inet input
+  [ meta load nfproto => reg 1 ]
+  [ cmp eq reg 1 0x0000000a ]
+  [ ct load protocol => reg 1 ]
+  [ cmp eq reg 1 0x00000006 ]

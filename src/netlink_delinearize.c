@@ -2070,17 +2070,71 @@ static bool __meta_dependency_may_kill(const struct expr *dep, uint8_t *nfproto)
 	return false;
 }
 
+static bool ct_may_dependency_kill(unsigned int meta_nfproto,
+				   const struct expr *ct)
+{
+	assert(ct->etype == EXPR_CT);
+
+	switch (ct->ct.key) {
+	case NFT_CT_DST:
+	case NFT_CT_SRC:
+		switch (ct->len) {
+		case 32:
+			return meta_nfproto == NFPROTO_IPV4;
+		case 128:
+			return meta_nfproto == NFPROTO_IPV6;
+		default:
+			break;
+		}
+		return false;
+	case NFT_CT_DST_IP:
+	case NFT_CT_SRC_IP:
+		return meta_nfproto == NFPROTO_IPV4;
+	case NFT_CT_DST_IP6:
+	case NFT_CT_SRC_IP6:
+		return meta_nfproto == NFPROTO_IPV6;
+	default:
+		break;
+	}
+
+	return false;
+}
+
+static bool meta_may_dependency_kill(uint8_t nfproto, const struct expr *meta, const struct expr *v)
+{
+	uint8_t l4proto;
+
+	if (meta->meta.key != NFT_META_L4PROTO)
+		return true;
+
+	if (v->etype != EXPR_VALUE || v->len != 8)
+		return false;
+
+	l4proto = mpz_get_uint8(v->value);
+
+	switch (l4proto) {
+	case IPPROTO_ICMP:
+		return nfproto == NFPROTO_IPV4;
+	case IPPROTO_ICMPV6:
+		return nfproto == NFPROTO_IPV6;
+	default:
+		break;
+	}
+
+	return false;
+}
+
 /* We have seen a protocol key expression that restricts matching at the network
  * base, leave it in place since this is meaningful in bridge, inet and netdev
  * families. Exceptions are ICMP and ICMPv6 where this code assumes that can
  * only happen with IPv4 and IPv6.
  */
-static bool meta_may_dependency_kill(struct payload_dep_ctx *ctx,
+static bool ct_meta_may_dependency_kill(struct payload_dep_ctx *ctx,
 				     unsigned int family,
 				     const struct expr *expr)
 {
-	uint8_t l4proto, nfproto = NFPROTO_UNSPEC;
 	struct expr *dep = payload_dependency_get(ctx, PROTO_BASE_NETWORK_HDR);
+	uint8_t nfproto = NFPROTO_UNSPEC;
 
 	if (!dep)
 		return true;
@@ -2100,22 +2154,14 @@ static bool meta_may_dependency_kill(struct payload_dep_ctx *ctx,
 		return true;
 	}
 
-	if (expr->left->meta.key != NFT_META_L4PROTO)
-		return true;
-
-	l4proto = mpz_get_uint8(expr->right->value);
-
-	switch (l4proto) {
-	case IPPROTO_ICMP:
-	case IPPROTO_ICMPV6:
-		break;
+	switch (expr->left->etype) {
+	case EXPR_META:
+		return meta_may_dependency_kill(nfproto, expr->left, expr->right);
+	case EXPR_CT:
+		return ct_may_dependency_kill(nfproto, expr->left);
 	default:
-		return false;
+		break;
 	}
-
-	if ((nfproto == NFPROTO_IPV4 && l4proto == IPPROTO_ICMPV6) ||
-	    (nfproto == NFPROTO_IPV6 && l4proto == IPPROTO_ICMP))
-		return false;
 
 	return true;
 }
@@ -2141,8 +2187,8 @@ static void ct_meta_common_postprocess(struct rule_pp_ctx *ctx,
 
 		if (base < PROTO_BASE_TRANSPORT_HDR) {
 			if (payload_dependency_exists(&ctx->pdctx, base) &&
-			    meta_may_dependency_kill(&ctx->pdctx,
-						     ctx->pctx.family, expr))
+			    ct_meta_may_dependency_kill(&ctx->pdctx,
+							ctx->pctx.family, expr))
 				payload_dependency_release(&ctx->pdctx, base);
 
 			if (left->flags & EXPR_F_PROTOCOL)
