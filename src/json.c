@@ -1958,7 +1958,7 @@ static json_t *generate_json_metainfo(void)
 int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
-	json_t *root;
+	json_t *root = NULL;
 
 	if (cmd->handle.table.name) {
 		table = table_cache_find(&ctx->nft->cache.table_cache,
@@ -2017,6 +2017,13 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CT_HELPERS:
 		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_CT_HELPER);
 		break;
+	case CMD_OBJ_CT_TIMEOUT:
+	case CMD_OBJ_CT_TIMEOUTS:
+		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_CT_TIMEOUT);
+	case CMD_OBJ_CT_EXPECT:
+	case CMD_OBJ_CT_EXPECTATIONS:
+		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_CT_EXPECT);
+		break;
 	case CMD_OBJ_LIMIT:
 	case CMD_OBJ_LIMITS:
 		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_LIMIT);
@@ -2025,14 +2032,29 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SECMARKS:
 		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_SECMARK);
 		break;
+	case CMD_OBJ_SYNPROXY:
+	case CMD_OBJ_SYNPROXYS:
+		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_SYNPROXY);
+		break;
 	case CMD_OBJ_FLOWTABLE:
 		root = do_list_flowtable_json(ctx, cmd, table);
 		break;
 	case CMD_OBJ_FLOWTABLES:
 		root = do_list_flowtables_json(ctx, cmd);
 		break;
-	default:
+	case CMD_OBJ_HOOKS:
+		return 0;
+	case CMD_OBJ_MONITOR:
+	case CMD_OBJ_MARKUP:
+	case CMD_OBJ_SETELEMS:
+	case CMD_OBJ_RULE:
+	case CMD_OBJ_EXPR:
+	case CMD_OBJ_ELEMENTS:
+		errno = EOPNOTSUPP;
+		return -1;
+	case CMD_OBJ_INVALID:
 		BUG("invalid command object type %u\n", cmd->obj);
+		break;
 	}
 
 	if (!json_is_array(root)) {
