@@ -1960,10 +1960,15 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 	struct table *table = NULL;
 	json_t *root;
 
-	if (cmd->handle.table.name)
+	if (cmd->handle.table.name) {
 		table = table_cache_find(&ctx->nft->cache.table_cache,
 					 cmd->handle.table.name,
 					 cmd->handle.family);
+		if (!table) {
+			errno = ENOENT;
+			return -1;
+		}
+	}
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
