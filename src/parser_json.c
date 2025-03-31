@@ -1298,9 +1298,13 @@ static struct expr *json_parse_verdict_expr(struct json_ctx *ctx,
 		if (strcmp(type, verdict_tbl[i].name))
 			continue;
 
-		if (verdict_tbl[i].need_chain &&
-		    json_unpack_err(ctx, root, "{s:s}", "target", &chain))
-			return NULL;
+		if (verdict_tbl[i].need_chain) {
+			if (json_unpack_err(ctx, root, "{s:s}", "target", &chain))
+				return NULL;
+
+			if (!chain || chain[0] == '\0')
+				return NULL;
+		}
 
 		return verdict_expr_alloc(int_loc, verdict_tbl[i].verdict,
 					  json_alloc_chain_expr(chain));
