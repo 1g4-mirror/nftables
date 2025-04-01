@@ -2321,9 +2321,9 @@ static struct stmt *json_parse_reject_stmt(struct json_ctx *ctx,
 	return stmt;
 }
 
-static void json_parse_set_stmt_list(struct json_ctx *ctx,
-				      struct list_head *stmt_list,
-				      json_t *stmt_json)
+static int json_parse_set_stmt_list(struct json_ctx *ctx,
+				    struct list_head *stmt_list,
+				    json_t *stmt_json)
 {
 	struct list_head *head;
 	struct stmt *stmt;
@@ -2331,10 +2331,12 @@ static void json_parse_set_stmt_list(struct json_ctx *ctx,
 	size_t index;
 
 	if (!stmt_json)
-		return;
+		return 0;
 
-	if (!json_is_array(stmt_json))
+	if (!json_is_array(stmt_json)) {
 		json_error(ctx, "Unexpected object type in stmt");
+		return -1;
+	}
 
 	head = stmt_list;
 	json_array_foreach(stmt_json, index, value) {
@@ -2342,16 +2344,19 @@ static void json_parse_set_stmt_list(struct json_ctx *ctx,
 		if (!stmt) {
 			json_error(ctx, "Parsing set statements array at index %zd failed.", index);
 			stmt_list_free(stmt_list);
-			return;
+			return -1;
 		}
 		if (!(stmt->flags & STMT_F_STATEFUL)) {
 			stmt_free(stmt);
 			json_error(ctx, "Unsupported set statements array at index %zd failed.", index);
 			stmt_list_free(stmt_list);
+			return -1;
 		}
 		list_add(&stmt->list, head);
 		head = &stmt->list;
 	}
+
+	return 0;
 }
 
 static struct stmt *json_parse_set_stmt(struct json_ctx *ctx,
@@ -2396,8 +2401,11 @@ static struct stmt *json_parse_set_stmt(struct json_ctx *ctx,
 	stmt->set.key = expr;
 	stmt->set.set = expr2;
 
-	if (!json_unpack(value, "{s:o}", "stmt", &stmt_json))
-		json_parse_set_stmt_list(ctx, &stmt->set.stmt_list, stmt_json);
+	if (!json_unpack(value, "{s:o}", "stmt", &stmt_json) &&
+	    json_parse_set_stmt_list(ctx, &stmt->set.stmt_list, stmt_json) < 0) {
+		stmt_free(stmt);
+		return NULL;
+	}
 
 	return stmt;
 }
@@ -2453,8 +2461,11 @@ static struct stmt *json_parse_map_stmt(struct json_ctx *ctx,
 	stmt->map.data = expr_data;
 	stmt->map.set = expr2;
 
-	if (!json_unpack(value, "{s:o}", "stmt", &stmt_json))
-		json_parse_set_stmt_list(ctx, &stmt->set.stmt_list, stmt_json);
+	if (!json_unpack(value, "{s:o}", "stmt", &stmt_json) &&
+	    json_parse_set_stmt_list(ctx, &stmt->set.stmt_list, stmt_json) < 0) {
+		stmt_free(stmt);
+		return NULL;
+	}
 
 	return stmt;
 }
@@ -3355,8 +3366,12 @@ static struct cmd *json_parse_cmd_add_set(struct json_ctx *ctx, json_t *root,
 	json_unpack(root, "{s:i}", "size", &set->desc.size);
 	json_unpack(root, "{s:b}", "auto-merge", &set->automerge);
 
-	if (!json_unpack(root, "{s:o}", "stmt", &stmt_json))
-		json_parse_set_stmt_list(ctx, &set->stmt_list, stmt_json);
+	if (!json_unpack(root, "{s:o}", "stmt", &stmt_json) &&
+	    json_parse_set_stmt_list(ctx, &set->stmt_list, stmt_json) < 0) {
+		set_free(set);
+		handle_free(&h);
+		return NULL;
+	}
 
 	handle_merge(&set->handle, &h);
 
