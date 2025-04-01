@@ -2344,6 +2344,11 @@ static void json_parse_set_stmt_list(struct json_ctx *ctx,
 			stmt_list_free(stmt_list);
 			return;
 		}
+		if (!(stmt->flags & STMT_F_STATEFUL)) {
+			stmt_free(stmt);
+			json_error(ctx, "Unsupported set statements array at index %zd failed.", index);
+			stmt_list_free(stmt_list);
+		}
 		list_add(&stmt->list, head);
 		head = &stmt->list;
 	}
