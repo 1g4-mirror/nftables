@@ -1082,7 +1082,8 @@ static int expr_evaluate_ct(struct eval_ctx *ctx, struct expr **expr)
 	switch (ct->ct.key) {
 	case NFT_CT_SRC:
 	case NFT_CT_DST:
-		ct_gen_nh_dependency(ctx, ct);
+		if (ct_gen_nh_dependency(ctx, ct) < 0)
+			return -1;
 		break;
 	case NFT_CT_SRC_IP:
 	case NFT_CT_DST_IP:
