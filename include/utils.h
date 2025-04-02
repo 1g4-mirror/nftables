@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <limits.h>
 #include <list.h>
 #include <gmputil.h>
 
@@ -38,6 +39,13 @@
 
 #define __must_be_array(a) \
 	BUILD_BUG_ON_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
+
+#define assert_refcount_safe(refcnt) do {						\
+	if ((refcnt) == 0)								\
+		BUG("refcount was 0");							\
+	if ((refcnt) >= INT_MAX)							\
+		BUG("refcount saturated");						\
+} while (0)
 
 #define container_of(ptr, type, member) ({			\
 	typeof( ((type *)0)->member ) *__mptr = (ptr);		\

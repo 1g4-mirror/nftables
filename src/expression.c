@@ -68,6 +68,7 @@ struct expr *expr_clone(const struct expr *expr)
 
 struct expr *expr_get(struct expr *expr)
 {
+	assert_refcount_safe(expr->refcnt);
 	expr->refcnt++;
 	return expr;
 }
@@ -84,6 +85,8 @@ void expr_free(struct expr *expr)
 {
 	if (expr == NULL)
 		return;
+
+	assert_refcount_safe(expr->refcnt);
 	if (--expr->refcnt > 0)
 		return;
 
@@ -343,11 +346,13 @@ static void variable_expr_clone(struct expr *new, const struct expr *expr)
 	new->scope      = expr->scope;
 	new->sym	= expr->sym;
 
+	assert_refcount_safe(expr->sym->refcnt);
 	expr->sym->refcnt++;
 }
 
 static void variable_expr_destroy(struct expr *expr)
 {
+	assert_refcount_safe(expr->sym->refcnt);
 	expr->sym->refcnt--;
 }
 

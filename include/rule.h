@@ -115,7 +115,7 @@ struct symbol {
 	struct list_head	list;
 	const char		*identifier;
 	struct expr		*expr;
-	int			refcnt;
+	unsigned int		refcnt;
 };
 
 extern void symbol_bind(struct scope *scope, const char *identifier,

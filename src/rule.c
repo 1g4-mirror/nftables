@@ -181,6 +181,7 @@ struct set *set_clone(const struct set *set)
 
 struct set *set_get(struct set *set)
 {
+	assert_refcount_safe(set->refcnt);
 	set->refcnt++;
 	return set;
 }
@@ -189,6 +190,7 @@ void set_free(struct set *set)
 {
 	struct stmt *stmt, *next;
 
+	assert_refcount_safe(set->refcnt);
 	if (--set->refcnt > 0)
 		return;
 
@@ -484,12 +486,14 @@ struct rule *rule_alloc(const struct location *loc, const struct handle *h)
 
 struct rule *rule_get(struct rule *rule)
 {
+	assert_refcount_safe(rule->refcnt);
 	rule->refcnt++;
 	return rule;
 }
 
 void rule_free(struct rule *rule)
 {
+	assert_refcount_safe(rule->refcnt);
 	if (--rule->refcnt > 0)
 		return;
 	stmt_list_free(&rule->stmts);
@@ -606,6 +610,7 @@ struct symbol *symbol_get(const struct scope *scope, const char *identifier)
 	if (!sym)
 		return NULL;
 
+	assert_refcount_safe(sym->refcnt);
 	sym->refcnt++;
 
 	return sym;
@@ -613,6 +618,7 @@ struct symbol *symbol_get(const struct scope *scope, const char *identifier)
 
 static void symbol_put(struct symbol *sym)
 {
+	assert_refcount_safe(sym->refcnt);
 	if (--sym->refcnt == 0) {
 		free_const(sym->identifier);
 		expr_free(sym->expr);
@@ -732,6 +738,7 @@ struct chain *chain_alloc(void)
 
 struct chain *chain_get(struct chain *chain)
 {
+	assert_refcount_safe(chain->refcnt);
 	chain->refcnt++;
 	return chain;
 }
@@ -741,6 +748,7 @@ void chain_free(struct chain *chain)
 	struct rule *rule, *next;
 	int i;
 
+	assert_refcount_safe(chain->refcnt);
 	if (--chain->refcnt > 0)
 		return;
 	list_for_each_entry_safe(rule, next, &chain->rules, list)
@@ -1176,6 +1184,7 @@ void table_free(struct table *table)
 	struct set *set, *nset;
 	struct obj *obj, *nobj;
 
+	assert_refcount_safe(table->refcnt);
 	if (--table->refcnt > 0)
 		return;
 	if (table->comment)
@@ -1214,6 +1223,7 @@ void table_free(struct table *table)
 
 struct table *table_get(struct table *table)
 {
+	assert_refcount_safe(table->refcnt);
 	table->refcnt++;
 	return table;
 }
@@ -1687,12 +1697,14 @@ struct obj *obj_alloc(const struct location *loc)
 
 struct obj *obj_get(struct obj *obj)
 {
+	assert_refcount_safe(obj->refcnt);
 	obj->refcnt++;
 	return obj;
 }
 
 void obj_free(struct obj *obj)
 {
+	assert_refcount_safe(obj->refcnt);
 	if (--obj->refcnt > 0)
 		return;
 	free_const(obj->comment);
@@ -2270,6 +2282,7 @@ struct flowtable *flowtable_alloc(const struct location *loc)
 
 struct flowtable *flowtable_get(struct flowtable *flowtable)
 {
+	assert_refcount_safe(flowtable->refcnt);
 	flowtable->refcnt++;
 	return flowtable;
 }
@@ -2278,6 +2291,7 @@ void flowtable_free(struct flowtable *flowtable)
 {
 	int i;
 
+	assert_refcount_safe(flowtable->refcnt);
 	if (--flowtable->refcnt > 0)
 		return;
 	handle_free(&flowtable->handle);
