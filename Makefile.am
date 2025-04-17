@@ -377,18 +377,19 @@ dist_pkgdata_DATA = \
 	files/nftables/netdev-ingress.nft \
 	$(NULL)
 
-pkgdocdir = ${docdir}/examples
+exampledir = ${docdir}/examples
 
-dist_pkgdoc_SCRIPTS = \
+dist_example_SCRIPTS = \
 	files/examples/ct_helpers.nft \
 	files/examples/load_balancing.nft \
 	files/examples/secmark.nft \
 	files/examples/sets_and_maps.nft \
 	$(NULL)
 
-pkgsysconfdir = ${sysconfdir}/nftables/osf
+pkgsysconfdir = ${sysconfdir}/${PACKAGE}
+osfdir = ${pkgsysconfdir}/osf
 
-dist_pkgsysconf_DATA = \
+dist_osf_DATA = \
 	files/osf/pf.os \
 	$(NULL)
 
@@ -412,3 +413,10 @@ EXTRA_DIST += \
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnftables.pc
+unit_DATA = tools/nftables.service
+man_MANS = tools/nftables.service.8
+doc_DATA = files/nftables/main.nft
+
+tools/nftables.service: tools/nftables.service.in ${top_builddir}/config.status
+	${AM_V_GEN}${MKDIR_P} tools
+	${AM_V_at}sed -e 's|@''sbindir''@|${sbindir}|g;s|@''pkgsysconfdir''@|${pkgsysconfdir}|g' <${srcdir}/tools/nftables.service.in >$@

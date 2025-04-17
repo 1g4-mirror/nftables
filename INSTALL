@@ -42,6 +42,12 @@ Installation instructions for nftables
 	The base directory for arch-independent files. Defaults to
 	$prefix/share.
 
+ --with-unitdir=
+
+	Directory for systemd unit files. Defaults to the value obtained from
+	pkg-config for systemd.pc, and ${prefix}/lib/systemd/system as a
+	fallback.
+
  --disable-debug
 
 	Disable debugging

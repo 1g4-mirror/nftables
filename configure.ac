@@ -114,6 +114,16 @@ AC_CHECK_DECLS([getprotobyname_r, getprotobynumber_r, getservbyport_r], [], [], 
 #include <netdb.h>
 ]])
 
+AC_ARG_WITH([unitdir],
+	[AS_HELP_STRING([--with-unitdir=PATH], [Path to systemd service unit directory])],
+	[unitdir="$withval"],
+	[
+		unitdir=$("$PKG_CONFIG" systemd --variable systemdsystemunitdir 2>/dev/null)
+		AS_IF([test -z "$unitdir"], [unitdir='${prefix}/lib/systemd/system'])
+	])
+AC_SUBST([unitdir])
+
+
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\
@@ -127,4 +137,5 @@ nft configuration:
   use mini-gmp:			${with_mini_gmp}
   enable man page:              ${enable_man_doc}
   libxtables support:		${with_xtables}
-  json output support:          ${with_json}"
+  json output support:          ${with_json}
+  systemd unit:			${unitdir}"
