@@ -131,6 +131,30 @@ AC_ARG_WITH([unitdir],
 )
 AC_SUBST([unitdir])
 
+AC_ARG_WITH([stable-release], [AS_HELP_STRING([--with-stable-release],
+            [Stable release number])],
+            [], [with_stable_release=0])
+AC_CONFIG_COMMANDS([stable_release],
+                   [STABLE_RELEASE=$stable_release],
+                   [stable_release=$with_stable_release])
+AC_CONFIG_COMMANDS([nftversion.h], [
+(
+	echo "static char nftversion[[]] = {"
+	echo "	${VERSION}," | tr '.' ','
+	echo "	${STABLE_RELEASE}"
+	echo "};"
+	echo "static char nftbuildstamp[[]] = {"
+	for ((i = 56; i >= 0; i-= 8)); do
+		echo "	((uint64_t)MAKE_STAMP >> $i) & 0xff,"
+	done
+	echo "};"
+) >nftversion.h
+])
+# Current date should be fetched exactly once per build,
+# so have 'make' call date and pass the value to every 'gcc' call
+AC_SUBST([MAKE_STAMP], ["\$(shell date +%s)"])
+CFLAGS="${CFLAGS} -DMAKE_STAMP=\${MAKE_STAMP}"
+
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\

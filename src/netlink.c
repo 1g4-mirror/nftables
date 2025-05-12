@@ -10,6 +10,7 @@
  */
 
 #include <nft.h>
+#include <nftversion.h>
 
 #include <errno.h>
 #include <libmnl/libmnl.h>
@@ -799,10 +800,41 @@ static int table_parse_udata_cb(const struct nftnl_udata *attr, void *data)
 			if (value[len - 1] != '\0')
 				return -1;
 			break;
+		case NFTNL_UDATA_TABLE_NFTVER:
+			if (len != sizeof(nftversion))
+				return -1;
+			break;
+		case NFTNL_UDATA_TABLE_NFTBLD:
+			if (len != sizeof(nftbuildstamp))
+				return -1;
+			break;
 		default:
 			return 0;
 	}
 	tb[type] = attr;
+	return 0;
+}
+
+static int version_cmp(const struct nftnl_udata **ud)
+{
+	const char *udbuf;
+	size_t i;
+
+	/* netlink attribute lengths checked by table_parse_udata_cb() */
+	if (ud[NFTNL_UDATA_TABLE_NFTVER]) {
+		udbuf = nftnl_udata_get(ud[NFTNL_UDATA_TABLE_NFTVER]);
+		for (i = 0; i < sizeof(nftversion); i++) {
+			if (nftversion[i] != udbuf[i])
+				return nftversion[i] - udbuf[i];
+		}
+	}
+	if (ud[NFTNL_UDATA_TABLE_NFTBLD]) {
+		udbuf = nftnl_udata_get(ud[NFTNL_UDATA_TABLE_NFTBLD]);
+		for (i = 0; i < sizeof(nftbuildstamp); i++) {
+			if (nftbuildstamp[i] != udbuf[i])
+				return nftbuildstamp[i] - udbuf[i];
+		}
+	}
 	return 0;
 }
 
@@ -830,6 +862,7 @@ struct table *netlink_delinearize_table(struct netlink_ctx *ctx,
 		}
 		if (ud[NFTNL_UDATA_TABLE_COMMENT])
 			table->comment = xstrdup(nftnl_udata_get(ud[NFTNL_UDATA_TABLE_COMMENT]));
+		table->is_from_future = version_cmp(ud) < 0;
 	}
 
 	return table;

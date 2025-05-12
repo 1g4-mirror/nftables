@@ -33,6 +33,7 @@ sbin_PROGRAMS =
 check_PROGRAMS =
 dist_man_MANS =
 CLEANFILES =
+DISTCLEANFILES =
 
 ###############################################################################
 
@@ -106,6 +107,8 @@ noinst_HEADERS = \
 	include/xt.h \
 	\
 	$(NULL)
+
+DISTCLEANFILES += nftversion.h
 
 ###############################################################################
 

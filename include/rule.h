@@ -170,6 +170,7 @@ struct table {
 	uint32_t		owner;
 	const char		*comment;
 	bool			has_xt_stmts;
+	bool			is_from_future;
 };
 
 extern struct table *table_alloc(void);

@@ -10,6 +10,7 @@
 
 #include <nft.h>
 #include <iface.h>
+#include <nftversion.h>
 
 #include <libmnl/libmnl.h>
 #include <libnftnl/common.h>
@@ -1082,23 +1083,31 @@ int mnl_nft_table_add(struct netlink_ctx *ctx, struct cmd *cmd,
 	if (nlt == NULL)
 		memory_allocation_error();
 
+	udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
+	if (!udbuf)
+		memory_allocation_error();
+
 	nftnl_table_set_u32(nlt, NFTNL_TABLE_FAMILY, cmd->handle.family);
 	if (cmd->table) {
 		nftnl_table_set_u32(nlt, NFTNL_TABLE_FLAGS, cmd->table->flags);
 
 		if (cmd->table->comment) {
-			udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
-			if (!udbuf)
-				memory_allocation_error();
 			if (!nftnl_udata_put_strz(udbuf, NFTNL_UDATA_TABLE_COMMENT, cmd->table->comment))
 				memory_allocation_error();
-			nftnl_table_set_data(nlt, NFTNL_TABLE_USERDATA, nftnl_udata_buf_data(udbuf),
-					     nftnl_udata_buf_len(udbuf));
-			nftnl_udata_buf_free(udbuf);
 		}
 	} else {
 		nftnl_table_set_u32(nlt, NFTNL_TABLE_FLAGS, 0);
 	}
+
+	if (!nftnl_udata_put(udbuf, NFTNL_UDATA_TABLE_NFTVER,
+			     sizeof(nftversion), nftversion) ||
+	    !nftnl_udata_put(udbuf, NFTNL_UDATA_TABLE_NFTBLD,
+	                     sizeof(nftbuildstamp), nftbuildstamp))
+		memory_allocation_error();
+	nftnl_table_set_data(nlt, NFTNL_TABLE_USERDATA,
+			     nftnl_udata_buf_data(udbuf),
+			     nftnl_udata_buf_len(udbuf));
+	nftnl_udata_buf_free(udbuf);
 
 	nlh = nftnl_nlmsg_build_hdr(nftnl_batch_buffer(ctx->batch),
 				    NFT_MSG_NEWTABLE,

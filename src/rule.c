@@ -1298,6 +1298,10 @@ static void table_print(const struct table *table, struct output_ctx *octx)
 		fprintf(octx->error_fp,
 			"# Warning: table %s %s is managed by iptables-nft, do not touch!\n",
 			family, table->handle.table.name);
+	if (table->is_from_future)
+		fprintf(octx->error_fp,
+			"# Warning: table %s %s was created by a newer version of nftables? Content may be incomplete!\n",
+			family, table->handle.table.name);
 
 	nft_print(octx, "table %s %s {", family, table->handle.table.name);
 	if (nft_output_handle(octx) || table->flags & TABLE_F_OWNER)
