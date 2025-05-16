@@ -962,7 +962,8 @@ static int set_elem_parse_expressions(struct nftnl_expr *e, void *data)
 	struct stmt *stmt;
 
 	stmt = netlink_parse_set_expr(set, cache, e);
-	list_add_tail(&stmt->list, &setelem_parse_ctx->stmt_list);
+	if (stmt)
+		list_add_tail(&stmt->list, &setelem_parse_ctx->stmt_list);
 
 	return 0;
 }
