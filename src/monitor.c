@@ -453,8 +453,8 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 			nftnl_set_elems_iter_destroy(nlsei);
 			goto out;
 		}
-		if (netlink_delinearize_setelem(nlse, dummyset,
-						&monh->ctx->nft->cache) < 0) {
+		if (netlink_delinearize_setelem(monh->ctx,
+						nlse, dummyset) < 0) {
 			set_free(dummyset);
 			nftnl_set_elems_iter_destroy(nlsei);
 			goto out;
@@ -711,8 +711,7 @@ static void netlink_events_cache_addsetelem(struct netlink_mon_handler *monh,
 
 	nlse = nftnl_set_elems_iter_next(nlsei);
 	while (nlse != NULL) {
-		if (netlink_delinearize_setelem(nlse, set,
-						&monh->ctx->nft->cache) < 0) {
+		if (netlink_delinearize_setelem(monh->ctx, nlse, set) < 0) {
 			fprintf(stderr,
 				"W: Unable to cache set_elem. "
 				"Delinearize failed.\n");

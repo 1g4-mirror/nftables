@@ -162,9 +162,9 @@ extern int netlink_list_setelems(struct netlink_ctx *ctx,
 extern int netlink_get_setelem(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc, struct set *cache_set,
 			       struct set *set, struct expr *init);
-extern int netlink_delinearize_setelem(struct nftnl_set_elem *nlse,
-				       struct set *set,
-				       struct nft_cache *cache);
+extern int netlink_delinearize_setelem(struct netlink_ctx *ctx,
+				       struct nftnl_set_elem *nlse,
+				       struct set *set);
 
 extern int netlink_list_objs(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_reset_objs(struct netlink_ctx *ctx, const struct cmd *cmd,
