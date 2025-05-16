@@ -1785,6 +1785,10 @@ struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 		obj->synproxy.flags =
 			nftnl_obj_get_u32(nlo, NFTNL_OBJ_SYNPROXY_FLAGS);
 		break;
+	default:
+		netlink_io_error(ctx, NULL, "Unknown object type %u", type);
+		obj_free(obj);
+		return NULL;
 	}
 	obj->type = type;
 
