@@ -1441,7 +1441,9 @@ key_end:
 		key->byteorder = set->key->byteorder;
 		key->len = set->key->len;
 	} else {
-		BUG("Unexpected set element with no key\n");
+		netlink_io_error(ctx, NULL,
+			         "Unexpected set element with no key");
+		return 0;
 	}
 
 	expr = set_elem_expr_alloc(&netlink_location, key);
