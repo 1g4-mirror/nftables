@@ -37,3 +37,35 @@
     }
 ]
 
+# fib daddr oif exists
+[
+    {
+        "match": {
+            "left": {
+                "fib": {
+                    "flags": "daddr",
+                    "result": "oif"
+                }
+            },
+            "op": "==",
+            "right": true
+        }
+    }
+]
+
+# fib daddr oif missing
+[
+    {
+        "match": {
+            "left": {
+                "fib": {
+                    "flags": "daddr",
+                    "result": "oif"
+                }
+            },
+            "op": "==",
+            "right": false
+        }
+    }
+]
+

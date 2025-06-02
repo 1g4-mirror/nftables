@@ -1,0 +1,17 @@
+# synproxy timestamp
+[
+    {
+        "synproxy": {
+            "flags": "timestamp"
+        }
+    }
+]
+
+# synproxy sack-perm
+[
+    {
+        "synproxy": {
+            "flags": "sack-perm"
+        }
+    }
+]
