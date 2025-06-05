@@ -707,9 +707,20 @@ static void nft_dev_add(struct nft_dev *dev_array, const struct expr *expr, int 
 	unsigned int ifname_len;
 	char ifname[IFNAMSIZ];
 
+	if (expr->etype != EXPR_VALUE)
+		BUG("Must be a value, not %s\n", expr_name(expr));
+
 	ifname_len = div_round_up(expr->len, BITS_PER_BYTE);
 	memset(ifname, 0, sizeof(ifname));
+
+	if (ifname_len > sizeof(ifname))
+		BUG("Interface length %u exceeds limit\n", ifname_len);
+
 	mpz_export_data(ifname, expr->value, BYTEORDER_HOST_ENDIAN, ifname_len);
+
+	if (strnlen(ifname, IFNAMSIZ) >= IFNAMSIZ)
+		BUG("Interface length %zu exceeds limit, no NUL byte\n", strnlen(ifname, IFNAMSIZ));
+
 	dev_array[i].ifname = xstrdup(ifname);
 	dev_array[i].location = &expr->location;
 }
