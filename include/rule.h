@@ -753,6 +753,7 @@ void cmd_add_loc(struct cmd *cmd, uint16_t offset, const struct location *loc);
 
 struct eval_recursion {
 	uint16_t binop;
+	uint16_t list;
 };
 
 /**

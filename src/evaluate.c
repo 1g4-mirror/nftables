@@ -1512,10 +1512,18 @@ static int list_member_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	struct expr *next = list_entry((*expr)->list.next, struct expr, list);
 	int err;
 
+	/* should never be hit in practice */
+	if (ctx->recursion.list >= USHRT_MAX)
+		return expr_binary_error(ctx->msgs, next, NULL,
+					 "List limit %u reached ",
+					 ctx->recursion.list);
+
+	ctx->recursion.list++;
 	assert(*expr != next);
 	list_del(&(*expr)->list);
 	err = expr_evaluate(ctx, expr);
 	list_add_tail(&(*expr)->list, &next->list);
+	ctx->recursion.list--;
 	return err;
 }
 
@@ -1578,10 +1586,59 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 
-		if (i->etype == EXPR_SET)
+		switch (i->etype) {
+		case EXPR_INVALID:
+			BUG("Unexpected etype %d", i->etype);
+			break;
+		case EXPR_VALUE:
+		case EXPR_UNARY:
+		case EXPR_BINOP:
+		case EXPR_FLAGCMP:
+		case EXPR_RELATIONAL:
+		case EXPR_CONCAT:
+		case EXPR_MAP:
+		case EXPR_PAYLOAD:
+		case EXPR_EXTHDR:
+		case EXPR_META:
+		case EXPR_RT:
+		case EXPR_CT:
+		case EXPR_SET_ELEM:
+		case EXPR_NUMGEN:
+		case EXPR_HASH:
+		case EXPR_FIB:
+		case EXPR_SOCKET:
+		case EXPR_OSF:
+		case EXPR_XFRM:
+			break;
+		case EXPR_RANGE:
+		case EXPR_PREFIX:
+			/* allowed on RHS (e.g. th dport . mark { 1-65535 . 42 }
+			 *                                       ~~~~~~~~ allowed
+			 * but not on LHS (e.g  1-4 . mark { ...}
+			 *                      ~~~ illegal
+			 *
+			 * recursion.list > 0 means that the concatenation is
+			 * part of another expression, such as EXPR_MAPPING or
+			 * EXPR_SET_ELEM (is used as RHS).
+			 */
+			if (ctx->recursion.list > 0)
+				break;
+
 			return expr_error(ctx->msgs, i,
 					  "cannot use %s in concatenation",
 					  expr_name(i));
+		case EXPR_VERDICT:
+		case EXPR_SYMBOL:
+		case EXPR_VARIABLE:
+		case EXPR_LIST:
+		case EXPR_SET:
+		case EXPR_SET_REF:
+		case EXPR_MAPPING:
+		case EXPR_SET_ELEM_CATCHALL:
+			return expr_error(ctx->msgs, i,
+					  "cannot use %s in concatenation",
+					  expr_name(i));
+		}
 
 		if (!i->dtype)
 			return expr_error(ctx->msgs, i,
