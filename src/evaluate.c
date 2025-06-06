@@ -1410,11 +1410,11 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 	unsigned int max_shift_len = ctx->ectx.len;
 	int ret = -1;
 
-	if (ctx->recursion >= USHRT_MAX)
+	if (ctx->recursion.binop >= USHRT_MAX)
 		return expr_binary_error(ctx->msgs, op, NULL,
 					 "Binary operation limit %u reached ",
-					 ctx->recursion);
-	ctx->recursion++;
+					 ctx->recursion.binop);
+	ctx->recursion.binop++;
 
 	if (expr_evaluate(ctx, &op->left) < 0)
 		return -1;
@@ -1481,7 +1481,7 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 	}
 
 
-	if (ctx->recursion == 0)
+	if (ctx->recursion.binop == 0)
 		BUG("recursion counter underflow");
 
 	/* can't check earlier: evaluate functions might do constant-merging + expr_free.
@@ -1489,7 +1489,7 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 	 * So once we've evaluate everything check for remaining length of the
 	 * binop chain.
 	 */
-	if (--ctx->recursion == 0) {
+	if (--ctx->recursion.binop == 0) {
 		unsigned int to_linearize = 0;
 
 		op = *expr;

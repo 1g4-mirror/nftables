@@ -751,6 +751,10 @@ void cmd_add_loc(struct cmd *cmd, uint16_t offset, const struct location *loc);
 #include <payload.h>
 #include <expression.h>
 
+struct eval_recursion {
+	uint16_t binop;
+};
+
 /**
  * struct eval_ctx - evaluation context
  *
@@ -762,7 +766,7 @@ void cmd_add_loc(struct cmd *cmd, uint16_t offset, const struct location *loc);
  * @set:	current set
  * @stmt:	current statement
  * @stmt_len:	current statement template length
- * @recursion:  expr evaluation recursion counter
+ * @recursion:  expr evaluation recursion counters
  * @cache:	cache context
  * @debug_mask: debugging bitmask
  * @ectx:	expression context
@@ -778,7 +782,7 @@ struct eval_ctx {
 	struct set		*set;
 	struct stmt		*stmt;
 	uint32_t		stmt_len;
-	uint32_t		recursion;
+	struct eval_recursion	recursion;
 	struct expr_ctx		ectx;
 	struct proto_ctx	pctx;
 };
