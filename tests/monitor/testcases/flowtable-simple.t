@@ -7,4 +7,4 @@ J {"add": {"flowtable": {"family": "ip", "name": "ft", "table": "t", "handle": 0
 
 I delete flowtable ip t ft
 O -
-J {"delete": {"flowtable": {"family": "ip", "name": "ft", "table": "t", "handle": 0, "hook": "ingress", "prio": 0, "dev": "lo"}}}
+J {"delete": {"flowtable": {"family": "ip", "name": "ft", "table": "t", "handle": 0}}}
