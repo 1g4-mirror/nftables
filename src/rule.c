@@ -1032,8 +1032,10 @@ static void chain_print_declaration(const struct chain *chain,
 		nft_print(octx, "\n\t\tcomment \"%s\"", chain->comment);
 	nft_print(octx, "\n");
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		nft_print(octx, "\t\ttype %s hook %s", chain->type.str,
-			  hooknum2str(chain->handle.family, chain->hook.num));
+		if (chain->type.str)
+			nft_print(octx, "\t\ttype %s hook %s", chain->type.str,
+				  hooknum2str(chain->handle.family, chain->hook.num));
+
 		if (chain->dev_array_len == 1) {
 			nft_print(octx, " device \"%s\"", chain->dev_array[0]);
 		} else if (chain->dev_array_len > 1) {
@@ -1045,10 +1047,12 @@ static void chain_print_declaration(const struct chain *chain,
 			}
 			nft_print(octx, " }");
 		}
-		nft_print(octx, " priority %s;",
-			  prio2str(octx, priobuf, sizeof(priobuf),
-				   chain->handle.family, chain->hook.num,
-				   chain->priority.expr));
+
+		if (chain->priority.expr)
+			nft_print(octx, " priority %s;",
+				  prio2str(octx, priobuf, sizeof(priobuf),
+					   chain->handle.family, chain->hook.num,
+					   chain->priority.expr));
 		if (chain->policy) {
 			mpz_export_data(&policy, chain->policy->value,
 					BYTEORDER_HOST_ENDIAN, sizeof(int));
