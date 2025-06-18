@@ -13,8 +13,7 @@ table inet x {
 	map test2 {
 		type ipv4_addr : synproxy
 		flags interval
-		elements = { 192.168.1.0/24 : "https-synproxy",
-			     192.168.2.0/24 : "other-synproxy" }
+		elements = { 192.168.1.0/24 : "https-synproxy", 192.168.2.0/24 : "other-synproxy" }
 	}
 
 	chain y {

@@ -5,8 +5,7 @@ table ip x {
 
 	map sctm_o0 {
 		type mark : verdict
-		elements = { 0x00000000 : jump sctm_o0_0,
-			     0x00000001 : jump sctm_o0_1 }
+		elements = { 0x00000000 : jump sctm_o0_0, 0x00000001 : jump sctm_o0_1 }
 	}
 
 	map sctm_o1 {

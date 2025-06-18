@@ -64,8 +64,7 @@ EXPECTED="table inet t {
 
 	map m2 {
 		typeof vlan id : meta mark
-		elements = { 1 : 0x00000001,
-			     4095 : 0x00004095 }
+		elements = { 1 : 0x00000001, 4095 : 0x00004095 }
 	}
 
 	map m3 {

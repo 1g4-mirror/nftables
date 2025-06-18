@@ -2,8 +2,7 @@ table inet filter {
 	map portmap {
 		type inet_service : verdict
 		counter
-		elements = { 22 counter packets 0 bytes 0 : jump ssh_input,
-			     * counter packets 0 bytes 0 : drop }
+		elements = { 22 counter packets 0 bytes 0 : jump ssh_input, * counter packets 0 bytes 0 : drop }
 	}
 
 	chain ssh_input {

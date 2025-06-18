@@ -21,8 +21,7 @@ table inet x {
 
 	map test {
 		type ipv4_addr : quota
-		elements = { 192.168.2.2 : "user124",
-			     192.168.2.3 : "user124" }
+		elements = { 192.168.2.2 : "user124", 192.168.2.3 : "user124" }
 	}
 
 	chain y {

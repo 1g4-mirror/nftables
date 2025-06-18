@@ -30,12 +30,19 @@ generate_add() {
 }
 
 generate_test() {
+	count=0
 	elements=""
 	for ((i=1; i<=HOWMANY; i++)) ; do
 		for ((j=1; j<=HOWMANY; j++)) ; do
+			((count++))
 			elements="${elements}10.${i}.${j}.0/24 : 10.0.${i}.${j}"
 			[ "$i" == "$HOWMANY" ] && [ "$j" == "$HOWMANY" ] && break
-			elements="${elements},\\n\\t\\t\\t     "
+			if [ "$count" == "2" ] ; then
+				count=0
+				elements="${elements},\\n\\t\\t\\t     "
+			else
+				elements="${elements}, "
+			fi
 		done
 	done
 	echo -e "$elements"
