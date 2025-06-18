@@ -21,7 +21,9 @@
         "table": "t",
         "type": "mark",
         "handle": 0,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           {
             "range": [

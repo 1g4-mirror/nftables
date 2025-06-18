@@ -24,7 +24,9 @@
           "ipv6_addr"
         ],
         "handle": 0,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           {
             "concat": [
@@ -1582,7 +1584,9 @@
           "ipv4_addr"
         ],
         "handle": 0,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           {
             "concat": [

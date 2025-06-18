@@ -39,7 +39,9 @@
         "handle": 0,
         "map": "mark",
         "size": 65535,
-        "flags": "timeout",
+        "flags": [
+          "timeout"
+        ],
         "timeout": 360
       }
     },
@@ -59,7 +61,9 @@
         "handle": 0,
         "map": "mark",
         "size": 65535,
-        "flags": "timeout",
+        "flags": [
+          "timeout"
+        ],
         "timeout": 60
       }
     },

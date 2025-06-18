@@ -62,7 +62,9 @@
         "table": "test_arp",
         "type": "inet_service",
         "handle": 0,
-        "flags": "constant"
+        "flags": [
+          "constant"
+        ]
       }
     },
     {
@@ -104,7 +106,9 @@
         "table": "filter",
         "type": "inet_service",
         "handle": 0,
-        "flags": "constant"
+        "flags": [
+          "constant"
+        ]
       }
     },
     {

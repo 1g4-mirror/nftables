@@ -27,7 +27,9 @@
           "inet_service"
         ],
         "handle": 0,
-        "flags": "dynamic",
+        "flags": [
+          "dynamic"
+        ],
         "elem": [
           {
             "elem": {
@@ -62,7 +64,9 @@
           "inet_service"
         ],
         "handle": 0,
-        "flags": "dynamic"
+        "flags": [
+          "dynamic"
+        ]
       }
     },
     {
@@ -78,7 +82,9 @@
           "inet_service"
         ],
         "handle": 0,
-        "flags": "dynamic",
+        "flags": [
+          "dynamic"
+        ],
         "elem": [
           {
             "elem": {
