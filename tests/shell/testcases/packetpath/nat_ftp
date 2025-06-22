@@ -20,7 +20,7 @@ assert_pass()
 	if [ $ret != 0 ]
 	then
 		echo "FAIL: ${@}"
-		ip netns exec $R nft list ruleset
+		ip netns exec $R $NFT list ruleset
 		tcpdump -nnr ${PCAP}
 		test -r /proc/net/nf_conntrack && ip netns exec $R cat /proc/net/nf_conntrack
 		ip netns exec $R conntrack -S
@@ -82,7 +82,7 @@ assert_pass "topo initialization"
 reload_ruleset()
 {
 	ip netns exec $R conntrack -F 2> /dev/null
-	ip netns exec $R nft -f - <<-EOF
+	ip netns exec $R $NFT -f - <<-EOF
 	flush ruleset
 	table ip6 ftp_helper_nat_test {
 		ct helper ftp-standard {

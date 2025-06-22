@@ -67,7 +67,7 @@ sleep 3
 ip netns exec $C ping -q -6 2001:db8:ffff:22::1 -c1
 assert_pass "topo initialization"
 
-ip netns exec $R nft -f - <<EOF
+ip netns exec $R $NFT -f - <<EOF
 table ip6 filter {
         flowtable f1 {
                 hook ingress priority -100
@@ -88,7 +88,7 @@ assert_pass "apply nft ruleset"
 
 if [ ! -r /proc/net/nf_conntrack ]
 then
-	echo "E: nf_conntrack unreadable, skipping" >&2	
+	echo "E: nf_conntrack unreadable, skipping" >&2
 	exit 77
 fi
 
