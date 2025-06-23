@@ -4897,6 +4897,18 @@ static int elems_evaluate(struct eval_ctx *ctx, struct set *set)
 	return 0;
 }
 
+static bool set_type_compatible(const struct set *set, const struct set *existing_set)
+{
+	if (set_is_datamap(set->flags))
+		return set_is_datamap(existing_set->flags);
+
+	if (set_is_objmap(set->flags))
+		return set_is_objmap(existing_set->flags);
+
+	assert(!set_is_map(set->flags));
+	return !set_is_map(existing_set->flags);
+}
+
 static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 {
 	struct set *existing_set = NULL;
@@ -5020,8 +5032,15 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return 0;
 	}
 
-	if (existing_set && set_is_interval(set->flags) && !set_is_interval(existing_set->flags))
-		return set_error(ctx, set, "existing %s lacks interval flag", type);
+	if (existing_set) {
+		if (set_is_interval(set->flags) && !set_is_interval(existing_set->flags))
+			return set_error(ctx, set,
+					 "existing %s lacks interval flag", type);
+		if (!set_type_compatible(set, existing_set))
+			return set_error(ctx, set, "Cannot merge %s with incompatible existing %s of same name",
+					type,
+					set_is_map(existing_set->flags) ? "map" : "set");
+	}
 
 	set->existing_set = existing_set;
 
