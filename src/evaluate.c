@@ -2863,16 +2863,32 @@ static int expr_evaluate_flagcmp(struct eval_ctx *ctx, struct expr **exprp)
 	return expr_evaluate(ctx, exprp);
 }
 
-static int verdict_validate_chainlen(struct eval_ctx *ctx,
+static int verdict_validate_chain(struct eval_ctx *ctx,
 				     struct expr *chain)
 {
-	if (chain->len > NFT_CHAIN_MAXNAMELEN * BITS_PER_BYTE)
+	char buf[NFT_CHAIN_MAXNAMELEN];
+	unsigned int len;
+
+	len = chain->len / BITS_PER_BYTE;
+	if (len > NFT_CHAIN_MAXNAMELEN)
 		return expr_error(ctx->msgs, chain,
 				  "chain name too long (%u, max %u)",
 				  chain->len / BITS_PER_BYTE,
 				  NFT_CHAIN_MAXNAMELEN);
 
-	return 0;
+	if (!len)
+		return expr_error(ctx->msgs, chain,
+				  "chain name length 0 not allowed");
+
+	memset(buf, 0, sizeof(buf));
+	mpz_export_data(buf, chain->value, BYTEORDER_HOST_ENDIAN, len);
+
+	if (strnlen(buf, sizeof(buf)) < sizeof(buf))
+		return 0;
+
+	return expr_error(ctx->msgs, chain,
+			  "chain name must be smaller than %u",
+			  NFT_CHAIN_MAXNAMELEN);
 }
 
 static int expr_evaluate_verdict(struct eval_ctx *ctx, struct expr **exprp)
@@ -2883,7 +2899,7 @@ static int expr_evaluate_verdict(struct eval_ctx *ctx, struct expr **exprp)
 	case NFT_GOTO:
 	case NFT_JUMP:
 		if (expr->chain->etype == EXPR_VALUE &&
-		    verdict_validate_chainlen(ctx, expr->chain))
+		    verdict_validate_chain(ctx, expr->chain))
 			return -1;
 
 		break;
@@ -3115,7 +3131,7 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 						  "not a value expression");
 			}
 
-			if (verdict_validate_chainlen(ctx, stmt->expr->chain))
+			if (verdict_validate_chain(ctx, stmt->expr->chain))
 				return -1;
 		}
 		break;
