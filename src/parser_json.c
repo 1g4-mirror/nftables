@@ -3006,7 +3006,13 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 	size_t index;
 
 	if (!json_unpack(root, "s", &dev)) {
-		tmp = constant_expr_alloc(int_loc, &string_type,
+		if (strlen(dev) >= IFNAMSIZ) {
+			json_error(ctx, "Device name %s too long", dev);
+			expr_free(expr);
+			return NULL;
+		}
+
+		tmp = constant_expr_alloc(int_loc, &ifname_type,
 					  BYTEORDER_HOST_ENDIAN,
 					  strlen(dev) * BITS_PER_BYTE, dev);
 		compound_expr_add(expr, tmp);
@@ -3024,7 +3030,14 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 			expr_free(expr);
 			return NULL;
 		}
-		tmp = constant_expr_alloc(int_loc, &string_type,
+
+		if (strlen(dev) >= IFNAMSIZ) {
+			json_error(ctx, "Device name %s too long at index %zu", dev, index);
+			expr_free(expr);
+			return NULL;
+		}
+
+		tmp = constant_expr_alloc(int_loc, &ifname_type,
 					  BYTEORDER_HOST_ENDIAN,
 					  strlen(dev) * BITS_PER_BYTE, dev);
 		compound_expr_add(expr, tmp);
