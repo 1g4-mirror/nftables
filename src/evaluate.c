@@ -1785,6 +1785,23 @@ static int __expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr *elem)
 	return 0;
 }
 
+static bool datatype_compatible(const struct datatype *a, const struct datatype *b)
+{
+	return (a->type == TYPE_MARK &&
+		datatype_equal(datatype_basetype(a), datatype_basetype(b))) ||
+		datatype_equal(a, b);
+}
+
+static bool elem_key_compatible(const struct expr *set_key,
+				const struct expr *elem_key)
+{
+	/* Catchall element is always compatible with the set key declaration */
+	if (elem_key->etype == EXPR_SET_ELEM_CATCHALL)
+		return true;
+
+	return datatype_compatible(set_key->dtype, elem_key->dtype);
+}
+
 static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *elem = *expr;
@@ -1824,6 +1841,12 @@ static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 			break;
 		}
 	}
+
+	if (ctx->set && !elem_key_compatible(ctx->ectx.key, elem->key))
+		return expr_error(ctx->msgs, elem,
+				  "Element mismatches %s definition, expected %s, not '%s'",
+				  set_is_map(ctx->set->flags) ? "map" : "set",
+				  ctx->ectx.key->dtype->desc, elem->key->dtype->desc);
 
 	datatype_set(elem, elem->key->dtype);
 	elem->len   = elem->key->len;
@@ -2031,13 +2054,6 @@ static int mapping_expr_expand(struct eval_ctx *ctx)
 	}
 
 	return 0;
-}
-
-static bool datatype_compatible(const struct datatype *a, const struct datatype *b)
-{
-	return (a->type == TYPE_MARK &&
-		datatype_equal(datatype_basetype(a), datatype_basetype(b))) ||
-		datatype_equal(a, b);
 }
 
 static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
