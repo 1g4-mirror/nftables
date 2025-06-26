@@ -57,7 +57,7 @@ static void setelem_expr_to_range(struct expr *expr)
 		expr->key = key;
 		break;
 	default:
-		BUG("unhandled key type %d\n", expr->key->etype);
+		BUG("unhandled key type %s\n", expr_name(expr->key));
 	}
 }
 

@@ -5036,6 +5036,18 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		if (set_is_interval(set->flags) && !set_is_interval(existing_set->flags))
 			return set_error(ctx, set,
 					 "existing %s lacks interval flag", type);
+		if (set->data && existing_set->data &&
+		    !datatype_equal(existing_set->data->dtype, set->data->dtype))
+			return set_error(ctx, set,
+					 "%s already exists with different datatype (%s vs %s)",
+					 type, existing_set->data->dtype->desc,
+					 set->data->dtype->desc);
+		if (!datatype_equal(existing_set->key->dtype, set->key->dtype))
+			return set_error(ctx, set,
+					 "%s already exists with different datatype (%s vs %s)",
+					 type, existing_set->key->dtype->desc,
+					 set->key->dtype->desc);
+		/* Catch attempt to merge set and map */
 		if (!set_type_compatible(set, existing_set))
 			return set_error(ctx, set, "Cannot merge %s with incompatible existing %s of same name",
 					type,
