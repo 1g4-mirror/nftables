@@ -8,11 +8,11 @@ set -e
 
 FLOWTABLES="flowtable f {
 	hook ingress priority filter
-	devices = { lo }
+	devices = { \"lo\" }
 }
 flowtable f2 {
 	hook ingress priority filter
-	devices = { d0 }
+	devices = { \"d0\" }
 }"
 
 RULESET="table inet filter {
@@ -25,23 +25,23 @@ table ip filter {
 EXPECTED="table inet filter {
 	flowtable f {
 		hook ingress priority filter
-		devices = { lo }
+		devices = { \"lo\" }
 	}
 }"
 EXPECTED2="table ip filter {
 	flowtable f2 {
 		hook ingress priority filter
-		devices = { d0 }
+		devices = { \"d0\" }
 	}
 }"
 EXPECTED3="table ip filter {
 	flowtable f {
 		hook ingress priority filter
-		devices = { lo }
+		devices = { \"lo\" }
 	}
 	flowtable f2 {
 		hook ingress priority filter
-		devices = { d0 }
+		devices = { \"d0\" }
 	}
 }"
 

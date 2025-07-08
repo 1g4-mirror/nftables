@@ -5,12 +5,12 @@ table netdev filter1 {
 }
 table netdev filter2 {
 	chain Main_Ingress2 {
-		type filter hook ingress devices = { d23456789012345, lo } priority -500; policy accept;
+		type filter hook ingress devices = { "d23456789012345", "lo" } priority -500; policy accept;
 	}
 }
 table netdev filter3 {
 	chain Main_Ingress3 {
-		type filter hook ingress devices = { d23456789012345, lo } priority -500; policy accept;
+		type filter hook ingress devices = { "d23456789012345", "lo" } priority -500; policy accept;
 	}
 
 	chain Main_Egress3 {

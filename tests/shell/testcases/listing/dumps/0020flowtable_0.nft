@@ -1,7 +1,7 @@
 table inet filter {
 	flowtable f {
 		hook ingress priority filter
-		devices = { lo }
+		devices = { "lo" }
 	}
 
 	flowtable f2 {
@@ -11,7 +11,7 @@ table inet filter {
 table ip filter {
 	flowtable f {
 		hook ingress priority filter
-		devices = { lo }
+		devices = { "lo" }
 	}
 
 	flowtable f2 {

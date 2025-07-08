@@ -1044,7 +1044,7 @@ static void chain_print_declaration(const struct chain *chain,
 		} else if (chain->dev_array_len > 1) {
 			nft_print(octx, " devices = { ");
 			for (i = 0; i < chain->dev_array_len; i++) {
-				nft_print(octx, "%s", chain->dev_array[i]);
+				nft_print(octx, "\"%s\"", chain->dev_array[i]);
 					if (i + 1 != chain->dev_array_len)
 						nft_print(octx, ", ");
 			}
@@ -2295,7 +2295,7 @@ static void flowtable_print_declaration(const struct flowtable *flowtable,
 	if (flowtable->dev_array_len > 0) {
 		nft_print(octx, "%s%sdevices = { ", opts->tab, opts->tab);
 		for (i = 0; i < flowtable->dev_array_len; i++) {
-			nft_print(octx, "%s", flowtable->dev_array[i]);
+			nft_print(octx, "\"%s\"", flowtable->dev_array[i]);
 			if (i + 1 != flowtable->dev_array_len)
 				nft_print(octx, ", ");
 		}

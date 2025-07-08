@@ -6,7 +6,7 @@
 EXPECTED="table ip filter2 {
 	flowtable main_ft2 {
 		hook ingress priority filter
-		devices = { lo }
+		devices = { \"lo\" }
 		counter
 	}
 }"
