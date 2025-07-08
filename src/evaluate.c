@@ -5024,7 +5024,8 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		set->flags |= NFT_SET_EXPR;
 
 	if (set_is_anonymous(set->flags)) {
-		if (set_is_interval(set->init->set_flags) &&
+		if (set->init->etype == EXPR_SET &&
+		    set_is_interval(set->init->set_flags) &&
 		    !(set->init->set_flags & NFT_SET_CONCAT) &&
 		    interval_set_eval(ctx, set, set->init) < 0)
 			return -1;
