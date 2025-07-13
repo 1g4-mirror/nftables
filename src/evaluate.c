@@ -1842,11 +1842,11 @@ static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 		}
 	}
 
-	if (ctx->set && !elem_key_compatible(ctx->ectx.key, elem->key))
+	if (ctx->set && !elem_key_compatible(ctx->set->key, elem->key))
 		return expr_error(ctx->msgs, elem,
 				  "Element mismatches %s definition, expected %s, not '%s'",
 				  set_is_map(ctx->set->flags) ? "map" : "set",
-				  ctx->ectx.key->dtype->desc, elem->key->dtype->desc);
+				  ctx->set->key->dtype->desc, elem->key->dtype->desc);
 
 	datatype_set(elem, elem->key->dtype);
 	elem->len   = elem->key->len;
