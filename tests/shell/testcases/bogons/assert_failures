@@ -46,5 +46,5 @@ for f in $jsondir/*; do
 	echo "Check json input $f"
 	$NFT --check -j -f "$f" 2> "$tmpfile"
 
-	die_on_error $?
+	die_on_error $? "$f"
 done
