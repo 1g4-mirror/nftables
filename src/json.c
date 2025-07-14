@@ -278,8 +278,7 @@ static json_t *rule_print_json(struct output_ctx *octx,
 
 static json_t *chain_print_json(const struct chain *chain)
 {
-	json_t *root, *tmp, *devs = NULL;
-	int priority, policy, i;
+	json_t *root;
 
 	root = nft_json_pack("{s:s, s:s, s:s, s:I}",
 			 "family", family2str(chain->handle.family),
@@ -291,8 +290,12 @@ static json_t *chain_print_json(const struct chain *chain)
 		json_object_set_new(root, "comment", json_string(chain->comment));
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		mpz_export_data(&priority, chain->priority.expr->value,
-				BYTEORDER_HOST_ENDIAN, sizeof(int));
+		json_t *tmp = NULL, *devs = NULL;
+		int priority = 0, policy, i;
+
+		if (chain->priority.expr)
+			mpz_export_data(&priority, chain->priority.expr->value,
+					BYTEORDER_HOST_ENDIAN, sizeof(int));
 
 		if (chain->policy) {
 			mpz_export_data(&policy, chain->policy->value,
@@ -301,12 +304,15 @@ static json_t *chain_print_json(const struct chain *chain)
 			policy = NF_ACCEPT;
 		}
 
-		tmp = nft_json_pack("{s:s, s:s, s:i, s:s}",
-				"type", chain->type.str,
-				"hook", hooknum2str(chain->handle.family,
-						    chain->hook.num),
-				"prio", priority,
-				"policy", chain_policy2str(policy));
+		if (chain->type.str)
+			tmp = nft_json_pack("{s:s, s:s, s:i, s:s}",
+					"type", chain->type.str,
+					"hook", hooknum2str(chain->handle.family,
+							    chain->hook.num),
+					"prio", priority,
+					"policy", chain_policy2str(policy));
+		else
+			tmp = NULL;
 
 		for (i = 0; i < chain->dev_array_len; i++) {
 			const char *dev = chain->dev_array[i];
@@ -320,8 +326,10 @@ static json_t *chain_print_json(const struct chain *chain)
 		if (devs)
 			json_object_set_new(root, "dev", devs);
 
-		json_object_update(root, tmp);
-		json_decref(tmp);
+		if (tmp) {
+			json_object_update(root, tmp);
+			json_decref(tmp);
+		}
 	}
 
 	return nft_json_pack("{s:o}", "chain", root);
