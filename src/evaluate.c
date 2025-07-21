@@ -2218,6 +2218,20 @@ static bool data_mapping_has_interval(struct expr *data)
 	return false;
 }
 
+static bool elem_data_compatible(const struct expr *set_data,
+				const struct expr *elem_data)
+{
+	if (elem_data->etype == EXPR_RANGE) {
+		/* EXPR_RANGE has invalid_type, use the lhs type.
+		 * It should be impossible to have a EXPR_RANGE where
+		 * lhs and rhs don't have the same dtype.
+		 */
+		return elem_data_compatible(set_data, elem_data->left);
+	}
+
+	return datatype_compatible(set_data->dtype, elem_data->dtype);
+}
+
 static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *mapping = *expr;
@@ -2273,6 +2287,12 @@ static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
 		return expr_error(ctx->msgs, mapping->right,
 				  "Object mapping data should be a value, not %s",
 				  expr_name(mapping->right));
+
+	if (set_is_datamap(set->flags) &&
+	    !elem_data_compatible(set->data, mapping->right))
+		return expr_error(ctx->msgs, mapping->right,
+				  "Element mapping mismatches map definition, expected %s, not '%s'",
+				  set->data->dtype->desc, mapping->right->dtype->desc);
 
 	mapping->flags |= EXPR_F_CONSTANT;
 	return 0;
