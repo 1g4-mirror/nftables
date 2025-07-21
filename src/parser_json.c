@@ -3006,6 +3006,25 @@ static struct expr *parse_policy(const char *policy)
 				   sizeof(int) * BITS_PER_BYTE, &policy_num);
 }
 
+static struct expr *ifname_expr_alloc(struct json_ctx *ctx,
+				      const char *name)
+{
+	size_t length = strlen(name);
+
+	if (length == 0) {
+		json_error(ctx, "empty interface name");
+		return NULL;
+	}
+
+	if (length >= IFNAMSIZ) {
+		json_error(ctx, "Device name %s too long", name);
+		return NULL;
+	}
+
+	return constant_expr_alloc(int_loc, &ifname_type, BYTEORDER_HOST_ENDIAN,
+				   length * BITS_PER_BYTE, name);
+}
+
 static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 {
 	struct expr *tmp, *expr = compound_expr_alloc(int_loc, EXPR_LIST);
@@ -3014,15 +3033,12 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 	size_t index;
 
 	if (!json_unpack(root, "s", &dev)) {
-		if (strlen(dev) >= IFNAMSIZ) {
-			json_error(ctx, "Device name %s too long", dev);
+		tmp = ifname_expr_alloc(ctx, dev);
+		if (!tmp) {
 			expr_free(expr);
 			return NULL;
 		}
 
-		tmp = constant_expr_alloc(int_loc, &ifname_type,
-					  BYTEORDER_HOST_ENDIAN,
-					  strlen(dev) * BITS_PER_BYTE, dev);
 		compound_expr_add(expr, tmp);
 		return expr;
 	}
@@ -3039,15 +3055,11 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 			return NULL;
 		}
 
-		if (strlen(dev) >= IFNAMSIZ) {
-			json_error(ctx, "Device name %s too long at index %zu", dev, index);
+		tmp = ifname_expr_alloc(ctx, dev);
+		if (!tmp) {
 			expr_free(expr);
 			return NULL;
 		}
-
-		tmp = constant_expr_alloc(int_loc, &ifname_type,
-					  BYTEORDER_HOST_ENDIAN,
-					  strlen(dev) * BITS_PER_BYTE, dev);
 		compound_expr_add(expr, tmp);
 	}
 	return expr;
