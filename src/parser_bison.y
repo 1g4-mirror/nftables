@@ -705,7 +705,7 @@ int nft_lex(void *, void *, void *);
 %destructor { handle_free(&$$); } obj_spec objid_spec obj_or_id_spec
 
 %type <handle>			set_identifier flowtableid_spec flowtable_identifier obj_identifier
-%destructor { handle_free(&$$); } set_identifier flowtableid_spec obj_identifier
+%destructor { handle_free(&$$); } set_identifier flowtableid_spec flowtable_identifier obj_identifier
 
 %type <handle>			basehook_spec
 %destructor { handle_free(&$$); } basehook_spec
@@ -2281,6 +2281,7 @@ flowtable_block		:	/* empty */	{ $$ = $<flowtable>-1; }
 					erec_queue(error(&@3, "unknown chain hook"),
 						   state->msgs);
 					xfree($3);
+					expr_free($4.expr);
 					YYERROR;
 				}
 				xfree($3);
