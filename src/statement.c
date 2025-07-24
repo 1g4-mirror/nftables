@@ -140,6 +140,7 @@ static void chain_stmt_print(const struct stmt *stmt, struct output_ctx *octx)
 static void chain_stmt_destroy(struct stmt *stmt)
 {
 	expr_free(stmt->chain.expr);
+	chain_free(stmt->chain.chain);
 }
 
 static const struct stmt_ops chain_stmt_ops = {

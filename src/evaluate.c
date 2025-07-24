@@ -4596,7 +4596,7 @@ static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule,
 
 static int stmt_evaluate_chain(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct chain *chain = stmt->chain.chain;
+	struct chain *chain = chain_get(stmt->chain.chain);
 	struct cmd *cmd;
 
 	chain->flags |= CHAIN_F_BINDING;

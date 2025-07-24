@@ -235,7 +235,7 @@ static void netlink_parse_chain_verdict(struct netlink_parse_ctx *ctx,
 	}
 
 	if (chain) {
-		ctx->stmt = chain_stmt_alloc(loc, chain, verdict);
+		ctx->stmt = chain_stmt_alloc(loc, chain_get(chain), verdict);
 		expr_free(expr);
 	} else {
 		ctx->stmt = verdict_stmt_alloc(loc, expr);
