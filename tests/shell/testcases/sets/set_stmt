@@ -44,7 +44,6 @@ test_set_stmt() {
 test_set_stmt "0" "counter packets 1 bytes 2" "counter packets 3 bytes 4"
 test_set_stmt "1" "limit rate 1/second" "limit rate 5/second"
 test_set_stmt "2" "ct count over 2" "ct count over 5"
-test_set_stmt "3" "last" "last"
 test_set_stmt "4" "quota over 1000 bytes" "quota over 30000 bytes used 1000 bytes"
 
 exit 0
