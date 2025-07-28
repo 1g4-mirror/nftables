@@ -5,7 +5,7 @@
 unshare -n bash -c "ip link add d0 type dummy; \
 	$NFT \"table netdev t { \
 		chain c { \
-			type filter hook ingress priority 0; devices = { d0 }; \
+			type filter hook ingress devices = { d0 } priority 0;\
 		}; \
 	}\"; \
 	ip link del d0; \
