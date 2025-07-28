@@ -16,7 +16,7 @@ $NFT -f - <<< "$RULESET"
 # Commands that should be invalid
 
 declare -a cmds=(
-		"flush set t m"
+		"flush set t m" "flush set t f"
 		"flush map t s" "flush map t f"
 		"flush meter t s" "flush meter t m"
 		)
