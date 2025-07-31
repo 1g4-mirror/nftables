@@ -396,11 +396,12 @@ NAT STATEMENTS
 ~~~~~~~~~~~~~~
 [verse]
 ____
-*snat* [[*ip* | *ip6*] [ *prefix* ] *to*] 'ADDR_SPEC' [*:*'PORT_SPEC'] ['FLAGS']
-*dnat* [[*ip* | *ip6*] [ *prefix* ] *to*] 'ADDR_SPEC' [*:*'PORT_SPEC'] ['FLAGS']
+*snat* [[*ip* | *ip6*] [ *prefix* ] *to*] 'TARGET_SPEC' ['FLAGS']
+*dnat* [[*ip* | *ip6*] [ *prefix* ] *to*] 'TARGET_SPEC' ['FLAGS']
 *masquerade* [*to :*'PORT_SPEC'] ['FLAGS']
 *redirect* [*to :*'PORT_SPEC'] ['FLAGS']
 
+'TARGET_SPEC' := 'ADDR_SPEC' | ['ADDR_SPEC'] *:*'PORT_SPEC'
 'ADDR_SPEC' := 'address' | 'address' *-* 'address'
 'PORT_SPEC' := 'port' | 'port' *-* 'port'
 
@@ -410,11 +411,11 @@ ____
 
 The nat statements are only valid from nat chain types. +
 
-The *snat* and *masquerade* statements specify that the source address of the
+The *snat* and *masquerade* statements specify that the source address/port of the
 packet should be modified. While *snat* is only valid in the postrouting and
 input chains, *masquerade* makes sense only in postrouting. The dnat and
 redirect statements are only valid in the prerouting and output chains, they
-specify that the destination address of the packet should be modified. You can
+specify that the destination address/port of the packet should be modified. You can
 use non-base chains which are called from base chains of nat chain type too.
 All future packets in this connection will also be mangled, and rules should
 cease being examined.
@@ -424,8 +425,12 @@ outgoing interface's IP address to translate to. It is particularly useful on
 gateways with dynamic (public) IP addresses.
 
 The *redirect* statement is a special form of dnat which always translates the
-destination address to the local host's one. It comes in handy if one only wants
-to alter the destination port of incoming traffic on different interfaces.
+destination address to the local host's one. It comes in handy to intercept
+traffic passing a router and feeding it to a locally running daemon, e.g. when
+building a transparent proxy or application-layer gateway.
+
+For 'TARGET_SPEC', one may specify addresses, ports, or both. If no address or
+no port is specified, the respective packet header field remains unchanged.
 
 When used in the inet family (available with kernel 5.2), the dnat and snat
 statements require the use of the ip and ip6 keyword in case an address is
