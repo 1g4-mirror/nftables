@@ -2578,16 +2578,20 @@ static int binop_can_transfer(struct eval_ctx *ctx,
 
 	switch (left->op) {
 	case OP_LSHIFT:
+		assert(left->right->etype == EXPR_VALUE);
+		assert(right->etype == EXPR_VALUE);
+
 		if (mpz_scan1(right->value, 0) < mpz_get_uint32(left->right->value))
 			return expr_binary_error(ctx->msgs, right, left,
 						 "Comparison is always false");
 		return 1;
 	case OP_RSHIFT:
+		assert(left->right->etype == EXPR_VALUE);
 		if (ctx->ectx.len < right->len + mpz_get_uint32(left->right->value))
 			ctx->ectx.len += mpz_get_uint32(left->right->value);
 		return 1;
 	case OP_XOR:
-		return 1;
+		return expr_is_constant(left->right);
 	default:
 		return 0;
 	}
