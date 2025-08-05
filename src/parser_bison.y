@@ -1113,6 +1113,7 @@ close_scope_osf		: { scanner_pop_start_cond(nft->scanner, PARSER_SC_EXPR_OSF); }
 close_scope_policy	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_POLICY); };
 close_scope_quota	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_QUOTA); };
 close_scope_queue	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_EXPR_QUEUE); };
+close_scope_rate	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_RATE); };
 close_scope_reject	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_STMT_REJECT); };
 close_scope_reset	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_CMD_RESET); };
 close_scope_rt		: { scanner_pop_start_cond(nft->scanner, PARSER_SC_EXPR_RT); };
@@ -3557,7 +3558,7 @@ limit_stmt_alloc	:	LIMIT	RATE
 			}
 			;
 
-limit_stmt		:	limit_stmt_alloc limit_args
+limit_stmt		:	limit_stmt_alloc limit_args close_scope_rate
 			;
 
 limit_args		:	limit_mode	limit_rate_pkts	limit_burst_pkts
@@ -3652,21 +3653,7 @@ limit_burst_bytes	:	/* empty */			{ $$ = 0; }
 			|	BURST	NUM	bytes_unit	{ $$ = $2 * $3; }
 			;
 
-limit_rate_bytes	:	NUM     STRING
-			{
-				struct error_record *erec;
-				uint64_t rate, unit;
-
-				erec = rate_parse(&@$, $2, &rate, &unit);
-				free_const($2);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
-				$$.rate = rate * $1;
-				$$.unit = unit;
-			}
-			|	NUM bytes_unit SLASH time_unit
+limit_rate_bytes	:	NUM bytes_unit SLASH time_unit
 			{
 				$$.rate = $1 * $2;
 				$$.unit = $4;
@@ -4897,7 +4884,7 @@ ct_obj_alloc		:	/* empty */
 			}
 			;
 
-limit_config		:	RATE	limit_mode	limit_rate_pkts	limit_burst_pkts
+limit_config		:	RATE	limit_mode	limit_rate_pkts	limit_burst_pkts	close_scope_rate
 			{
 				struct limit *limit;
 
@@ -4908,7 +4895,7 @@ limit_config		:	RATE	limit_mode	limit_rate_pkts	limit_burst_pkts
 				limit->type	= NFT_LIMIT_PKTS;
 				limit->flags	= $2;
 			}
-			|	RATE	limit_mode	limit_rate_bytes	limit_burst_bytes
+			|	RATE	limit_mode	limit_rate_bytes	limit_burst_bytes close_scope_rate
 			{
 				struct limit *limit;
 

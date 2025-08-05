@@ -1488,67 +1488,6 @@ const struct datatype *set_datatype_alloc(const struct datatype *orig_dtype,
 	return dtype;
 }
 
-static struct error_record *time_unit_parse(const struct location *loc,
-					    const char *str, uint64_t *unit)
-{
-	if (strcmp(str, "second") == 0)
-		*unit = 1ULL;
-	else if (strcmp(str, "minute") == 0)
-		*unit = 1ULL * 60;
-	else if (strcmp(str, "hour") == 0)
-		*unit = 1ULL * 60 * 60;
-	else if (strcmp(str, "day") == 0)
-		*unit = 1ULL * 60 * 60 * 24;
-	else if (strcmp(str, "week") == 0)
-		*unit = 1ULL * 60 * 60 * 24 * 7;
-	else
-		return error(loc, "Wrong time format, expecting second, minute, hour, day or week");
-
-	return NULL;
-}
-
-static struct error_record *data_unit_parse(const struct location *loc,
-					    const char *str, uint64_t *rate)
-{
-	if (strcmp(str, "bytes") == 0)
-		*rate = 1ULL;
-	else if (strcmp(str, "kbytes") == 0)
-		*rate = 1024;
-	else if (strcmp(str, "mbytes") == 0)
-		*rate = 1024 * 1024;
-	else
-		return error(loc, "Wrong unit format, expecting bytes, kbytes or mbytes");
-
-	return NULL;
-}
-
-struct error_record *rate_parse(const struct location *loc, const char *str,
-				uint64_t *rate, uint64_t *unit)
-{
-	const char *slash, *rate_str;
-	struct error_record *erec;
-
-	slash = strchr(str, '/');
-	if (!slash)
-		return error(loc, "wrong rate format, expecting {bytes,kbytes,mbytes}/{second,minute,hour,day,week}");
-
-	rate_str = strndup(str, slash - str);
-	if (!rate_str)
-		memory_allocation_error();
-
-	erec = data_unit_parse(loc, rate_str, rate);
-	free_const(rate_str);
-
-	if (erec != NULL)
-		return erec;
-
-	erec = time_unit_parse(loc, slash + 1, unit);
-	if (erec != NULL)
-		return erec;
-
-	return NULL;
-}
-
 static const struct symbol_table boolean_tbl = {
 	.base		= BASE_DECIMAL,
 	.symbols	= {
