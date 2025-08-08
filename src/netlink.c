@@ -789,7 +789,8 @@ static int list_table_cb(struct nftnl_table *nlt, void *arg)
 	struct table *table;
 
 	table = netlink_delinearize_table(ctx, nlt);
-	list_add_tail(&table->list, &ctx->list);
+	if (table)
+		list_add_tail(&table->list, &ctx->list);
 
 	return 0;
 }

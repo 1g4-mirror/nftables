@@ -237,6 +237,10 @@ static int netlink_events_table_cb(const struct nlmsghdr *nlh, int type,
 
 	nlt = netlink_table_alloc(nlh);
 	t = netlink_delinearize_table(monh->ctx, nlt);
+	if (!t) {
+		nftnl_table_free(nlt);
+		return MNL_CB_ERROR;
+	}
 	cmd = netlink_msg2cmd(type, nlh->nlmsg_flags);
 
 	switch (monh->format) {
