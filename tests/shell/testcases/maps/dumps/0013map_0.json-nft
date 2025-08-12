@@ -38,7 +38,9 @@
         ],
         "handle": 0,
         "map": "verdict",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {

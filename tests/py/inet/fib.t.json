@@ -100,9 +100,7 @@
         "match": {
             "left": {
                 "fib": {
-                    "flags": [
-                        "daddr"
-                    ],
+                    "flags": "daddr",
                     "result": "check"
                 }
             },
@@ -118,9 +116,7 @@
         "match": {
             "left": {
                 "fib": {
-                    "flags": [
-                        "daddr"
-                    ],
+                    "flags": "daddr",
                     "result": "check"
                 }
             },

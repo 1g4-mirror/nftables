@@ -111,7 +111,9 @@
         },
         "handle": 0,
         "map": "ct expectation",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {
@@ -140,7 +142,9 @@
         },
         "handle": 0,
         "map": "ct helper",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {

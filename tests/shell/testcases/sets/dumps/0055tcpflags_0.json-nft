@@ -21,7 +21,9 @@
         "table": "test",
         "type": "tcp_flag",
         "handle": 0,
-        "flags": "constant",
+        "flags": [
+          "constant"
+        ],
         "elem": [
           {
             "|": [

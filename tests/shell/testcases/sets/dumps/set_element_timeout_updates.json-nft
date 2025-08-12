@@ -40,7 +40,9 @@
           }
         },
         "handle": 0,
-        "flags": "timeout",
+        "flags": [
+          "timeout"
+        ],
         "timeout": 60
       }
     }

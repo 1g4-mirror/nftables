@@ -9,7 +9,20 @@
 [
     {
         "log": {
-            "flags": "all"
+            "flags": [
+                "all"
+            ]
+        }
+    }
+]
+
+# log flags all
+[
+    {
+        "log": {
+            "flags": [
+                "all"
+            ]
         }
     }
 ]

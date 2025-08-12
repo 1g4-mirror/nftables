@@ -12,7 +12,9 @@
         "family": "netdev",
         "name": "test",
         "handle": 0,
-        "flags": "dormant"
+        "flags": [
+          "dormant"
+        ]
       }
     },
     {

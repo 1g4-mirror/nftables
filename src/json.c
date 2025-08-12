@@ -62,14 +62,10 @@ static int json_array_extend_new(json_t *array, json_t *other_array)
 
 static void json_add_array_new(json_t *obj, const char *name, json_t *array)
 {
-	if (json_array_size(array) > 1) {
+	if (json_array_size(array))
 		json_object_set_new(obj, name, array);
-	} else {
-		if (json_array_size(array))
-			json_object_set(obj, name,
-					json_array_get(array, 0));
+	else
 		json_decref(array);
-	}
 }
 
 static json_t *expr_print_json(const struct expr *expr, struct output_ctx *octx)

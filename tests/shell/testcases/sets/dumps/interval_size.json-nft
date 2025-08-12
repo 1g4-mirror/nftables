@@ -29,7 +29,9 @@
         },
         "handle": 0,
         "size": 1,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "auto-merge": true,
         "elem": [
           {
@@ -56,7 +58,9 @@
         },
         "handle": 0,
         "size": 1,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           "0.0.0.0"
         ]

@@ -30,7 +30,9 @@
         "table": "test-ip",
         "type": "inet_service",
         "handle": 0,
-        "flags": "timeout",
+        "flags": [
+          "timeout"
+        ],
         "timeout": 10845
       }
     },

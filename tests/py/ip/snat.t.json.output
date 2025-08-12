@@ -241,8 +241,12 @@
                 }
             },
             "family": "ip",
-            "flags": "netmap",
-            "type_flags": "prefix"
+            "flags": [
+                "netmap"
+            ],
+            "type_flags": [
+                "prefix"
+            ]
         }
     }
 ]

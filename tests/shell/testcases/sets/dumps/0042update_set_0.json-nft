@@ -39,7 +39,9 @@
         "type": "ether_addr",
         "handle": 0,
         "size": 65535,
-        "flags": "dynamic"
+        "flags": [
+          "dynamic"
+        ]
       }
     },
     {

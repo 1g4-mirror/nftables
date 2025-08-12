@@ -12,7 +12,9 @@
         "family": "ip",
         "name": "x",
         "handle": 0,
-        "flags": "dormant"
+        "flags": [
+          "dormant"
+        ]
       }
     },
     {

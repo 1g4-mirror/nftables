@@ -34,7 +34,9 @@
         "type": "ipv4_addr",
         "handle": 0,
         "map": "mark",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             "127.0.0.2",

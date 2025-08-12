@@ -40,7 +40,9 @@
         },
         "handle": 0,
         "map": "classid",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {

@@ -47,10 +47,10 @@ JSON_TABLE_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0,
 JSON_TABLE_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_TABLE_1")
 
 STD_TABLE_2=$(sed 's/\(flags dormant\)/\1,persist/' <<< "$STD_TABLE_1")
-JSON_TABLE_2=$(sed 's/\("flags":\) \("dormant"\)/\1 [\2, "persist"]/' <<< "$JSON_TABLE_1")
+JSON_TABLE_2=$(sed 's/\("dormant"\)/\1, "persist"/' <<< "$JSON_TABLE_1_EQUIV")
 
-back_n_forth "$STD_TABLE_1" "$JSON_TABLE_1"
-json_equiv "$JSON_TABLE_1_EQUIV" "$JSON_TABLE_1"
+back_n_forth "$STD_TABLE_1" "$JSON_TABLE_1_EQUIV"
+json_equiv "$JSON_TABLE_1" "$JSON_TABLE_1_EQUIV"
 back_n_forth "$STD_TABLE_2" "$JSON_TABLE_2"
 
 #
@@ -67,10 +67,10 @@ JSON_SET_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}},
 JSON_SET_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_SET_1")
 
 STD_SET_2=$(sed 's/\(flags interval\)/\1,timeout/' <<< "$STD_SET_1")
-JSON_SET_2=$(sed 's/\("flags":\) \("interval"\)/\1 [\2, "timeout"]/' <<< "$JSON_SET_1")
+JSON_SET_2=$(sed 's/\("interval"\)/\1, "timeout"/' <<< "$JSON_SET_1_EQUIV")
 
-back_n_forth "$STD_SET_1" "$JSON_SET_1"
-json_equiv "$JSON_SET_1_EQUIV" "$JSON_SET_1"
+back_n_forth "$STD_SET_1" "$JSON_SET_1_EQUIV"
+json_equiv "$JSON_SET_1" "$JSON_SET_1_EQUIV"
 back_n_forth "$STD_SET_2" "$JSON_SET_2"
 
 #
@@ -86,10 +86,10 @@ JSON_FIB_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}},
 JSON_FIB_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_FIB_1")
 
 STD_FIB_2=$(sed 's/\(fib saddr\)/\1 . iif/' <<< "$STD_FIB_1")
-JSON_FIB_2=$(sed 's/\("flags":\) \("saddr"\)/\1 [\2, "iif"]/' <<< "$JSON_FIB_1")
+JSON_FIB_2=$(sed 's/\("saddr"\)/\1, "iif"/' <<< "$JSON_FIB_1_EQUIV")
 
-back_n_forth "$STD_FIB_1" "$JSON_FIB_1"
-json_equiv "$JSON_FIB_1_EQUIV" "$JSON_FIB_1"
+back_n_forth "$STD_FIB_1" "$JSON_FIB_1_EQUIV"
+json_equiv "$JSON_FIB_1" "$JSON_FIB_1_EQUIV"
 back_n_forth "$STD_FIB_2" "$JSON_FIB_2"
 
 #
@@ -105,10 +105,10 @@ JSON_NAT_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}},
 JSON_NAT_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_NAT_1")
 
 STD_NAT_2=$(sed 's/\(persistent\)/random,\1/' <<< "$STD_NAT_1")
-JSON_NAT_2=$(sed 's/\("flags":\) \("persistent"\)/\1 ["random", \2]/' <<< "$JSON_NAT_1")
+JSON_NAT_2=$(sed 's/\("persistent"\)/"random", \1/' <<< "$JSON_NAT_1_EQUIV")
 
-back_n_forth "$STD_NAT_1" "$JSON_NAT_1"
-json_equiv "$JSON_NAT_1_EQUIV" "$JSON_NAT_1"
+back_n_forth "$STD_NAT_1" "$JSON_NAT_1_EQUIV"
+json_equiv "$JSON_NAT_1" "$JSON_NAT_1_EQUIV"
 back_n_forth "$STD_NAT_2" "$JSON_NAT_2"
 
 #
@@ -124,10 +124,10 @@ JSON_LOG_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}},
 JSON_LOG_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_LOG_1")
 
 STD_LOG_2=$(sed 's/\(tcp sequence\)/\1,options/' <<< "$STD_LOG_1")
-JSON_LOG_2=$(sed 's/\("flags":\) \("tcp sequence"\)/\1 [\2, "tcp options"]/' <<< "$JSON_LOG_1")
+JSON_LOG_2=$(sed 's/\("tcp sequence"\)/\1, "tcp options"/' <<< "$JSON_LOG_1_EQUIV")
 
-back_n_forth "$STD_LOG_1" "$JSON_LOG_1"
-json_equiv "$JSON_LOG_1_EQUIV" "$JSON_LOG_1"
+back_n_forth "$STD_LOG_1" "$JSON_LOG_1_EQUIV"
+json_equiv "$JSON_LOG_1" "$JSON_LOG_1_EQUIV"
 back_n_forth "$STD_LOG_2" "$JSON_LOG_2"
 
 #
@@ -143,10 +143,10 @@ JSON_SYNPROXY_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle":
 JSON_SYNPROXY_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_SYNPROXY_1")
 
 STD_SYNPROXY_2=$(sed 's/\(sack-perm\)/timestamp \1/' <<< "$STD_SYNPROXY_1")
-JSON_SYNPROXY_2=$(sed 's/\("flags":\) \("sack-perm"\)/\1 ["timestamp", \2]/' <<< "$JSON_SYNPROXY_1")
+JSON_SYNPROXY_2=$(sed 's/\("sack-perm"\)/"timestamp", \1/' <<< "$JSON_SYNPROXY_1_EQUIV")
 
-back_n_forth "$STD_SYNPROXY_1" "$JSON_SYNPROXY_1"
-json_equiv "$JSON_SYNPROXY_1_EQUIV" "$JSON_SYNPROXY_1"
+back_n_forth "$STD_SYNPROXY_1" "$JSON_SYNPROXY_1_EQUIV"
+json_equiv "$JSON_SYNPROXY_1" "$JSON_SYNPROXY_1_EQUIV"
 back_n_forth "$STD_SYNPROXY_2" "$JSON_SYNPROXY_2"
 
 #
@@ -164,10 +164,10 @@ JSON_SYNPROXY_OBJ_1='{"nftables": [{"table": {"family": "ip", "name": "t", "hand
 JSON_SYNPROXY_OBJ_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_SYNPROXY_OBJ_1")
 
 STD_SYNPROXY_OBJ_2=$(sed 's/ \(sack-perm\)/timestamp \1/' <<< "$STD_SYNPROXY_OBJ_1")
-JSON_SYNPROXY_OBJ_2=$(sed 's/\("flags":\) \("sack-perm"\)/\1 ["timestamp", \2]/' <<< "$JSON_SYNPROXY_OBJ_1")
+JSON_SYNPROXY_OBJ_2=$(sed 's/\("sack-perm"\)/"timestamp", \1/' <<< "$JSON_SYNPROXY_OBJ_1_EQUIV")
 
-back_n_forth "$STD_SYNPROXY_OBJ_1" "$JSON_SYNPROXY_OBJ_1"
-json_equiv "$JSON_SYNPROXY_OBJ_1_EQUIV" "$JSON_SYNPROXY_OBJ_1"
+back_n_forth "$STD_SYNPROXY_OBJ_1" "$JSON_SYNPROXY_OBJ_1_EQUIV"
+json_equiv "$JSON_SYNPROXY_OBJ_1" "$JSON_SYNPROXY_OBJ_1_EQUIV"
 back_n_forth "$STD_SYNPROXY_OBJ_2" "$JSON_SYNPROXY_OBJ_2"
 
 #
@@ -183,8 +183,8 @@ JSON_QUEUE_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}
 JSON_QUEUE_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_QUEUE_1")
 
 STD_QUEUE_2=$(sed 's/\(bypass\)/\1,fanout/' <<< "$STD_QUEUE_1")
-JSON_QUEUE_2=$(sed 's/\("flags":\) \("bypass"\)/\1 [\2, "fanout"]/' <<< "$JSON_QUEUE_1")
+JSON_QUEUE_2=$(sed 's/\("bypass"\)/\1, "fanout"/' <<< "$JSON_QUEUE_1_EQUIV")
 
-back_n_forth "$STD_QUEUE_1" "$JSON_QUEUE_1"
-json_equiv "$JSON_QUEUE_1_EQUIV" "$JSON_QUEUE_1"
+back_n_forth "$STD_QUEUE_1" "$JSON_QUEUE_1_EQUIV"
+json_equiv "$JSON_QUEUE_1" "$JSON_QUEUE_1_EQUIV"
 back_n_forth "$STD_QUEUE_2" "$JSON_QUEUE_2"

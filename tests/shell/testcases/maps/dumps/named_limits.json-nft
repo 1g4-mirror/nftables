@@ -144,7 +144,9 @@
         },
         "handle": 0,
         "map": "limit",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {
@@ -284,7 +286,9 @@
         },
         "handle": 0,
         "map": "limit",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {

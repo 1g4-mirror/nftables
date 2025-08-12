@@ -25,7 +25,9 @@
           "ipv4_addr"
         ],
         "handle": 0,
-        "flags": "timeout"
+        "flags": [
+          "timeout"
+        ]
       }
     },
     {
@@ -38,7 +40,9 @@
           "inet_service"
         ],
         "handle": 0,
-        "flags": "timeout"
+        "flags": [
+          "timeout"
+        ]
       }
     }
   ]

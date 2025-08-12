@@ -19,9 +19,7 @@
 [
     {
         "synproxy": {
-            "flags": [
-                "timestamp"
-            ]
+            "flags": "timestamp"
         }
     }
 ]
@@ -56,9 +54,7 @@
 [
     {
         "synproxy": {
-            "flags": [
-                "sack-perm"
-            ]
+            "flags": "sack-perm"
         }
     }
 ]

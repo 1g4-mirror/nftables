@@ -199,7 +199,9 @@
         },
         "handle": 0,
         "size": 16,
-        "flags": "interval"
+        "flags": [
+          "interval"
+        ]
       }
     },
     {

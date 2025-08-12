@@ -21,7 +21,9 @@
         "table": "t",
         "type": "inet_service",
         "handle": 0,
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           25,
           30,

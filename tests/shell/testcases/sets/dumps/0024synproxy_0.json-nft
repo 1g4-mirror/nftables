@@ -58,7 +58,9 @@
         "type": "ipv4_addr",
         "handle": 0,
         "map": "synproxy",
-        "flags": "interval",
+        "flags": [
+          "interval"
+        ],
         "elem": [
           [
             {

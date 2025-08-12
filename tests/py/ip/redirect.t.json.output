@@ -1,3 +1,49 @@
+# udp dport 53 redirect random
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "field": "dport",
+                    "protocol": "udp"
+                }
+            },
+            "op": "==",
+            "right": 53
+        }
+    },
+    {
+        "redirect": {
+            "flags": [
+                "random"
+            ]
+        }
+    }
+]
+
+# udp dport 53 redirect persistent
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "field": "dport",
+                    "protocol": "udp"
+                }
+            },
+            "op": "==",
+            "right": 53
+        }
+    },
+    {
+        "redirect": {
+            "flags": [
+                "persistent"
+            ]
+        }
+    }
+]
+
 # udp dport 53 redirect random,persistent,fully-random
 [
     {
@@ -140,6 +186,78 @@
             "port": {
                 "range": [ 100, 200 ]
             }
+        }
+    }
+]
+
+# tcp dport 9128 redirect to :993 random
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "field": "dport",
+                    "protocol": "tcp"
+                }
+            },
+            "op": "==",
+            "right": 9128
+        }
+    },
+    {
+        "redirect": {
+            "flags": [
+                "random"
+            ],
+            "port": 993
+        }
+    }
+]
+
+# tcp dport 9128 redirect to :993 fully-random
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "field": "dport",
+                    "protocol": "tcp"
+                }
+            },
+            "op": "==",
+            "right": 9128
+        }
+    },
+    {
+        "redirect": {
+            "flags": [
+                "fully-random"
+            ],
+            "port": 993
+        }
+    }
+]
+
+# tcp dport 9128 redirect to :123 persistent
+[
+    {
+        "match": {
+            "left": {
+                "payload": {
+                    "field": "dport",
+                    "protocol": "tcp"
+                }
+            },
+            "op": "==",
+            "right": 9128
+        }
+    },
+    {
+        "redirect": {
+            "flags": [
+                "persistent"
+            ],
+            "port": 123
         }
     }
 ]

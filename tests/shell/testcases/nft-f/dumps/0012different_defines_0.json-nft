@@ -529,7 +529,9 @@
           {
             "queue": {
               "num": 0,
-              "flags": "bypass"
+              "flags": [
+                "bypass"
+              ]
             }
           }
         ]
@@ -768,7 +770,9 @@
                   }
                 }
               },
-              "flags": "bypass"
+              "flags": [
+                "bypass"
+              ]
             }
           }
         ]
