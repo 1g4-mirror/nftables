@@ -1027,19 +1027,6 @@ struct expr *compound_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void compound_expr_print(const struct expr *expr, const char *delim,
-				 struct output_ctx *octx)
-{
-	const struct expr *i;
-	const char *d = "";
-
-	list_for_each_entry(i, &expr->expr_set.expressions, list) {
-		nft_print(octx, "%s", d);
-		expr_print(i, octx);
-		d = delim;
-	}
-}
-
 static void concat_expr_destroy(struct expr *expr)
 {
 	struct expr *i, *next;
@@ -1050,7 +1037,14 @@ static void concat_expr_destroy(struct expr *expr)
 
 static void concat_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	compound_expr_print(expr, " . ", octx);
+	const struct expr *i;
+	const char *d = "";
+
+	list_for_each_entry(i, &expr_concat(expr)->expressions, list) {
+		nft_print(octx, "%s", d);
+		expr_print(i, octx);
+		d = " . ";
+	}
 }
 
 static void concat_expr_clone(struct expr *new, const struct expr *expr)
@@ -1244,7 +1238,14 @@ void concat_expr_remove(struct expr *concat, struct expr *expr)
 
 static void list_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
-	compound_expr_print(expr, ",", octx);
+	const struct expr *i;
+	const char *d = "";
+
+	list_for_each_entry(i, &expr_list(expr)->expressions, list) {
+		nft_print(octx, "%s", d);
+		expr_print(i, octx);
+		d = ",";
+	}
 }
 
 static void list_expr_clone(struct expr *new, const struct expr *expr)
