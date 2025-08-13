@@ -1048,12 +1048,6 @@ static void compound_expr_print(const struct expr *expr, const char *delim,
 	}
 }
 
-void compound_expr_remove(struct expr *compound, struct expr *expr)
-{
-	compound->expr_set.size--;
-	list_del(&expr->list);
-}
-
 static void concat_expr_destroy(struct expr *expr)
 {
 	compound_expr_destroy(expr);
@@ -1247,6 +1241,12 @@ void concat_expr_add(struct expr *concat, struct expr *item)
 	expr_concat->size++;
 }
 
+void concat_expr_remove(struct expr *concat, struct expr *expr)
+{
+	expr_concat(concat)->size--;
+	list_del(&expr->list);
+}
+
 static void list_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	compound_expr_print(expr, ",", octx);
@@ -1281,6 +1281,12 @@ void list_expr_add(struct expr *expr, struct expr *item)
 
 	list_add_tail(&item->list, &expr_list->expressions);
 	expr_list->size++;
+}
+
+void list_expr_remove(struct expr *list, struct expr *expr)
+{
+	expr_list(list)->size--;
+	list_del(&expr->list);
 }
 
 /* list is assumed to have two items at least, otherwise extend this! */
@@ -1431,6 +1437,12 @@ void set_expr_add(struct expr *set, struct expr *elem)
 
 	list_add_tail(&elem->list, &expr_set->expressions);
 	expr_set->size++;
+}
+
+void set_expr_remove(struct expr *set, struct expr *expr)
+{
+	expr_set(set)->size--;
+	list_del(&expr->list);
 }
 
 static void mapping_expr_print(const struct expr *expr, struct output_ctx *octx)

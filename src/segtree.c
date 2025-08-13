@@ -448,13 +448,13 @@ next:
 			mpz_clear(range);
 
 			r2 = list_entry(r2_next, typeof(*r2), list);
-			compound_expr_remove(expr_value(start), r1);
+			concat_expr_remove(expr_value(start), r1);
 
 			if (free_r1)
 				expr_free(r1);
 		}
 
-		compound_expr_remove(set, start);
+		set_expr_remove(set, start);
 		expr_free(start);
 		start = NULL;
 	}
@@ -584,7 +584,7 @@ void interval_map_decompose(struct expr *set)
 			catchall = i;
 			continue;
 		}
-		compound_expr_remove(set, i);
+		set_expr_remove(set, i);
 		elements[n++] = i;
 	}
 	qsort(elements, n, sizeof(elements[0]), expr_value_cmp);

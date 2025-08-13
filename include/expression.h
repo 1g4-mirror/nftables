@@ -525,21 +525,23 @@ struct expr *range_expr_to_prefix(struct expr *range);
 
 extern struct expr *compound_expr_alloc(const struct location *loc,
 					enum expr_types etypes);
-extern void compound_expr_remove(struct expr *compound, struct expr *expr);
 extern void list_expr_sort(struct list_head *head);
 extern void list_splice_sorted(struct list_head *list, struct list_head *head);
 
 extern struct expr *concat_expr_alloc(const struct location *loc);
 void concat_expr_add(struct expr *concat, struct expr *item);
+void concat_expr_remove(struct expr *concat, struct expr *expr);
 
 extern struct expr *list_expr_alloc(const struct location *loc);
 void list_expr_add(struct expr *expr, struct expr *item);
+void list_expr_remove(struct expr *expr, struct expr *item);
 struct expr *list_expr_to_binop(struct expr *expr);
 
 extern struct expr *set_expr_alloc(const struct location *loc,
 				   const struct set *set);
 void __set_expr_add(struct expr *set, struct expr *elem);
 void set_expr_add(struct expr *set, struct expr *elem);
+void set_expr_remove(struct expr *expr, struct expr *item);
 
 extern void concat_range_aggregate(struct expr *set);
 extern void interval_map_decompose(struct expr *set);
