@@ -1211,7 +1211,7 @@ static struct expr *concat_expr_parse_udata(const struct nftnl_udata *attr)
 			goto err_free;
 
 		dt = concat_subtype_add(dt, expr->dtype->type);
-		compound_expr_add(concat_expr, expr);
+		concat_expr_add(concat_expr, expr);
 		len += netlink_padded_len(expr->len);
 	}
 
@@ -1243,6 +1243,14 @@ static const struct expr_ops concat_expr_ops = {
 struct expr *concat_expr_alloc(const struct location *loc)
 {
 	return compound_expr_alloc(loc, EXPR_CONCAT);
+}
+
+void concat_expr_add(struct expr *concat, struct expr *item)
+{
+	struct expr_concat *expr_concat = expr_concat(concat);
+
+	list_add_tail(&item->list, &expr_concat->expressions);
+	expr_concat->size++;
 }
 
 static void list_expr_print(const struct expr *expr, struct output_ctx *octx)

@@ -121,7 +121,7 @@ static struct expr *handle_concat_expr(const struct location *loc,
 {
 	if (expr->etype != EXPR_CONCAT) {
 		expr = concat_expr_alloc(loc);
-		compound_expr_add(expr, expr_l);
+		concat_expr_add(expr, expr_l);
 	} else {
 		location_update(&expr_r->location, loc_rhs, 2);
 
@@ -129,7 +129,7 @@ static struct expr *handle_concat_expr(const struct location *loc,
 		expr->location = *loc;
 	}
 
-	compound_expr_add(expr, expr_r);
+	concat_expr_add(expr, expr_r);
 	return expr;
 }
 

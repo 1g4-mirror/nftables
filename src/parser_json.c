@@ -1347,10 +1347,10 @@ static struct expr *json_parse_concat_expr(struct json_ctx *ctx,
 			struct expr *concat;
 
 			concat = concat_expr_alloc(int_loc);
-			compound_expr_add(concat, expr);
+			concat_expr_add(concat, expr);
 			expr = concat;
 		}
-		compound_expr_add(expr, tmp);
+		concat_expr_add(expr, tmp);
 	}
 	return expr ? json_check_concat_expr(ctx, expr) : NULL;
 }
@@ -1824,7 +1824,7 @@ static struct expr *json_parse_dtype_expr(struct json_ctx *ctx, json_t *root)
 				expr_free(expr);
 				return NULL;
 			}
-			compound_expr_add(expr, i);
+			concat_expr_add(expr, i);
 		}
 
 		return json_check_concat_expr(ctx, expr);

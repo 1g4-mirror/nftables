@@ -128,7 +128,7 @@ static struct expr *netlink_parse_concat_expr(struct netlink_parse_ctx *ctx,
 				      "Relational expression size mismatch");
 			goto err;
 		}
-		compound_expr_add(concat, expr);
+		concat_expr_add(concat, expr);
 
 		consumed = netlink_padded_len(expr->len);
 		assert(consumed > 0);
@@ -171,7 +171,7 @@ static struct expr *netlink_parse_concat_key(struct netlink_parse_ctx *ctx,
 			expr_set_type(expr, i, i->byteorder);
 		}
 
-		compound_expr_add(concat, expr);
+		concat_expr_add(concat, expr);
 
 		consumed = netlink_padded_len(expr->len);
 		assert(consumed > 0);
@@ -204,7 +204,7 @@ static struct expr *netlink_parse_concat_data(struct netlink_parse_ctx *ctx,
 		}
 		i = constant_expr_splice(data, expr->len);
 		data->len -= netlink_padding_len(expr->len);
-		compound_expr_add(concat, i);
+		concat_expr_add(concat, i);
 
 		len -= netlink_padded_len(expr->len);
 		reg += netlink_register_space(expr->len);

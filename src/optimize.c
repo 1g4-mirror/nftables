@@ -657,7 +657,7 @@ static void __merge_concat(const struct optimize_ctx *ctx, uint32_t i,
 				list_for_each_entry(expr, &expr_set(stmt_a->expr->right)->expressions, list) {
 					concat_clone = expr_clone(concat);
 					clone = expr_clone(expr->key);
-					compound_expr_add(concat_clone, clone);
+					concat_expr_add(concat_clone, clone);
 					list_add_tail(&concat_clone->list, &pending_list);
 				}
 				list_del(&concat->list);
@@ -670,13 +670,13 @@ static void __merge_concat(const struct optimize_ctx *ctx, uint32_t i,
 			case EXPR_RANGE:
 			case EXPR_RANGE_VALUE:
 				clone = expr_clone(stmt_a->expr->right);
-				compound_expr_add(concat, clone);
+				concat_expr_add(concat, clone);
 				break;
 			case EXPR_LIST:
 				list_for_each_entry(expr, &expr_list(stmt_a->expr->right)->expressions, list) {
 					concat_clone = expr_clone(concat);
 					clone = expr_clone(expr);
-					compound_expr_add(concat_clone, clone);
+					concat_expr_add(concat_clone, clone);
 					list_add_tail(&concat_clone->list, &pending_list);
 				}
 				list_del(&concat->list);
@@ -720,7 +720,7 @@ static void merge_concat_stmts(const struct optimize_ctx *ctx,
 
 	for (k = 0; k < merge->num_stmts; k++) {
 		stmt_a = ctx->stmt_matrix[from][merge->stmt[k]];
-		compound_expr_add(concat, expr_get(stmt_a->expr->left));
+		concat_expr_add(concat, expr_get(stmt_a->expr->left));
 	}
 	expr_free(stmt->expr->left);
 	stmt->expr->left = concat;
@@ -920,7 +920,7 @@ static void merge_concat_stmts_vmap(const struct optimize_ctx *ctx,
 	concat_a = concat_expr_alloc(&internal_location);
 	for (i = 0; i < merge->num_stmts; i++) {
 		stmt_a = ctx->stmt_matrix[from][merge->stmt[i]];
-		compound_expr_add(concat_a, expr_get(stmt_a->expr->left));
+		concat_expr_add(concat_a, expr_get(stmt_a->expr->left));
 	}
 
 	/* build set data contenation, eg. { eth0 . 1.1.1.1 . 22 : accept } */
@@ -1021,8 +1021,8 @@ static struct expr *stmt_nat_expr(struct stmt *nat_stmt)
 	if (nat_stmt->nat.proto) {
 		if (nat_stmt->nat.addr) {
 			nat_expr = concat_expr_alloc(&internal_location);
-			compound_expr_add(nat_expr, expr_get(nat_stmt->nat.addr));
-			compound_expr_add(nat_expr, expr_get(nat_stmt->nat.proto));
+			concat_expr_add(nat_expr, expr_get(nat_stmt->nat.addr));
+			concat_expr_add(nat_expr, expr_get(nat_stmt->nat.proto));
 		} else {
 			nat_expr = expr_get(nat_stmt->nat.proto);
 		}
@@ -1110,7 +1110,7 @@ static void merge_concat_nat(const struct optimize_ctx *ctx,
 		for (j = 0; j < merge->num_stmts; j++) {
 			stmt = ctx->stmt_matrix[i][merge->stmt[j]];
 			expr = stmt->expr->right;
-			compound_expr_add(concat, expr_get(expr));
+			concat_expr_add(concat, expr_get(expr));
 		}
 
 		nat_stmt = ctx->stmt_matrix[i][k];
@@ -1131,7 +1131,7 @@ static void merge_concat_nat(const struct optimize_ctx *ctx,
 			else if (left->payload.desc == &proto_ip6)
 				family = NFPROTO_IPV6;
 		}
-		compound_expr_add(concat, expr_get(left));
+		concat_expr_add(concat, expr_get(left));
 	}
 	expr = map_expr_alloc(&internal_location, concat, set);
 

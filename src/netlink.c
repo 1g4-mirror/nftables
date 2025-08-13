@@ -1366,7 +1366,7 @@ static struct expr *netlink_parse_concat_elem_key(const struct set *set,
 	concat = concat_expr_alloc(&data->location);
 	while (off > 0) {
 		expr = concat_elem_expr(set, n, dtype, data, &off);
-		compound_expr_add(concat, expr);
+		concat_expr_add(concat, expr);
 		if (set->key->etype == EXPR_CONCAT)
 			n = list_next_entry(n, list);
 	}
@@ -1405,7 +1405,7 @@ static struct expr *netlink_parse_concat_elem(const struct set *set,
 
 			range = range_expr_alloc(&data->location, left, expr);
 			range = range_expr_reduce(range);
-			compound_expr_add(concat, range);
+			concat_expr_add(concat, range);
 		}
 		assert(list_empty(&expressions));
 	} else {
