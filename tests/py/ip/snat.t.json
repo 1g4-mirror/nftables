@@ -283,39 +283,6 @@
     }
 ]
 
-# snat ip interval to ip saddr map { 10.141.11.4 : 192.168.2.2-192.168.2.4 }
-[
-    {
-        "snat": {
-            "addr": {
-                "map": {
-                    "data": {
-                        "set": [
-                            [
-                                "10.141.11.4",
-                                {
-                                    "range": [
-                                        "192.168.2.2",
-                                        "192.168.2.4"
-                                    ]
-                                }
-                            ]
-                        ]
-                    },
-                    "key": {
-                        "payload": {
-                            "field": "saddr",
-                            "protocol": "ip"
-                        }
-                    }
-                }
-            },
-            "family": "ip",
-            "type_flags": "interval"
-        }
-    }
-]
-
 # snat ip prefix to ip saddr map { 10.141.11.0/24 : 192.168.2.0/24 }
 [
     {
