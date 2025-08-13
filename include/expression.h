@@ -523,8 +523,6 @@ extern struct expr *range_expr_alloc(const struct location *loc,
 				     struct expr *low, struct expr *high);
 struct expr *range_expr_to_prefix(struct expr *range);
 
-extern struct expr *compound_expr_alloc(const struct location *loc,
-					enum expr_types etypes);
 extern void list_expr_sort(struct list_head *head);
 extern void list_splice_sorted(struct list_head *list, struct list_head *head);
 

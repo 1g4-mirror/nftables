@@ -2502,7 +2502,7 @@ flowtable_expr		:	'{'	flowtable_list_expr	'}'
 
 flowtable_list_expr	:	flowtable_expr_member
 			{
-				$$ = compound_expr_alloc(&@$, EXPR_LIST);
+				$$ = list_expr_alloc(&@$);
 				list_expr_add($$, $1);
 			}
 			|	flowtable_list_expr	COMMA	flowtable_expr_member
@@ -2841,14 +2841,14 @@ dev_spec		:	DEVICE	string
 				if (!expr)
 					YYERROR;
 
-				$$ = compound_expr_alloc(&@$, EXPR_LIST);
+				$$ = list_expr_alloc(&@$);
 				list_expr_add($$, expr);
 
 			}
 			|	DEVICE	variable_expr
 			{
 				datatype_set($2->sym->expr, &ifname_type);
-				$$ = compound_expr_alloc(&@$, EXPR_LIST);
+				$$ = list_expr_alloc(&@$);
 				list_expr_add($$, $2);
 			}
 			|	DEVICES		'='	flowtable_expr
@@ -4748,7 +4748,7 @@ set_rhs_expr		:	concat_rhs_expr
 
 initializer_expr	:	rhs_expr
 			|	list_rhs_expr
-			|	'{' '}'		{ $$ = compound_expr_alloc(&@$, EXPR_SET); }
+			|	'{' '}'		{ $$ = set_expr_alloc(&@$, NULL); }
 			|	DASH	NUM
 			{
 				int32_t num = -$2;

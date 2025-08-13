@@ -5497,7 +5497,7 @@ static struct expr *expr_set_to_list(struct eval_ctx *ctx, struct expr *dev_expr
 
 	loc = dev_expr->location;
 	expr_free(dev_expr);
-	dev_expr = compound_expr_alloc(&loc, EXPR_LIST);
+	dev_expr = list_expr_alloc(&loc);
 	list_splice_init(&tmp, &expr_list(dev_expr)->expressions);
 
 	return dev_expr;

@@ -1016,17 +1016,6 @@ struct expr *range_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-struct expr *compound_expr_alloc(const struct location *loc,
-				 enum expr_types etype)
-{
-	struct expr *expr;
-
-	expr = expr_alloc(loc, etype, &invalid_type, BYTEORDER_INVALID, 0);
-	/* same layout for EXPR_CONCAT, EXPR_SET and EXPR_LIST. */
-	init_list_head(&expr->expr_set.expressions);
-	return expr;
-}
-
 static void concat_expr_destroy(struct expr *expr)
 {
 	struct expr *i, *next;
@@ -1219,7 +1208,12 @@ static const struct expr_ops concat_expr_ops = {
 
 struct expr *concat_expr_alloc(const struct location *loc)
 {
-	return compound_expr_alloc(loc, EXPR_CONCAT);
+	struct expr *expr;
+
+	expr = expr_alloc(loc, EXPR_CONCAT, &invalid_type, BYTEORDER_INVALID, 0);
+	init_list_head(&expr_concat(expr)->expressions);
+
+	return expr;
 }
 
 void concat_expr_add(struct expr *concat, struct expr *item)
@@ -1276,7 +1270,12 @@ static const struct expr_ops list_expr_ops = {
 
 struct expr *list_expr_alloc(const struct location *loc)
 {
-	return compound_expr_alloc(loc, EXPR_LIST);
+	struct expr *expr;
+
+	expr = expr_alloc(loc, EXPR_LIST, &invalid_type, BYTEORDER_INVALID, 0);
+	init_list_head(&expr_list(expr)->expressions);
+
+	return expr;
 }
 
 void list_expr_add(struct expr *expr, struct expr *item)
@@ -1427,7 +1426,10 @@ static const struct expr_ops set_expr_ops = {
 
 struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
 {
-	struct expr *set_expr = compound_expr_alloc(loc, EXPR_SET);
+	struct expr *set_expr;
+
+	set_expr = expr_alloc(loc, EXPR_SET, &invalid_type, BYTEORDER_INVALID, 0);
+	init_list_head(&expr_set(set_expr)->expressions);
 
 	if (!set)
 		return set_expr;

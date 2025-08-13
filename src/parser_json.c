@@ -3026,7 +3026,7 @@ static struct expr *ifname_expr_alloc(struct json_ctx *ctx,
 
 static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 {
-	struct expr *tmp, *expr = compound_expr_alloc(int_loc, EXPR_LIST);
+	struct expr *tmp, *expr = list_expr_alloc(int_loc);
 	const char *dev;
 	json_t *value;
 	size_t index;
