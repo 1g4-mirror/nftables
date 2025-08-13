@@ -1027,15 +1027,6 @@ struct expr *compound_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void compound_expr_clone(struct expr *new, const struct expr *expr)
-{
-	struct expr *i;
-
-	init_list_head(&new->expr_set.expressions);
-	list_for_each_entry(i, &expr->expr_set.expressions, list)
-		compound_expr_add(new, expr_clone(i));
-}
-
 static void compound_expr_destroy(struct expr *expr)
 {
 	struct expr *i, *next;
@@ -1077,6 +1068,15 @@ static void concat_expr_destroy(struct expr *expr)
 static void concat_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	compound_expr_print(expr, " . ", octx);
+}
+
+static void concat_expr_clone(struct expr *new, const struct expr *expr)
+{
+	struct expr *i;
+
+	init_list_head(&expr_concat(new)->expressions);
+	list_for_each_entry(i, &expr_concat(expr)->expressions, list)
+		concat_expr_add(new, expr_clone(i));
 }
 
 #define NFTNL_UDATA_SET_KEY_CONCAT_NEST 0
@@ -1234,7 +1234,7 @@ static const struct expr_ops concat_expr_ops = {
 	.name		= "concat",
 	.print		= concat_expr_print,
 	.json		= concat_expr_json,
-	.clone		= compound_expr_clone,
+	.clone		= concat_expr_clone,
 	.destroy	= concat_expr_destroy,
 	.build_udata	= concat_expr_build_udata,
 	.parse_udata	= concat_expr_parse_udata,
@@ -1258,12 +1258,21 @@ static void list_expr_print(const struct expr *expr, struct output_ctx *octx)
 	compound_expr_print(expr, ",", octx);
 }
 
+static void list_expr_clone(struct expr *new, const struct expr *expr)
+{
+	struct expr *i;
+
+	init_list_head(&expr_list(new)->expressions);
+	list_for_each_entry(i, &expr_list(expr)->expressions, list)
+		list_expr_add(new, expr_clone(i));
+}
+
 static const struct expr_ops list_expr_ops = {
 	.type		= EXPR_LIST,
 	.name		= "list",
 	.print		= list_expr_print,
 	.json		= list_expr_json,
-	.clone		= compound_expr_clone,
+	.clone		= list_expr_clone,
 	.destroy	= compound_expr_destroy,
 };
 
@@ -1375,6 +1384,15 @@ static void set_expr_print(const struct expr *expr, struct output_ctx *octx)
 	nft_print(octx, " }");
 }
 
+static void set_expr_clone(struct expr *new, const struct expr *expr)
+{
+	struct expr *i;
+
+	init_list_head(&expr_set(new)->expressions);
+	list_for_each_entry(i, &expr_set(expr)->expressions, list)
+		set_expr_add(new, expr_clone(i));
+}
+
 static void set_expr_set_type(const struct expr *expr,
 			      const struct datatype *dtype,
 			      enum byteorder byteorder)
@@ -1391,7 +1409,7 @@ static const struct expr_ops set_expr_ops = {
 	.print		= set_expr_print,
 	.json		= set_expr_json,
 	.set_type	= set_expr_set_type,
-	.clone		= compound_expr_clone,
+	.clone		= set_expr_clone,
 	.destroy	= compound_expr_destroy,
 };
 
