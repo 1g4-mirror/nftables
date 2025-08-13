@@ -1929,7 +1929,7 @@ static bool elem_key_compatible(const struct expr *set_key,
 				const struct expr *elem_key)
 {
 	/* Catchall element is always compatible with the set key declaration */
-	if (elem_key->etype == EXPR_SET_ELEM_CATCHALL)
+	if (expr_type_catchall(elem_key))
 		return true;
 
 	return datatype_compatible(set_key->dtype, elem_key->dtype);

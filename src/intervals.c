@@ -175,7 +175,7 @@ static void setelem_automerge(struct set_automerge_ctx *ctx)
 	mpz_init(rop);
 
 	list_for_each_entry_safe(i, next, &expr_set(ctx->init)->expressions, list) {
-		if (i->key->etype == EXPR_SET_ELEM_CATCHALL)
+		if (expr_type_catchall(i->key))
 			continue;
 
 		range_expr_value_low(range.low, i);
@@ -410,7 +410,7 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 	list_for_each_entry_safe(elem, next, &expr_set(elems)->expressions, list) {
 		i = interval_expr_key(elem);
 
-		if (i->key->etype == EXPR_SET_ELEM_CATCHALL) {
+		if (expr_type_catchall(i->key)) {
 			/* Assume max value to simplify handling. */
 			mpz_bitmask(range.low, i->len);
 			mpz_bitmask(range.high, i->len);
@@ -574,7 +574,7 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 	list_for_each_entry_safe(elem, next, &expr_set(init)->expressions, list) {
 		i = interval_expr_key(elem);
 
-		if (i->key->etype == EXPR_SET_ELEM_CATCHALL)
+		if (expr_type_catchall(i->key))
 			continue;
 
 		range_expr_value_low(range.low, i);
@@ -686,7 +686,7 @@ int set_to_intervals(const struct set *set, struct expr *init, bool add)
 	list_for_each_entry_safe(i, n, &expr_set(init)->expressions, list) {
 		elem = interval_expr_key(i);
 
-		if (elem->key->etype == EXPR_SET_ELEM_CATCHALL)
+		if (expr_type_catchall(elem->key))
 			continue;
 
 		if (prev)
@@ -770,12 +770,12 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 	bool adjacent = false;
 
 	key = setelem_key(elem);
-	if (key->etype == EXPR_SET_ELEM_CATCHALL)
+	if (expr_type_catchall(key))
 		return 0;
 
 	if (next_elem) {
 		next_key = setelem_key(next_elem);
-		if (next_key->etype == EXPR_SET_ELEM_CATCHALL)
+		if (expr_type_catchall(next_key))
 			next_key = NULL;
 	}
 

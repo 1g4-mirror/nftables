@@ -558,6 +558,9 @@ extern struct expr *set_elem_expr_alloc(const struct location *loc,
 
 struct expr *set_elem_catchall_expr_alloc(const struct location *loc);
 
+#define expr_type_catchall(__expr)			\
+	((__expr)->etype == EXPR_SET_ELEM_CATCHALL)
+
 extern void range_expr_value_low(mpz_t rop, const struct expr *expr);
 extern void range_expr_value_high(mpz_t rop, const struct expr *expr);
 void range_expr_swap_values(struct expr *range);

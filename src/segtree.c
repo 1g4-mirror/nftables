@@ -579,7 +579,7 @@ void interval_map_decompose(struct expr *set)
 		else if (i->etype == EXPR_MAPPING)
 			key = i->left->key;
 
-		if (key && key->etype == EXPR_SET_ELEM_CATCHALL) {
+		if (key && expr_type_catchall(key)) {
 			list_del(&i->list);
 			catchall = i;
 			continue;
