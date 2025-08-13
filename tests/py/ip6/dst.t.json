@@ -290,26 +290,3 @@
         }
     }
 ]
-
-# dst hdrlength != { 33, 55, 67, 88}
-[
-    {
-        "match": {
-            "left": {
-                "exthdr": {
-                    "field": "hdrlength",
-                    "name": "dst"
-                }
-            },
-            "op": "!=",
-            "right": {
-                "set": [
-                    33,
-                    55,
-                    67,
-                    88
-                ]
-            }
-        }
-    }
-]

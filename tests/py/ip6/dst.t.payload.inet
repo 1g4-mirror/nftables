@@ -117,13 +117,3 @@ ip6 test-ip6 input
   [ cmp eq reg 1 0x0000000a ]
   [ exthdr load ipv6 1b @ 60 + 1 => reg 1 ]
   [ lookup reg 1 set __set%d ]
-
-# dst hdrlength != { 33, 55, 67, 88}
-__set%d test-ip6 3
-__set%d test-ip6 0
-	element 00000021  : 0 [end]	element 00000037  : 0 [end]	element 00000043  : 0 [end]	element 00000058  : 0 [end]
-ip6 test-ip6 input
-  [ meta load nfproto => reg 1 ]
-  [ cmp eq reg 1 0x0000000a ]
-  [ exthdr load ipv6 1b @ 60 + 1 => reg 1 ]
-  [ lookup reg 1 set __set%d 0x1 ]

@@ -571,46 +571,6 @@
     }
 ]
 
-# ip6 nexthdr { 33-44}
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "nexthdr",
-                    "protocol": "ip6"
-                }
-            },
-	    "op": "==",
-            "right": {
-                "set": [
-                    { "range": [ 33, 44 ] }
-                ]
-            }
-        }
-    }
-]
-
-# ip6 nexthdr != { 33-44}
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "nexthdr",
-                    "protocol": "ip6"
-                }
-            },
-            "op": "!=",
-            "right": {
-                "set": [
-                    { "range": [ 33, 44 ] }
-                ]
-            }
-        }
-    }
-]
-
 # ip6 nexthdr 33-44
 [
     {
