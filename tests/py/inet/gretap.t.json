@@ -139,23 +139,6 @@
     }
 ]
 
-# gretap ip dscp 0x02
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dscp",
-                    "protocol": "ip",
-                    "tunnel": "gretap"
-                }
-            },
-            "op": "==",
-            "right": 2
-        }
-    }
-]
-
 # gretap ip saddr . gretap ip daddr { 1.2.3.4 . 4.3.2.1 }
 [
     {

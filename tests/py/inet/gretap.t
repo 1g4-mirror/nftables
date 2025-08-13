@@ -15,7 +15,6 @@ gretap icmp type echo-reply;ok
 gretap ether saddr 62:87:4d:d6:19:05;ok
 gretap vlan id 10;ok
 gretap ip dscp 0x02;ok
-gretap ip dscp 0x02;ok
 gretap ip saddr . gretap ip daddr { 1.2.3.4 . 4.3.2.1 };ok
 
 gretap ip saddr set 1.2.3.4;fail
