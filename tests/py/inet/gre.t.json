@@ -121,23 +121,6 @@
     }
 ]
 
-# gre ip dscp 0x02
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dscp",
-                    "protocol": "ip",
-                    "tunnel": "gre"
-                }
-            },
-            "op": "==",
-            "right": 2
-        }
-    }
-]
-
 # gre ip saddr . gre ip daddr { 1.2.3.4 . 4.3.2.1 }
 [
     {

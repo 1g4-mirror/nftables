@@ -16,7 +16,6 @@ gre icmp type echo-reply;ok
 gre ether saddr 62:87:4d:d6:19:05;fail
 gre vlan id 10;fail
 gre ip dscp 0x02;ok
-gre ip dscp 0x02;ok
 gre ip saddr . gre ip daddr { 1.2.3.4 . 4.3.2.1 };ok
 
 gre ip saddr set 1.2.3.4;fail
