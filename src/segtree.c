@@ -207,7 +207,7 @@ static struct expr *expr_to_set_elem(struct expr *e)
 	return __expr_to_set_elem(e, expr);
 }
 
-static void set_compound_expr_add(struct expr *compound, struct expr *expr, struct expr *orig)
+static void set_expr_add_splice(struct expr *compound, struct expr *expr, struct expr *orig)
 {
 	struct expr *elem;
 
@@ -250,7 +250,7 @@ int get_set_decompose(struct set *cache_set, struct set *set)
 				return -1;
 			}
 
-			set_compound_expr_add(new_init, range, left);
+			set_expr_add_splice(new_init, range, left);
 
 			expr_free(left);
 			expr_free(i);
@@ -262,9 +262,9 @@ int get_set_decompose(struct set *cache_set, struct set *set)
 							      left, NULL);
 
 				if (range)
-					set_compound_expr_add(new_init, range, left);
+					set_expr_add_splice(new_init, range, left);
 				else
-					set_compound_expr_add(new_init,
+					set_expr_add_splice(new_init,
 							      expr_to_set_elem(left), left);
 			}
 			left = i;
@@ -273,9 +273,9 @@ int get_set_decompose(struct set *cache_set, struct set *set)
 	if (left) {
 		range = get_set_interval_find(cache_set, left, NULL);
 		if (range)
-			set_compound_expr_add(new_init, range, left);
+			set_expr_add_splice(new_init, range, left);
 		else
-			set_compound_expr_add(new_init, expr_to_set_elem(left), left);
+			set_expr_add_splice(new_init, expr_to_set_elem(left), left);
 	}
 
 	expr_free(set->init);
