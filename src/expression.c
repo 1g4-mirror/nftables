@@ -90,7 +90,7 @@ void expr_free(struct expr *expr)
 	datatype_free(expr->dtype);
 
 	/* EXPR_INVALID expressions lack ->ops structure.
-	 * This happens for compound types.
+	 * This happens for set, list and concat types.
 	 */
 	if (expr->etype != EXPR_INVALID)
 		expr_destroy(expr);
@@ -1027,14 +1027,6 @@ struct expr *compound_expr_alloc(const struct location *loc,
 	return expr;
 }
 
-static void compound_expr_destroy(struct expr *expr)
-{
-	struct expr *i, *next;
-
-	list_for_each_entry_safe(i, next, &expr->expr_set.expressions, list)
-		expr_free(i);
-}
-
 static void compound_expr_print(const struct expr *expr, const char *delim,
 				 struct output_ctx *octx)
 {
@@ -1050,7 +1042,10 @@ static void compound_expr_print(const struct expr *expr, const char *delim,
 
 static void concat_expr_destroy(struct expr *expr)
 {
-	compound_expr_destroy(expr);
+	struct expr *i, *next;
+
+	list_for_each_entry_safe(i, next, &expr_concat(expr)->expressions, list)
+		expr_free(i);
 }
 
 static void concat_expr_print(const struct expr *expr, struct output_ctx *octx)
@@ -1261,13 +1256,21 @@ static void list_expr_clone(struct expr *new, const struct expr *expr)
 		list_expr_add(new, expr_clone(i));
 }
 
+static void list_expr_destroy(struct expr *expr)
+{
+	struct expr *i, *next;
+
+	list_for_each_entry_safe(i, next, &expr_list(expr)->expressions, list)
+		expr_free(i);
+}
+
 static const struct expr_ops list_expr_ops = {
 	.type		= EXPR_LIST,
 	.name		= "list",
 	.print		= list_expr_print,
 	.json		= list_expr_json,
 	.clone		= list_expr_clone,
-	.destroy	= compound_expr_destroy,
+	.destroy	= list_expr_destroy,
 };
 
 struct expr *list_expr_alloc(const struct location *loc)
@@ -1393,6 +1396,14 @@ static void set_expr_clone(struct expr *new, const struct expr *expr)
 		set_expr_add(new, expr_clone(i));
 }
 
+static void set_expr_destroy(struct expr *expr)
+{
+	struct expr *i, *next;
+
+	list_for_each_entry_safe(i, next, &expr_set(expr)->expressions, list)
+		expr_free(i);
+}
+
 static void set_expr_set_type(const struct expr *expr,
 			      const struct datatype *dtype,
 			      enum byteorder byteorder)
@@ -1410,7 +1421,7 @@ static const struct expr_ops set_expr_ops = {
 	.json		= set_expr_json,
 	.set_type	= set_expr_set_type,
 	.clone		= set_expr_clone,
-	.destroy	= compound_expr_destroy,
+	.destroy	= set_expr_destroy,
 };
 
 struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
