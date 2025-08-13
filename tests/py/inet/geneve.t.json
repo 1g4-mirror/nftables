@@ -264,35 +264,6 @@
     }
 ]
 
-# udp dport 6081 geneve ip dscp 0x02
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dport",
-                    "protocol": "udp"
-                }
-            },
-            "op": "==",
-            "right": 6081
-        }
-    },
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dscp",
-                    "protocol": "ip",
-                    "tunnel": "geneve"
-                }
-            },
-            "op": "==",
-            "right": 2
-        }
-    }
-]
-
 # udp dport 6081 geneve ip saddr . geneve ip daddr { 1.2.3.4 . 4.3.2.1 }
 [
     {

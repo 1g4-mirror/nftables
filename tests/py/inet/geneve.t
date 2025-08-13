@@ -17,7 +17,6 @@ udp dport 6081 geneve icmp type echo-reply;ok
 udp dport 6081 geneve ether saddr 62:87:4d:d6:19:05;ok
 udp dport 6081 geneve vlan id 10;ok
 udp dport 6081 geneve ip dscp 0x02;ok
-udp dport 6081 geneve ip dscp 0x02;ok
 udp dport 6081 geneve ip saddr . geneve ip daddr { 1.2.3.4 . 4.3.2.1 };ok
 
 udp dport 6081 geneve ip saddr set 1.2.3.4;fail
