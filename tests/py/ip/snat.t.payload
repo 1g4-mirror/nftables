@@ -135,17 +135,3 @@ ip
   [ payload load 2b @ transport header + 2 => reg 9 ]
   [ lookup reg 1 set __map%d dreg 1 ]
   [ nat snat ip addr_min reg 1 proto_min reg 9 ]
-
-# ip daddr 192.168.0.1 dnat to tcp dport map { 443 : 10.141.10.4 . 8443, 80 : 10.141.10.4 . 8080 }
-__map%d x b size 2
-__map%d x 0
-        element 0000bb01  : 040a8d0a 0000fb20 0 [end]   element 00005000  : 040a8d0a 0000901f 0 [end]
-ip
-  [ payload load 4b @ network header + 16 => reg 1 ]
-  [ cmp eq reg 1 0x0100a8c0 ]
-  [ meta load l4proto => reg 1 ]
-  [ cmp eq reg 1 0x00000006 ]
-  [ payload load 2b @ transport header + 2 => reg 1 ]
-  [ lookup reg 1 set __map%d dreg 1 ]
-  [ nat dnat ip addr_min reg 1 proto_min reg 9 ]
-
