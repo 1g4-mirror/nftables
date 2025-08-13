@@ -1254,64 +1254,6 @@
         "match": {
             "left": {
                 "payload": {
-                    "field": "type",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": {
-                "set": [
-                    "mld-listener-query",
-                    "mld-listener-report",
-                    "mld-listener-done",
-                    "nd-neighbor-solicit",
-                    "nd-neighbor-advert",
-                    "nd-redirect"
-                ]
-            }
-        }
-    },
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "taddr",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": "2001:db8::133"
-        }
-    }
-]
-
-# icmpv6 taddr 2001:db8::133
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "type",
-                    "protocol": "icmpv6"
-                }
-            },
-            "op": "==",
-            "right": {
-                "set": [
-                    "mld-listener-query",
-                    "mld-listener-report",
-                    "mld-listener-done",
-                    "nd-neighbor-solicit",
-                    "nd-neighbor-advert",
-                    "nd-redirect"
-                ]
-            }
-        }
-    },
-    {
-        "match": {
-            "left": {
-                "payload": {
                     "field": "taddr",
                     "protocol": "icmpv6"
                 }
