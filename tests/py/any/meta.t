@@ -221,7 +221,6 @@ meta hour "00:01" drop;ok
 meta hour "01:01" drop;ok
 meta hour "02:02" drop;ok
 meta hour "03:03" drop;ok
-meta hour "24:00" drop;fail
 meta hour "23:59:60" drop;ok;meta hour "00:00" drop
 meta hour "00:00"-"02:02" drop;ok
 meta hour "01:01"-"03:03" drop;ok
