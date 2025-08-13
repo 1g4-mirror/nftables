@@ -64,7 +64,7 @@ static void set_elem_add(const struct set *set, struct expr *init, mpz_t value,
 	expr = set_elem_expr_alloc(&internal_location, expr);
 	expr->flags = flags;
 
-	compound_expr_add(init, expr);
+	set_expr_add(init, expr);
 }
 
 struct expr *get_set_intervals(const struct set *set, const struct expr *init)
@@ -86,12 +86,12 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 				     i->flags, byteorder);
 			break;
 		case EXPR_CONCAT:
-			compound_expr_add(new_init, expr_clone(i));
+			set_expr_add(new_init, expr_clone(i));
 			i->flags |= EXPR_F_INTERVAL_END;
-			compound_expr_add(new_init, expr_clone(i));
+			set_expr_add(new_init, expr_clone(i));
 			break;
 		case EXPR_SET_ELEM_CATCHALL:
-			compound_expr_add(new_init, expr_clone(i));
+			set_expr_add(new_init, expr_clone(i));
 			break;
 		default:
 			range_expr_value_low(low, i);
@@ -214,16 +214,16 @@ static void set_compound_expr_add(struct expr *compound, struct expr *expr, stru
 	switch (expr->etype) {
 	case EXPR_SET_ELEM:
 		list_splice_init(&orig->stmt_list, &expr->stmt_list);
-		compound_expr_add(compound, expr);
+		set_expr_add(compound, expr);
 		break;
 	case EXPR_MAPPING:
 		list_splice_init(&orig->left->stmt_list, &expr->left->stmt_list);
-		compound_expr_add(compound, expr);
+		set_expr_add(compound, expr);
 		break;
 	default:
 		elem = set_elem_expr_alloc(&orig->location, expr);
 		list_splice_init(&orig->stmt_list, &elem->stmt_list);
-		compound_expr_add(compound, elem);
+		set_expr_add(compound, elem);
 		break;
 	}
 }
@@ -551,7 +551,7 @@ add_interval(struct expr *set, struct expr *low, struct expr *i)
 	} else
 		expr = interval_to_range(low, i, range);
 
-	compound_expr_add(set, expr);
+	set_expr_add(set, expr);
 
 	mpz_clear(range);
 	mpz_clear(p);
@@ -645,7 +645,7 @@ void interval_map_decompose(struct expr *set)
 	mpz_bitmask(i->value, i->len);
 
 	if (!mpz_cmp(i->value, expr_value(low)->value)) {
-		compound_expr_add(set, low);
+		set_expr_add(set, low);
 	} else {
 		add_interval(set, low, i);
 		expr_free(low);
@@ -656,7 +656,7 @@ void interval_map_decompose(struct expr *set)
 out:
 	if (catchall) {
 		catchall->flags |= EXPR_F_KERNEL;
-		compound_expr_add(set, catchall);
+		set_expr_add(set, catchall);
 	}
 
 	free(ranges);

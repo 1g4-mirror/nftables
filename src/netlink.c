@@ -1591,7 +1591,7 @@ key_end:
 		expr = mapping_expr_alloc(&netlink_location, expr, data);
 	}
 out:
-	compound_expr_add(set->init, expr);
+	set_expr_add(set->init, expr);
 
 	if (!(flags & NFT_SET_ELEM_INTERVAL_END) &&
 	    nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_KEY_END)) {

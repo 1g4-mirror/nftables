@@ -1471,7 +1471,7 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 
 		expr = set_elem_expr_alloc(int_loc, expr);
 		set_expr = set_expr_alloc(int_loc, NULL);
-		compound_expr_add(set_expr, expr);
+		set_expr_add(set_expr, expr);
 		return set_expr;
 	}
 
@@ -1515,7 +1515,7 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 
 		if (!set_expr)
 			set_expr = set_expr_alloc(int_loc, NULL);
-		compound_expr_add(set_expr, expr);
+		set_expr_add(set_expr, expr);
 	}
 	return set_expr;
 }

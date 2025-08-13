@@ -537,6 +537,9 @@ struct expr *list_expr_to_binop(struct expr *expr);
 
 extern struct expr *set_expr_alloc(const struct location *loc,
 				   const struct set *set);
+void __set_expr_add(struct expr *set, struct expr *elem);
+void set_expr_add(struct expr *set, struct expr *elem);
+
 extern void concat_range_aggregate(struct expr *set);
 extern void interval_map_decompose(struct expr *set);
 

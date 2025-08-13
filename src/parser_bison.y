@@ -3325,11 +3325,11 @@ verdict_map_expr	:	'{'	verdict_map_list_expr	'}'
 verdict_map_list_expr	:	verdict_map_list_member_expr
 			{
 				$$ = set_expr_alloc(&@$, NULL);
-				compound_expr_add($$, $1);
+				set_expr_add($$, $1);
 			}
 			|	verdict_map_list_expr	COMMA	verdict_map_list_member_expr
 			{
-				compound_expr_add($1, $3);
+				set_expr_add($1, $3);
 				$$ = $1;
 			}
 			|	verdict_map_list_expr	COMMA	opt_newline
@@ -4584,11 +4584,11 @@ set_expr		:	'{'	set_list_expr		'}'
 set_list_expr		:	set_list_member_expr
 			{
 				$$ = set_expr_alloc(&@$, NULL);
-				compound_expr_add($$, $1);
+				set_expr_add($$, $1);
 			}
 			|	set_list_expr		COMMA	set_list_member_expr
 			{
-				compound_expr_add($1, $3);
+				set_expr_add($1, $3);
 				$$ = $1;
 			}
 			|	set_list_expr		COMMA	opt_newline

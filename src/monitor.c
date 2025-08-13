@@ -400,7 +400,7 @@ static bool netlink_event_range_cache(struct set *cached_set,
 
 	/* if cache exists, dummyset must contain the other end of the range */
 	if (cached_set->rg_cache) {
-		compound_expr_add(dummyset->init, cached_set->rg_cache);
+		set_expr_add(dummyset->init, cached_set->rg_cache);
 		cached_set->rg_cache = NULL;
 		goto out_decompose;
 	}

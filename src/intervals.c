@@ -278,7 +278,7 @@ int set_automerge(struct list_head *msgs, struct cmd *cmd, struct set *set,
 			}
 			clone = expr_clone(i);
 			clone->flags |= EXPR_F_KERNEL;
-			list_add_tail(&clone->list, &expr_set(existing_set->init)->expressions);
+			__set_expr_add(existing_set->init, clone);
 		}
 	}
 
@@ -359,7 +359,7 @@ static void split_range(struct set *set, struct expr *prev, struct expr *i,
 	clone = expr_clone(prev);
 	mpz_set(clone->key->range.low, i->key->range.high);
 	mpz_add_ui(clone->key->range.low, i->key->range.high, 1);
-	list_add_tail(&clone->list, &expr_set(set->existing_set->init)->expressions);
+	__set_expr_add(set->existing_set->init, clone);
 
 	mpz_set(prev->key->range.high, i->key->range.low);
 	mpz_sub_ui(prev->key->range.high, i->key->range.low, 1);
@@ -527,7 +527,7 @@ int set_delete(struct list_head *msgs, struct cmd *cmd, struct set *set,
 	list_for_each_entry(i, &expr_set(existing_set->init)->expressions, list) {
 		if (!(i->flags & EXPR_F_KERNEL)) {
 			clone = expr_clone(i);
-			list_add_tail(&clone->list, &expr_set(add)->expressions);
+			__set_expr_add(add, clone);
 			i->flags |= EXPR_F_KERNEL;
 		}
 	}
@@ -646,7 +646,7 @@ int set_overlap(struct list_head *msgs, struct set *set, struct expr *init)
 		else if (existing_set) {
 			clone = expr_clone(i);
 			clone->flags |= EXPR_F_KERNEL;
-			list_add_tail(&clone->list, &expr_set(existing_set->init)->expressions);
+			__set_expr_add(existing_set->init, clone);
 		}
 	}
 

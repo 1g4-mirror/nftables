@@ -569,13 +569,13 @@ static void merge_expr_stmts(const struct optimize_ctx *ctx,
 
 	expr_a = stmt_a->expr->right;
 	elem = set_elem_expr_alloc(&internal_location, expr_get(expr_a));
-	compound_expr_add(set, elem);
+	set_expr_add(set, elem);
 
 	for (i = from + 1; i <= to; i++) {
 		stmt_b = ctx->stmt_matrix[i][merge->stmt[0]];
 		expr_b = stmt_b->expr->right;
 		elem = set_elem_expr_alloc(&internal_location, expr_get(expr_b));
-		compound_expr_add(set, elem);
+		set_expr_add(set, elem);
 	}
 
 	expr_free(stmt_a->expr->right);
@@ -590,7 +590,7 @@ static void merge_vmap(const struct optimize_ctx *ctx,
 	mappings = stmt_b->expr->mappings;
 	list_for_each_entry(expr, &expr_set(mappings)->expressions, list) {
 		mapping = expr_clone(expr);
-		compound_expr_add(stmt_a->expr->mappings, mapping);
+		set_expr_add(stmt_a->expr->mappings, mapping);
 	}
 }
 
@@ -702,7 +702,7 @@ static void __merge_concat_stmts(const struct optimize_ctx *ctx, uint32_t i,
 	list_for_each_entry_safe(concat, next, &concat_list, list) {
 		list_del(&concat->list);
 		elem = set_elem_expr_alloc(&internal_location, concat);
-		compound_expr_add(set, elem);
+		set_expr_add(set, elem);
 	}
 }
 
@@ -759,7 +759,7 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 
 			mapping = mapping_expr_alloc(&internal_location, elem,
 						     expr_get(verdict->expr));
-			compound_expr_add(set, mapping);
+			set_expr_add(set, mapping);
 		}
 		stmt_free(counter);
 		break;
@@ -773,7 +773,7 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 
 			mapping = mapping_expr_alloc(&internal_location, elem,
 						     expr_get(verdict->expr));
-			compound_expr_add(set, mapping);
+			set_expr_add(set, mapping);
 		}
 		stmt_free(counter);
 		break;
@@ -790,7 +790,7 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 
 		mapping = mapping_expr_alloc(&internal_location, elem,
 					     expr_get(verdict->expr));
-		compound_expr_add(set, mapping);
+		set_expr_add(set, mapping);
 		break;
 	default:
 		assert(0);
@@ -898,7 +898,7 @@ static void __merge_concat_stmts_vmap(const struct optimize_ctx *ctx,
 
 		mapping = mapping_expr_alloc(&internal_location, elem,
 					     expr_get(verdict->expr));
-		compound_expr_add(set, mapping);
+		set_expr_add(set, mapping);
 	}
 	stmt_free(counter);
 }
@@ -1061,7 +1061,7 @@ static void merge_nat(const struct optimize_ctx *ctx,
 
 		elem = set_elem_expr_alloc(&internal_location, expr_get(expr));
 		mapping = mapping_expr_alloc(&internal_location, elem, nat_expr);
-		compound_expr_add(set, mapping);
+		set_expr_add(set, mapping);
 	}
 
 	stmt = ctx->stmt_matrix[from][merge->stmt[0]];
@@ -1118,7 +1118,7 @@ static void merge_concat_nat(const struct optimize_ctx *ctx,
 
 		elem = set_elem_expr_alloc(&internal_location, concat);
 		mapping = mapping_expr_alloc(&internal_location, elem, nat_expr);
-		compound_expr_add(set, mapping);
+		set_expr_add(set, mapping);
 	}
 
 	concat = concat_expr_alloc(&internal_location);

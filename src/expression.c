@@ -1392,6 +1392,19 @@ struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
 	return set_expr;
 }
 
+void __set_expr_add(struct expr *set, struct expr *elem)
+{
+	list_add_tail(&elem->list, &expr_set(set)->expressions);
+}
+
+void set_expr_add(struct expr *set, struct expr *elem)
+{
+	struct expr_set *expr_set = expr_set(set);
+
+	list_add_tail(&elem->list, &expr_set->expressions);
+	expr_set->size++;
+}
+
 static void mapping_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	expr_print(expr->left, octx);
