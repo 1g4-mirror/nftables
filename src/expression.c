@@ -1048,12 +1048,6 @@ static void compound_expr_print(const struct expr *expr, const char *delim,
 	}
 }
 
-void compound_expr_add(struct expr *compound, struct expr *expr)
-{
-	list_add_tail(&expr->list, &compound->expr_set.expressions);
-	compound->expr_set.size++;
-}
-
 void compound_expr_remove(struct expr *compound, struct expr *expr)
 {
 	compound->expr_set.size--;
