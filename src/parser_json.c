@@ -1704,7 +1704,7 @@ static struct expr *json_parse_expr(struct json_ctx *ctx, json_t *root)
 				expr_free(list);
 				return NULL;
 			}
-			compound_expr_add(list, expr);
+			list_expr_add(list, expr);
 		}
 		return list;
 	case JSON_TRUE:
@@ -3038,7 +3038,7 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 			return NULL;
 		}
 
-		compound_expr_add(expr, tmp);
+		list_expr_add(expr, tmp);
 		return expr;
 	}
 	if (!json_is_array(root)) {
@@ -3059,7 +3059,7 @@ static struct expr *json_parse_devs(struct json_ctx *ctx, json_t *root)
 			expr_free(expr);
 			return NULL;
 		}
-		compound_expr_add(expr, tmp);
+		list_expr_add(expr, tmp);
 	}
 	return expr;
 }

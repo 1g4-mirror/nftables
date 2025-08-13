@@ -534,6 +534,7 @@ extern struct expr *concat_expr_alloc(const struct location *loc);
 void concat_expr_add(struct expr *concat, struct expr *item);
 
 extern struct expr *list_expr_alloc(const struct location *loc);
+void list_expr_add(struct expr *expr, struct expr *item);
 struct expr *list_expr_to_binop(struct expr *expr);
 
 extern struct expr *set_expr_alloc(const struct location *loc,

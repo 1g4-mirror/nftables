@@ -2454,7 +2454,7 @@ static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
 	} else {
 		if (list == NULL)
 			return expr_get(expr);
-		compound_expr_add(list, expr_get(expr));
+		list_expr_add(list, expr_get(expr));
 	}
 
 	return list;

@@ -2503,11 +2503,11 @@ flowtable_expr		:	'{'	flowtable_list_expr	'}'
 flowtable_list_expr	:	flowtable_expr_member
 			{
 				$$ = compound_expr_alloc(&@$, EXPR_LIST);
-				compound_expr_add($$, $1);
+				list_expr_add($$, $1);
 			}
 			|	flowtable_list_expr	COMMA	flowtable_expr_member
 			{
-				compound_expr_add($1, $3);
+				list_expr_add($1, $3);
 				$$ = $1;
 			}
 			|	flowtable_list_expr	COMMA	opt_newline
@@ -2842,14 +2842,14 @@ dev_spec		:	DEVICE	string
 					YYERROR;
 
 				$$ = compound_expr_alloc(&@$, EXPR_LIST);
-				compound_expr_add($$, expr);
+				list_expr_add($$, expr);
 
 			}
 			|	DEVICE	variable_expr
 			{
 				datatype_set($2->sym->expr, &ifname_type);
 				$$ = compound_expr_alloc(&@$, EXPR_LIST);
-				compound_expr_add($$, $2);
+				list_expr_add($$, $2);
 			}
 			|	DEVICES		'='	flowtable_expr
 			{
@@ -5199,13 +5199,13 @@ relational_expr		:	expr	/* implicit */	rhs_expr
 list_rhs_expr		:	basic_rhs_expr		COMMA		basic_rhs_expr
 			{
 				$$ = list_expr_alloc(&@$);
-				compound_expr_add($$, $1);
-				compound_expr_add($$, $3);
+				list_expr_add($$, $1);
+				list_expr_add($$, $3);
 			}
 			|	list_rhs_expr		COMMA		basic_rhs_expr
 			{
 				$1->location = @$;
-				compound_expr_add($1, $3);
+				list_expr_add($1, $3);
 				$$ = $1;
 			}
 			;
@@ -5763,13 +5763,13 @@ symbol_stmt_expr		:	symbol_expr
 list_stmt_expr		:	symbol_stmt_expr	COMMA	symbol_stmt_expr
 			{
 				$$ = list_expr_alloc(&@$);
-				compound_expr_add($$, $1);
-				compound_expr_add($$, $3);
+				list_expr_add($$, $1);
+				list_expr_add($$, $3);
 			}
 			|	list_stmt_expr	COMMA	symbol_stmt_expr
 			{
 				$1->location = @$;
-				compound_expr_add($1, $3);
+				list_expr_add($1, $3);
 				$$ = $1;
 			}
 			;

@@ -1272,6 +1272,14 @@ struct expr *list_expr_alloc(const struct location *loc)
 	return compound_expr_alloc(loc, EXPR_LIST);
 }
 
+void list_expr_add(struct expr *expr, struct expr *item)
+{
+	struct expr_list *expr_list = expr_list(expr);
+
+	list_add_tail(&item->list, &expr_list->expressions);
+	expr_list->size++;
+}
+
 /* list is assumed to have two items at least, otherwise extend this! */
 struct expr *list_expr_to_binop(struct expr *expr)
 {
