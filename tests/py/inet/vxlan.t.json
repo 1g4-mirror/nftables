@@ -264,35 +264,6 @@
     }
 ]
 
-# udp dport 4789 vxlan ip dscp 0x02
-[
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dport",
-                    "protocol": "udp"
-                }
-            },
-            "op": "==",
-            "right": 4789
-        }
-    },
-    {
-        "match": {
-            "left": {
-                "payload": {
-                    "field": "dscp",
-                    "protocol": "ip",
-                    "tunnel": "vxlan"
-                }
-            },
-            "op": "==",
-            "right": 2
-        }
-    }
-]
-
 # udp dport 4789 vxlan ip saddr . vxlan ip daddr { 1.2.3.4 . 4.3.2.1 }
 [
     {
