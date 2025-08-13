@@ -425,7 +425,7 @@ next:
 			mpz_clear(range);
 
 			r2 = list_entry(r2_next, typeof(*r2), list);
-			compound_expr_remove(start, r1);
+			compound_expr_remove(expr_value(start), r1);
 
 			if (free_r1)
 				expr_free(r1);
