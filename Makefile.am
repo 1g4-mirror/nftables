@@ -100,6 +100,7 @@ noinst_HEADERS = \
 	include/statement.h \
 	include/tcpopt.h \
 	include/trace.h \
+	include/tunnel.h \
 	include/utils.h \
 	include/xfrm.h \
 	include/xt.h \
@@ -243,6 +244,7 @@ src_libnftables_la_SOURCES = \
 	src/socket.c \
 	src/statement.c \
 	src/tcpopt.c \
+	src/tunnel.c \
 	src/utils.c \
 	src/xfrm.c \
 	$(NULL)
