@@ -827,6 +827,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"egress"		{ return EGRESS; }
 	"ingress"		{ return INGRESS; }
 	"path"			{ return PATH; }
+	"gbp"			{ return GBP; }
 }
 
 "notrack"		{ return NOTRACK; }
