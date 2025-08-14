@@ -492,6 +492,11 @@ struct secmark {
 	char		ctx[NFT_SECMARK_CTX_MAXLEN];
 };
 
+enum tunnel_type {
+	TUNNEL_UNSPEC = 0,
+	TUNNEL_ERSPAN,
+};
+
 struct tunnel {
 	uint32_t	id;
 	struct expr	*src;
@@ -500,6 +505,19 @@ struct tunnel {
 	uint16_t	dport;
 	uint8_t		tos;
 	uint8_t		ttl;
+	enum tunnel_type type;
+	union {
+		struct {
+			uint32_t	version;
+			struct {
+				uint32_t	index;
+			} v1;
+			struct {
+				uint8_t		direction;
+				uint8_t		hwid;
+			} v2;
+		} erspan;
+	};
 };
 
 /**

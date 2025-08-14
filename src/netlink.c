@@ -1808,6 +1808,41 @@ static int obj_parse_udata_cb(const struct nftnl_udata *attr, void *data)
 	return 0;
 }
 
+static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
+
+	struct obj *obj = data;
+
+	switch (nftnl_tunnel_opt_get_type(opt)) {
+	case NFTNL_TUNNEL_TYPE_ERSPAN:
+		obj->tunnel.type = TUNNEL_ERSPAN;
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_VERSION)) {
+			obj->tunnel.erspan.version =
+				nftnl_tunnel_opt_get_u32(opt,
+							 NFTNL_TUNNEL_ERSPAN_VERSION);
+		}
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V1_INDEX)) {
+			obj->tunnel.erspan.v1.index =
+				nftnl_tunnel_opt_get_u32(opt,
+							 NFTNL_TUNNEL_ERSPAN_V1_INDEX);
+		}
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V2_HWID)) {
+			obj->tunnel.erspan.v2.hwid =
+				nftnl_tunnel_opt_get_u8(opt,
+							NFTNL_TUNNEL_ERSPAN_V2_HWID);
+		}
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V2_DIR)) {
+			obj->tunnel.erspan.v2.direction =
+				nftnl_tunnel_opt_get_u8(opt,
+							NFTNL_TUNNEL_ERSPAN_V2_DIR);
+		}
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 				    struct nftnl_obj *nlo)
 {
@@ -1937,6 +1972,9 @@ struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST)) {
 			obj->tunnel.dst =
 				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_OPTS)) {
+			nftnl_obj_tunnel_opts_foreach(nlo, tunnel_parse_opt_cb, obj);
 		}
 		break;
 	default:

@@ -821,6 +821,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"dport"			{ return DPORT; }
 	"ttl"			{ return TTL; }
 	"tos"			{ return TOS; }
+	"version"		{ return HDRVERSION; }
+	"direction"		{ return DIRECTION; }
+	"erspan"		{ return ERSPAN; }
+	"egress"		{ return EGRESS; }
+	"ingress"		{ return INGRESS; }
 }
 
 "notrack"		{ return NOTRACK; }
