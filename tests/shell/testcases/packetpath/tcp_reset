@@ -2,8 +2,9 @@
 
 # NFT_TEST_REQUIRES(NFT_TEST_HAVE_socat)
 
-# regression check for kernel commit
-# netfilter: nf_reject: init skb->dev for reset packet
+# regression check for issue fixed with kernel commit
+# b975d3ee5962 ("net: add and use skb_get_hash_net")
+# without it, flow dissector used to WARN().
 
 ip link set lo up
 
