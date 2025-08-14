@@ -6,6 +6,8 @@
  * published by the Free Software Foundation.
  */
 
+#include <nft.h>
+
 #include <errno.h>
 #include <limits.h>
 #include <stddef.h>
@@ -38,6 +40,24 @@ const struct tunnel_template tunnel_templates[] = {
 						4 * 8, BYTEORDER_HOST_ENDIAN),
 };
 
+struct error_record *tunnel_key_parse(const struct location *loc,
+				      const char *str,
+				      unsigned int *value)
+{
+	unsigned int i;
+
+	for (i = 0; i < array_size(tunnel_templates); i++) {
+		if (!tunnel_templates[i].token ||
+		    strcmp(tunnel_templates[i].token, str))
+			continue;
+
+		*value = i;
+		return NULL;
+	}
+
+	return error(loc, "syntax error, unexpected %s", str);
+}
+
 static void tunnel_expr_print(const struct expr *expr, struct output_ctx *octx)
 {
 	uint32_t key = expr->tunnel.key;
@@ -63,6 +83,7 @@ const struct expr_ops tunnel_expr_ops = {
 	.type		= EXPR_TUNNEL,
 	.name		= "tunnel",
 	.print		= tunnel_expr_print,
+	.json		= tunnel_expr_json,
 	.cmp		= tunnel_expr_cmp,
 	.clone		= tunnel_expr_clone,
 };
