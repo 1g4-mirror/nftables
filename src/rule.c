@@ -1439,6 +1439,7 @@ void cmd_free(struct cmd *cmd)
 		case CMD_OBJ_LIMIT:
 		case CMD_OBJ_SECMARK:
 		case CMD_OBJ_SYNPROXY:
+		case CMD_OBJ_TUNNEL:
 			obj_free(cmd->object);
 			break;
 		case CMD_OBJ_FLOWTABLE:
@@ -1539,6 +1540,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 	case CMD_OBJ_LIMIT:
 	case CMD_OBJ_SECMARK:
 	case CMD_OBJ_SYNPROXY:
+	case CMD_OBJ_TUNNEL:
 		return mnl_nft_obj_add(ctx, cmd, flags);
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_add(ctx, cmd, flags);
@@ -1619,6 +1621,8 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_SECMARK);
 	case CMD_OBJ_SYNPROXY:
 		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_SYNPROXY);
+	case CMD_OBJ_TUNNEL:
+		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_TUNNEL);
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_del(ctx, cmd);
 	default:
@@ -1689,7 +1693,8 @@ void obj_free(struct obj *obj)
 		return;
 	free_const(obj->comment);
 	handle_free(&obj->handle);
-	if (obj->type == NFT_OBJECT_CT_TIMEOUT) {
+	switch (obj->type) {
+	case NFT_OBJECT_CT_TIMEOUT: {
 		struct timeout_state *ts, *next;
 
 		list_for_each_entry_safe(ts, next, &obj->ct_timeout.timeout_list, head) {
@@ -1697,6 +1702,14 @@ void obj_free(struct obj *obj)
 			free_const(ts->timeout_str);
 			free(ts);
 		}
+		}
+		break;
+	case NFT_OBJECT_TUNNEL:
+		expr_free(obj->tunnel.src);
+		expr_free(obj->tunnel.dst);
+		break;
+	default:
+		break;
 	}
 	free(obj);
 }
@@ -1956,6 +1969,60 @@ static void obj_print_data(const struct obj *obj,
 		nft_print(octx, "%s", opts->stmt_separator);
 		}
 		break;
+	case NFT_OBJECT_TUNNEL:
+		nft_print(octx, " %s {", obj->handle.obj.name);
+		if (nft_output_handle(octx))
+			nft_print(octx, " # handle %" PRIu64, obj->handle.handle.id);
+
+		obj_print_comment(obj, opts, octx);
+
+		nft_print(octx, "%s%s%sid %u",
+			  opts->nl, opts->tab, opts->tab, obj->tunnel.id);
+
+		if (obj->tunnel.src) {
+			if (obj->tunnel.src->len == 32) {
+				nft_print(octx, "%s%s%sip saddr ",
+					  opts->nl, opts->tab, opts->tab);
+				expr_print(obj->tunnel.src, octx);
+			} else if (obj->tunnel.src->len == 128) {
+				nft_print(octx, "%s%s%sip6 saddr ",
+					  opts->nl, opts->tab, opts->tab);
+				expr_print(obj->tunnel.src, octx);
+			}
+		}
+		if (obj->tunnel.dst) {
+			if (obj->tunnel.dst->len == 32) {
+				nft_print(octx, "%s%s%sip daddr ",
+					  opts->nl, opts->tab, opts->tab);
+				expr_print(obj->tunnel.dst, octx);
+			} else if (obj->tunnel.dst->len == 128) {
+				nft_print(octx, "%s%s%sip6 daddr ",
+					  opts->nl, opts->tab, opts->tab);
+				expr_print(obj->tunnel.dst, octx);
+			}
+		}
+		if (obj->tunnel.sport) {
+			nft_print(octx, "%s%s%ssport %u",
+				  opts->nl, opts->tab, opts->tab,
+				  obj->tunnel.sport);
+		}
+		if (obj->tunnel.dport) {
+			nft_print(octx, "%s%s%sdport %u",
+				  opts->nl, opts->tab, opts->tab,
+				  obj->tunnel.dport);
+		}
+		if (obj->tunnel.tos) {
+			nft_print(octx, "%s%s%stos %u",
+				  opts->nl, opts->tab, opts->tab,
+				  obj->tunnel.tos);
+		}
+		if (obj->tunnel.ttl) {
+			nft_print(octx, "%s%s%sttl %u",
+				  opts->nl, opts->tab, opts->tab,
+				  obj->tunnel.ttl);
+		}
+		nft_print(octx, "%s", opts->stmt_separator);
+		break;
 	default:
 		nft_print(octx, " unknown {%s", opts->nl);
 		break;
@@ -1971,6 +2038,7 @@ static const char * const obj_type_name_array[] = {
 	[NFT_OBJECT_SECMARK]	= "secmark",
 	[NFT_OBJECT_SYNPROXY]	= "synproxy",
 	[NFT_OBJECT_CT_EXPECT]	= "ct expectation",
+	[NFT_OBJECT_TUNNEL]	= "tunnel",
 };
 
 const char *obj_type_name(unsigned int type)
@@ -1989,6 +2057,7 @@ static uint32_t obj_type_cmd_array[NFT_OBJECT_MAX + 1] = {
 	[NFT_OBJECT_SECMARK]	= CMD_OBJ_SECMARK,
 	[NFT_OBJECT_SYNPROXY]	= CMD_OBJ_SYNPROXY,
 	[NFT_OBJECT_CT_EXPECT]	= CMD_OBJ_CT_EXPECT,
+	[NFT_OBJECT_TUNNEL]	= CMD_OBJ_TUNNEL,
 };
 
 enum cmd_obj obj_type_to_cmd(uint32_t type)
@@ -2458,6 +2527,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SYNPROXY:
 	case CMD_OBJ_SYNPROXYS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_SYNPROXY);
+	case CMD_OBJ_TUNNEL:
+	case CMD_OBJ_TUNNELS:
+		return do_list_obj(ctx, cmd, NFT_OBJECT_TUNNEL);
 	case CMD_OBJ_FLOWTABLE:
 		return do_list_flowtable(ctx, cmd, table);
 	case CMD_OBJ_FLOWTABLES:

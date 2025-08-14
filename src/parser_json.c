@@ -3212,6 +3212,7 @@ static int string_to_nft_object(const char *str)
 		[NFT_OBJECT_SECMARK]	= "secmark",
 		[NFT_OBJECT_CT_EXPECT]	= "ct expectation",
 		[NFT_OBJECT_SYNPROXY]	= "synproxy",
+		[NFT_OBJECT_TUNNEL]	= "tunnel",
 	};
 	unsigned int i;
 
@@ -3712,6 +3713,9 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 
 		obj->synproxy.flags |= flags;
 		break;
+	case CMD_OBJ_TUNNEL:
+		/* TODO */
+		break;
 	default:
 		BUG("Invalid CMD '%d'", cmd_obj);
 	}
@@ -3748,6 +3752,7 @@ static struct cmd *json_parse_cmd_add(struct json_ctx *ctx,
 		{ "ct helper", NFT_OBJECT_CT_HELPER, json_parse_cmd_add_object },
 		{ "ct timeout", NFT_OBJECT_CT_TIMEOUT, json_parse_cmd_add_object },
 		{ "ct expectation", NFT_OBJECT_CT_EXPECT, json_parse_cmd_add_object },
+		{ "tunnel", NFT_OBJECT_TUNNEL, json_parse_cmd_add_object },
 		{ "limit", CMD_OBJ_LIMIT, json_parse_cmd_add_object },
 		{ "secmark", CMD_OBJ_SECMARK, json_parse_cmd_add_object },
 		{ "synproxy", CMD_OBJ_SYNPROXY, json_parse_cmd_add_object }
@@ -3883,6 +3888,7 @@ static struct cmd *json_parse_cmd_list_multiple(struct json_ctx *ctx,
 	case CMD_OBJ_SETS:
 	case CMD_OBJ_COUNTERS:
 	case CMD_OBJ_CT_HELPERS:
+	case CMD_OBJ_TUNNELS:
 		if (!json_unpack(root, "{s:s}", "table", &tmp))
 			h.table.name = xstrdup(tmp);
 		break;
@@ -3921,6 +3927,8 @@ static struct cmd *json_parse_cmd_list(struct json_ctx *ctx,
 		{ "ct helpers", CMD_OBJ_CT_HELPERS, json_parse_cmd_list_multiple },
 		{ "ct timeout", NFT_OBJECT_CT_TIMEOUT, json_parse_cmd_add_object },
 		{ "ct expectation", NFT_OBJECT_CT_EXPECT, json_parse_cmd_add_object },
+		{ "tunnel", NFT_OBJECT_TUNNEL, json_parse_cmd_add_object },
+		{ "tunnels", CMD_OBJ_TUNNELS, json_parse_cmd_list_multiple },
 		{ "limit", CMD_OBJ_LIMIT, json_parse_cmd_add_object },
 		{ "limits", CMD_OBJ_LIMIT, json_parse_cmd_list_multiple },
 		{ "ruleset", CMD_OBJ_RULESET, json_parse_cmd_list_multiple },

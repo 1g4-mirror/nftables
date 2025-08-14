@@ -492,6 +492,16 @@ struct secmark {
 	char		ctx[NFT_SECMARK_CTX_MAXLEN];
 };
 
+struct tunnel {
+	uint32_t	id;
+	struct expr	*src;
+	struct expr	*dst;
+	uint16_t	sport;
+	uint16_t	dport;
+	uint8_t		tos;
+	uint8_t		ttl;
+};
+
 /**
  * struct obj - nftables stateful object statement
  *
@@ -518,6 +528,7 @@ struct obj {
 		struct secmark		secmark;
 		struct ct_expect	ct_expect;
 		struct synproxy		synproxy;
+		struct tunnel		tunnel;
 	};
 };
 
@@ -664,6 +675,8 @@ enum cmd_obj {
 	CMD_OBJ_CT_EXPECTATIONS,
 	CMD_OBJ_SYNPROXY,
 	CMD_OBJ_SYNPROXYS,
+	CMD_OBJ_TUNNEL,
+	CMD_OBJ_TUNNELS,
 	CMD_OBJ_HOOKS,
 };
 
