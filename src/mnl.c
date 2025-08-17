@@ -897,7 +897,9 @@ int mnl_nft_chain_add(struct netlink_ctx *ctx, struct cmd *cmd,
 			mnl_attr_put_strz(nlh, NFTA_CHAIN_TYPE, cmd->chain->type.str);
 		}
 
-		nest = mnl_attr_nest_start(nlh, NFTA_CHAIN_HOOK);
+		if (cmd->chain->type.str ||
+		    (cmd->chain && cmd->chain->dev_expr))
+			nest = mnl_attr_nest_start(nlh, NFTA_CHAIN_HOOK);
 
 		if (cmd->chain->type.str) {
 			mnl_attr_put_u32(nlh, NFTA_HOOK_HOOKNUM, htonl(cmd->chain->hook.num));
@@ -909,7 +911,9 @@ int mnl_nft_chain_add(struct netlink_ctx *ctx, struct cmd *cmd,
 		if (cmd->chain && cmd->chain->dev_expr)
 			mnl_nft_chain_devs_build(nlh, cmd);
 
-		mnl_attr_nest_end(nlh, nest);
+		if (cmd->chain->type.str ||
+		    (cmd->chain && cmd->chain->dev_expr))
+			mnl_attr_nest_end(nlh, nest);
 	}
 
 	nftnl_chain_free(nlc);

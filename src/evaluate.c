@@ -5776,18 +5776,21 @@ static int chain_evaluate(struct eval_ctx *ctx, struct chain *chain)
 	}
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		chain->hook.num = str2hooknum(chain->handle.family,
-					      chain->hook.name);
-		if (chain->hook.num == NF_INET_NUMHOOKS)
-			return __stmt_binary_error(ctx, &chain->hook.loc, NULL,
-						   "The %s family does not support this hook",
-						   family2str(chain->handle.family));
-
-		if (!evaluate_priority(ctx, &chain->priority,
-				       chain->handle.family, chain->hook.num))
-			return __stmt_binary_error(ctx, &chain->priority.loc, NULL,
-						   "invalid priority expression %s in this context.",
-						   expr_name(chain->priority.expr));
+		if (chain->hook.name) {
+			chain->hook.num = str2hooknum(chain->handle.family,
+						      chain->hook.name);
+			if (chain->hook.num == NF_INET_NUMHOOKS)
+				return __stmt_binary_error(ctx, &chain->hook.loc, NULL,
+							   "The %s family does not support this hook",
+							   family2str(chain->handle.family));
+		}
+		if (chain->priority.expr) {
+			if (!evaluate_priority(ctx, &chain->priority,
+					       chain->handle.family, chain->hook.num))
+				return __stmt_binary_error(ctx, &chain->priority.loc, NULL,
+							   "invalid priority expression %s in this context.",
+							   expr_name(chain->priority.expr));
+		}
 		if (chain->policy) {
 			expr_set_context(&ctx->ectx, &policy_type,
 					 NFT_NAME_MAXLEN * BITS_PER_BYTE);

@@ -282,6 +282,9 @@ static int nft_cmd_chain_error(struct netlink_ctx *ctx, struct cmd *cmd,
 		if (!(chain->flags & CHAIN_F_BASECHAIN))
 			break;
 
+		if (!chain->priority.expr || !chain->type.str)
+			break;
+
 		mpz_export_data(&priority, chain->priority.expr->value,
 				BYTEORDER_HOST_ENDIAN, sizeof(int));
 		if (priority <= -200 && !strcmp(chain->type.str, "nat"))

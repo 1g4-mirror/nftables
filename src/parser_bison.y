@@ -2834,6 +2834,7 @@ policy_spec		:	POLICY		policy_expr	close_scope_policy
 				}
 				$<chain>0->policy		= $2;
 				$<chain>0->policy->location	= @$;
+				$<chain>0->flags		|= CHAIN_F_BASECHAIN;
 			}
 			;
 
