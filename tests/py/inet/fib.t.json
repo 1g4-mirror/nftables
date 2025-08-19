@@ -101,7 +101,7 @@
             "left": {
                 "fib": {
                     "flags": "daddr",
-                    "result": "check"
+                    "result": "oif"
                 }
             },
 	    "op": "==",
@@ -117,7 +117,7 @@
             "left": {
                 "fib": {
                     "flags": "daddr",
-                    "result": "check"
+                    "result": "oif"
                 }
             },
 	    "op": "==",

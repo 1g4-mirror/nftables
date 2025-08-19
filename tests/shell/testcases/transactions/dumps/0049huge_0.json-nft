@@ -887,7 +887,7 @@
               "op": "==",
               "left": {
                 "fib": {
-                  "result": "check",
+                  "result": "oif",
                   "flags": [
                     "saddr",
                     "iif"

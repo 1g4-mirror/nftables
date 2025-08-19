@@ -82,7 +82,7 @@ STD_FIB_1="table ip t {
 		fib saddr check exists
 	}
 }"
-JSON_FIB_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}}, {"chain": {"family": "ip", "table": "t", "name": "c", "handle": 0}}, {"rule": {"family": "ip", "table": "t", "chain": "c", "handle": 0, "expr": [{"match": {"op": "==", "left": {"fib": {"result": "check", "flags": "saddr"}}, "right": true}}]}}]}'
+JSON_FIB_1='{"nftables": [{"table": {"family": "ip", "name": "t", "handle": 0}}, {"chain": {"family": "ip", "table": "t", "name": "c", "handle": 0}}, {"rule": {"family": "ip", "table": "t", "chain": "c", "handle": 0, "expr": [{"match": {"op": "==", "left": {"fib": {"result": "oif", "flags": "saddr"}}, "right": true}}]}}]}'
 JSON_FIB_1_EQUIV=$(sed 's/\("flags":\) \([^}]*\)/\1 [\2]/' <<< "$JSON_FIB_1")
 
 STD_FIB_2=$(sed 's/\(fib saddr\)/\1 . iif/' <<< "$STD_FIB_1")

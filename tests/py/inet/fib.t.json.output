@@ -46,7 +46,7 @@
                     "flags": [
                         "daddr"
                     ],
-                    "result": "check"
+                    "result": "oif"
                 }
             },
             "op": "==",
@@ -64,7 +64,7 @@
                     "flags": [
                         "daddr"
                     ],
-                    "result": "check"
+                    "result": "oif"
                 }
             },
             "op": "==",
