@@ -828,6 +828,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"ingress"		{ return INGRESS; }
 	"path"			{ return PATH; }
 	"gbp"			{ return GBP; }
+	"class"			{ return CLASS; }
+	"opt-type"		{ return OPTTYPE; }
+	"data"			{ return DATA; }
 }
 
 "notrack"		{ return NOTRACK; }

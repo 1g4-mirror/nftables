@@ -1707,6 +1707,14 @@ void obj_free(struct obj *obj)
 	case NFT_OBJECT_TUNNEL:
 		expr_free(obj->tunnel.src);
 		expr_free(obj->tunnel.dst);
+		if (obj->tunnel.type == TUNNEL_GENEVE) {
+			struct tunnel_geneve *geneve, *next;
+
+			list_for_each_entry_safe(geneve, next, &obj->tunnel.geneve_opts, list) {
+				list_del(&geneve->list);
+				free(geneve);
+			}
+		}
 		break;
 	default:
 		break;
@@ -1785,6 +1793,44 @@ static const char *synproxy_timestamp_to_str(const uint32_t flags)
                 return "timestamp";
 
         return "";
+}
+
+int tunnel_geneve_data_str2array(const char *hexstr,
+				 uint8_t *out_data,
+				 uint32_t *out_len)
+{
+	char bytestr[3] = {0};
+	size_t len;
+
+	if (hexstr[0] == '0' && (hexstr[1] == 'x' || hexstr[1] == 'X'))
+		hexstr += 2;
+	else
+		return -1;
+
+	len = strlen(hexstr);
+	if (len % 4 != 0)
+		return -1;
+
+	len = len / 2;
+	if (len > NFTNL_TUNNEL_GENEVE_DATA_MAXLEN)
+		return -1;
+
+	for (size_t i = 0; i < len; i++) {
+		uint32_t value;
+		char *endptr;
+
+		bytestr[0] = hexstr[i * 2];
+		bytestr[1] = hexstr[i * 2 + 1];
+
+		value = strtoul(bytestr, &endptr, 16);
+		if (*endptr != '\0')
+			return -1;
+
+		out_data[i] = (uint8_t) value;
+	}
+	*out_len = (uint8_t) len;
+
+	return 0;
 }
 
 static void obj_print_comment(const struct obj *obj,
@@ -2052,6 +2098,27 @@ static void obj_print_data(const struct obj *obj,
 				  obj->tunnel.vxlan.gbp);
 			nft_print(octx, "%s%s%s}",
 				  opts->nl, opts->tab, opts->tab);
+			break;
+		case TUNNEL_GENEVE:
+			struct tunnel_geneve *geneve;
+
+			nft_print(octx, "%s%s%sgeneve {", opts->nl, opts->tab, opts->tab);
+			list_for_each_entry(geneve, &obj->tunnel.geneve_opts, list) {
+				char data_str[256];
+				int offset = 0;
+
+				for (uint32_t i = 0; i < geneve->data_len; i++) {
+					offset += snprintf(data_str + offset,
+							   geneve->data_len,
+							   "%x",
+							   geneve->data[i]);
+				}
+				nft_print(octx, "%s%s%s%sclass 0x%x opt-type 0x%x data \"0x%s\"",
+					  opts->nl, opts->tab, opts->tab, opts->tab,
+					  geneve->geneve_class, geneve->type, data_str);
+
+			}
+			nft_print(octx, "%s%s%s}", opts->nl, opts->tab, opts->tab);
 			break;
 		default:
 			break;
