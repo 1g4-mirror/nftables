@@ -890,7 +890,7 @@ int mnl_nft_chain_add(struct netlink_ctx *ctx, struct cmd *cmd,
 	nftnl_chain_nlmsg_build_payload(nlh, nlc);
 
 	if (cmd->chain && cmd->chain->flags & CHAIN_F_BASECHAIN) {
-		struct nlattr *nest;
+		struct nlattr *nest = NULL;
 
 		if (cmd->chain->type.str) {
 			cmd_add_loc(cmd, nlh, &cmd->chain->type.loc);
@@ -911,8 +911,7 @@ int mnl_nft_chain_add(struct netlink_ctx *ctx, struct cmd *cmd,
 		if (cmd->chain && cmd->chain->dev_expr)
 			mnl_nft_chain_devs_build(nlh, cmd);
 
-		if (cmd->chain->type.str ||
-		    (cmd->chain && cmd->chain->dev_expr))
+		if (nest)
 			mnl_attr_nest_end(nlh, nest);
 	}
 
