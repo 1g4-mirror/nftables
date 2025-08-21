@@ -495,6 +495,7 @@ struct secmark {
 enum tunnel_type {
 	TUNNEL_UNSPEC = 0,
 	TUNNEL_ERSPAN,
+	TUNNEL_VXLAN,
 };
 
 struct tunnel {
@@ -517,6 +518,9 @@ struct tunnel {
 				uint8_t		hwid;
 			} v2;
 		} erspan;
+		struct {
+			uint32_t	gbp;
+		} vxlan;
 	};
 };
 

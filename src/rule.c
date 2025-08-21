@@ -2043,6 +2043,16 @@ static void obj_print_data(const struct obj *obj,
 			}
 			nft_print(octx, "%s%s%s}",
 				  opts->nl, opts->tab, opts->tab);
+			break;
+		case TUNNEL_VXLAN:
+			nft_print(octx, "%s%s%svxlan {",
+				  opts->nl, opts->tab, opts->tab);
+			nft_print(octx, "%s%s%s%sgbp %u",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  obj->tunnel.vxlan.gbp);
+			nft_print(octx, "%s%s%s}",
+				  opts->nl, opts->tab, opts->tab);
+			break;
 		default:
 			break;
 		}

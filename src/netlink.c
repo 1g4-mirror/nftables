@@ -1836,6 +1836,13 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 							NFTNL_TUNNEL_ERSPAN_V2_DIR);
 		}
 		break;
+	case NFTNL_TUNNEL_TYPE_VXLAN:
+		obj->tunnel.type = TUNNEL_VXLAN;
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_VXLAN_GBP)) {
+			obj->tunnel.type = TUNNEL_VXLAN;
+			obj->tunnel.vxlan.gbp = nftnl_tunnel_opt_get_u32(opt, NFTNL_TUNNEL_VXLAN_GBP);
+		}
+		break;
 	default:
 		break;
 	}
