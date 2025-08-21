@@ -1532,6 +1532,31 @@ static void obj_tunnel_add_opts(struct nftnl_obj *nlo, struct tunnel *tunnel)
 		nftnl_tunnel_opts_add(opts, opt);
 		nftnl_obj_set_data(nlo, NFTNL_OBJ_TUNNEL_OPTS, &opts, sizeof(struct nftnl_tunnel_opts *));
 		break;
+	case TUNNEL_GENEVE:
+		struct tunnel_geneve *geneve;
+
+		opts = nftnl_tunnel_opts_alloc(NFTNL_TUNNEL_TYPE_GENEVE);
+		if (!opts)
+			memory_allocation_error();
+
+		list_for_each_entry(geneve, &tunnel->geneve_opts, list) {
+			opt = nftnl_tunnel_opt_alloc(NFTNL_TUNNEL_TYPE_GENEVE);
+			if (!opt)
+				memory_allocation_error();
+
+			nftnl_tunnel_opt_set(opt,
+					     NFTNL_TUNNEL_GENEVE_TYPE,
+					     &geneve->type, sizeof(geneve->type));
+			nftnl_tunnel_opt_set(opt,
+					     NFTNL_TUNNEL_GENEVE_CLASS,
+					     &geneve->geneve_class, sizeof(geneve->geneve_class));
+			nftnl_tunnel_opt_set(opt,
+					     NFTNL_TUNNEL_GENEVE_DATA,
+					     &geneve->data, geneve->data_len);
+			nftnl_tunnel_opts_add(opts, opt);
+		}
+		nftnl_obj_set_data(nlo, NFTNL_OBJ_TUNNEL_OPTS, &opts, sizeof(struct nftnl_tunnel_opts *));
+		break;
 	case TUNNEL_UNSPEC:
 		break;
 	}

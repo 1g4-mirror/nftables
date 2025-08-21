@@ -496,6 +496,15 @@ enum tunnel_type {
 	TUNNEL_UNSPEC = 0,
 	TUNNEL_ERSPAN,
 	TUNNEL_VXLAN,
+	TUNNEL_GENEVE,
+};
+
+struct tunnel_geneve {
+	struct list_head	list;
+	uint16_t		geneve_class;
+	uint8_t			type;
+	uint8_t			data[NFTNL_TUNNEL_GENEVE_DATA_MAXLEN];
+	uint32_t		data_len;
 };
 
 struct tunnel {
@@ -521,8 +530,13 @@ struct tunnel {
 		struct {
 			uint32_t	gbp;
 		} vxlan;
+		struct list_head	geneve_opts;
 	};
 };
+
+int tunnel_geneve_data_str2array(const char *hexstr,
+				 uint8_t *out_data,
+				 uint32_t *out_len);
 
 /**
  * struct obj - nftables stateful object statement

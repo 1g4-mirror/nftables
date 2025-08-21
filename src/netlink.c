@@ -1843,6 +1843,35 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 			obj->tunnel.vxlan.gbp = nftnl_tunnel_opt_get_u32(opt, NFTNL_TUNNEL_VXLAN_GBP);
 		}
 		break;
+	case NFTNL_TUNNEL_TYPE_GENEVE:
+		struct tunnel_geneve *geneve;
+		const void *data;
+
+		if (!obj->tunnel.type) {
+			init_list_head(&obj->tunnel.geneve_opts);
+			obj->tunnel.type = TUNNEL_GENEVE;
+		}
+
+		geneve = xmalloc(sizeof(struct tunnel_geneve));
+		if (!geneve)
+			memory_allocation_error();
+
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_TYPE))
+			geneve->type = nftnl_tunnel_opt_get_u8(opt, NFTNL_TUNNEL_GENEVE_TYPE);
+
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_CLASS))
+			geneve->geneve_class = nftnl_tunnel_opt_get_u16(opt, NFTNL_TUNNEL_GENEVE_CLASS);
+
+		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_DATA)) {
+			data = nftnl_tunnel_opt_get_data(opt, NFTNL_TUNNEL_GENEVE_DATA,
+							 &geneve->data_len);
+			if (!data)
+				return -1;
+			memcpy(&geneve->data, data, geneve->data_len);
+		}
+
+		list_add_tail(&geneve->list, &obj->tunnel.geneve_opts);
+		break;
 	default:
 		break;
 	}

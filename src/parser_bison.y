@@ -613,6 +613,8 @@ int nft_lex(void *, void *, void *);
 %token EGRESS			"egress"
 %token INGRESS			"ingress"
 %token GBP			"gbp"
+%token CLASS			"class"
+%token OPTTYPE			"opt-type"
 
 %token COUNTERS			"counters"
 %token QUOTAS			"quotas"
@@ -771,7 +773,7 @@ int nft_lex(void *, void *, void *);
 %type <flowtable>		flowtable_block_alloc flowtable_block
 %destructor { flowtable_free($$); }	flowtable_block_alloc
 
-%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc vxlan_block vxlan_block_alloc
+%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc vxlan_block vxlan_block_alloc geneve_block geneve_block_alloc
 %destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list stateful_stmt_list set_elem_stmt_list
@@ -5012,6 +5014,44 @@ erspan_config		:	HDRVERSION	NUM
 			}
 			;
 
+geneve_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|	geneve_block	common_block
+			|	geneve_block	stmt_separator
+			|	geneve_block	geneve_config	stmt_separator
+			{
+				$$ = $1;
+			}
+			;
+
+geneve_block_alloc	:	/* empty */
+			{
+				$$ = $<obj>-1;
+			}
+			;
+
+geneve_config		:	CLASS	NUM	OPTTYPE	NUM	DATA	string
+			{
+				struct tunnel_geneve *geneve;
+
+				geneve = xmalloc(sizeof(struct tunnel_geneve));
+				geneve->geneve_class = $2;
+				geneve->type = $4;
+				if (tunnel_geneve_data_str2array($6, geneve->data, &geneve->data_len)) {
+					erec_queue(error(&@6, "Invalid data array %s\n", $6), state->msgs);
+					free_const($6);
+					free(geneve);
+					YYERROR;
+				}
+
+				if (!$<obj>0->tunnel.type) {
+					$<obj>0->tunnel.type = TUNNEL_GENEVE;
+					init_list_head(&$<obj>0->tunnel.geneve_opts);
+				}
+				list_add_tail(&geneve->list, &$<obj>0->tunnel.geneve_opts);
+				free_const($6);
+			}
+			;
+
 vxlan_block		:	/* empty */	{ $$ = $<obj>-1; }
 			|	vxlan_block	common_block
 			|	vxlan_block	stmt_separator
@@ -5081,6 +5121,7 @@ tunnel_config		:	ID	NUM
 			{
 				$<obj>0->tunnel.type = TUNNEL_VXLAN;
 			}
+			|	GENEVE	geneve_block_alloc '{' geneve_block '}'
 			;
 
 tunnel_block		:	/* empty */	{ $$ = $<obj>-1; }
