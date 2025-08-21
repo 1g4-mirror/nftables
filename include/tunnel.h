@@ -25,6 +25,10 @@ extern const struct tunnel_template tunnel_templates[];
 	.byteorder	= (__byteorder),			\
 }
 
+struct error_record *tunnel_key_parse(const struct location *loc,
+			       const char *str,
+			       unsigned int *value);
+
 extern struct expr *tunnel_expr_alloc(const struct location *loc,
 				      enum nft_tunnel_keys key);
 
