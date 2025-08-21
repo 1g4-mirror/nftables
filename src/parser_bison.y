@@ -321,6 +321,8 @@ int nft_lex(void *, void *, void *);
 %token RULESET			"ruleset"
 %token TRACE			"trace"
 
+%token PATH			"path"
+
 %token INET			"inet"
 %token NETDEV			"netdev"
 
@@ -779,8 +781,8 @@ int nft_lex(void *, void *, void *);
 %destructor { stmt_free($$); }	counter_stmt counter_stmt_alloc stateful_stmt last_stmt
 %type <stmt>			limit_stmt_alloc quota_stmt_alloc last_stmt_alloc ct_limit_stmt_alloc
 %destructor { stmt_free($$); }	limit_stmt_alloc quota_stmt_alloc last_stmt_alloc ct_limit_stmt_alloc
-%type <stmt>			objref_stmt objref_stmt_counter objref_stmt_limit objref_stmt_quota objref_stmt_ct objref_stmt_synproxy
-%destructor { stmt_free($$); }	objref_stmt objref_stmt_counter objref_stmt_limit objref_stmt_quota objref_stmt_ct objref_stmt_synproxy
+%type <stmt>			objref_stmt objref_stmt_counter objref_stmt_limit objref_stmt_quota objref_stmt_ct objref_stmt_synproxy objref_stmt_tunnel
+%destructor { stmt_free($$); }	objref_stmt objref_stmt_counter objref_stmt_limit objref_stmt_quota objref_stmt_ct objref_stmt_synproxy objref_stmt_tunnel
 
 %type <stmt>			payload_stmt
 %destructor { stmt_free($$); }	payload_stmt
@@ -940,9 +942,9 @@ int nft_lex(void *, void *, void *);
 %destructor { expr_free($$); }	mh_hdr_expr
 %type <val>			mh_hdr_field
 
-%type <expr>			meta_expr
-%destructor { expr_free($$); }	meta_expr
-%type <val>			meta_key	meta_key_qualified	meta_key_unqualified	numgen_type
+%type <expr>			meta_expr	tunnel_expr
+%destructor { expr_free($$); }	meta_expr	tunnel_expr
+%type <val>			meta_key	meta_key_qualified	meta_key_unqualified	numgen_type	tunnel_key
 
 %type <expr>			socket_expr
 %destructor { expr_free($$); } socket_expr
@@ -3206,6 +3208,14 @@ objref_stmt_synproxy	: 	SYNPROXY	NAME	stmt_expr close_scope_synproxy
 			}
 			;
 
+objref_stmt_tunnel	:	TUNNEL	NAME	stmt_expr	close_scope_tunnel
+			{
+				$$ = objref_stmt_alloc(&@$);
+				$$->objref.type = NFT_OBJECT_TUNNEL;
+				$$->objref.expr = $3;
+			}
+			;
+
 objref_stmt_ct		:	CT	TIMEOUT		SET	stmt_expr	close_scope_ct
 			{
 				$$ = objref_stmt_alloc(&@$);
@@ -3226,6 +3236,7 @@ objref_stmt		:	objref_stmt_counter
 			|	objref_stmt_quota
 			|	objref_stmt_synproxy
 			|	objref_stmt_ct
+			|	objref_stmt_tunnel
 			;
 
 stateful_stmt		:	counter_stmt	close_scope_counter
@@ -3904,6 +3915,7 @@ primary_stmt_expr	:	symbol_expr			{ $$ = $1; }
 			|	boolean_expr			{ $$ = $1; }
 			|	meta_expr			{ $$ = $1; }
 			|	rt_expr				{ $$ = $1; }
+			|	tunnel_expr			{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
 			|	numgen_expr             	{ $$ = $1; }
 			|	hash_expr               	{ $$ = $1; }
@@ -4381,6 +4393,7 @@ selector_expr		:	payload_expr			{ $$ = $1; }
 			|	exthdr_expr			{ $$ = $1; }
 			|	exthdr_exists_expr		{ $$ = $1; }
 			|	meta_expr			{ $$ = $1; }
+			|	tunnel_expr			{ $$ = $1; }
 			|	socket_expr			{ $$ = $1; }
 			|	rt_expr				{ $$ = $1; }
 			|	ct_expr				{ $$ = $1; }
@@ -5491,6 +5504,16 @@ socket_expr		:	SOCKET	socket_key	close_scope_socket
 socket_key 		: 	TRANSPARENT	{ $$ = NFT_SOCKET_TRANSPARENT; }
 			|	MARK		{ $$ = NFT_SOCKET_MARK; }
 			|	WILDCARD	{ $$ = NFT_SOCKET_WILDCARD; }
+			;
+
+tunnel_key		:	PATH		{ $$ = NFT_TUNNEL_PATH; }
+			|	ID		{ $$ = NFT_TUNNEL_ID; }
+			;
+
+tunnel_expr		:	TUNNEL	tunnel_key
+			{
+				$$ = tunnel_expr_alloc(&@$, $2);
+			}
 			;
 
 offset_opt		:	/* empty */	{ $$ = 0; }

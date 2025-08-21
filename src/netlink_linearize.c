@@ -334,6 +334,18 @@ static void netlink_gen_osf(struct netlink_linearize_ctx *ctx,
 	nft_rule_add_expr(ctx, nle, &expr->location);
 }
 
+static void netlink_gen_tunnel(struct netlink_linearize_ctx *ctx,
+			       const struct expr *expr,
+			       enum nft_registers dreg)
+{
+	struct nftnl_expr *nle;
+
+	nle = alloc_nft_expr("tunnel");
+	netlink_put_register(nle, NFTNL_EXPR_TUNNEL_DREG, dreg);
+	nftnl_expr_set_u32(nle, NFTNL_EXPR_TUNNEL_KEY, expr->tunnel.key);
+	nftnl_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_numgen(struct netlink_linearize_ctx *ctx,
 			    const struct expr *expr,
 			    enum nft_registers dreg)
@@ -932,6 +944,8 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_fib(ctx, expr, dreg);
 	case EXPR_SOCKET:
 		return netlink_gen_socket(ctx, expr, dreg);
+	case EXPR_TUNNEL:
+		return netlink_gen_tunnel(ctx, expr, dreg);
 	case EXPR_OSF:
 		return netlink_gen_osf(ctx, expr, dreg);
 	case EXPR_XFRM:

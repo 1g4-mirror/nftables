@@ -77,6 +77,7 @@ enum expr_types {
 	EXPR_NUMGEN,
 	EXPR_HASH,
 	EXPR_RT,
+	EXPR_TUNNEL,
 	EXPR_FIB,
 	EXPR_XFRM,
 	EXPR_SET_ELEM_CATCHALL,
@@ -229,6 +230,7 @@ enum expr_flags {
 #include <hash.h>
 #include <ct.h>
 #include <socket.h>
+#include <tunnel.h>
 #include <osf.h>
 #include <xfrm.h>
 
@@ -368,6 +370,10 @@ struct expr {
 			enum nft_socket_keys	key;
 			uint32_t		level;
 		} socket;
+		struct {
+			/* EXPR_TUNNEL */
+			enum nft_tunnel_keys	key;
+		} tunnel;
 		struct {
 			/* EXPR_RT */
 			enum nft_rt_keys	key;

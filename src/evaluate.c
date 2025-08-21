@@ -1737,6 +1737,7 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 		case EXPR_SOCKET:
 		case EXPR_OSF:
 		case EXPR_XFRM:
+		case EXPR_TUNNEL:
 			break;
 		case EXPR_RANGE:
 		case EXPR_PREFIX:
@@ -3053,6 +3054,11 @@ static int expr_evaluate_osf(struct eval_ctx *ctx, struct expr **expr)
 	return expr_evaluate_primary(ctx, expr);
 }
 
+static int expr_evaluate_tunnel(struct eval_ctx *ctx, struct expr **exprp)
+{
+	return expr_evaluate_primary(ctx, exprp);
+}
+
 static int expr_evaluate_variable(struct eval_ctx *ctx, struct expr **exprp)
 {
 	struct symbol *sym = (*exprp)->sym;
@@ -3170,6 +3176,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_meta(ctx, expr);
 	case EXPR_SOCKET:
 		return expr_evaluate_socket(ctx, expr);
+	case EXPR_TUNNEL:
+		return expr_evaluate_tunnel(ctx, expr);
 	case EXPR_OSF:
 		return expr_evaluate_osf(ctx, expr);
 	case EXPR_FIB:

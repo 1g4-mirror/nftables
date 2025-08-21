@@ -410,7 +410,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 }
 
 "counter"		{ scanner_push_start_cond(yyscanner, SCANSTATE_COUNTER); return COUNTER; }
-<SCANSTATE_COUNTER,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_STMT_SYNPROXY,SCANSTATE_EXPR_OSF>"name"			{ return NAME; }
+<SCANSTATE_COUNTER,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_STMT_SYNPROXY,SCANSTATE_EXPR_OSF,SCANSTATE_TUNNEL>"name"			{ return NAME; }
 <SCANSTATE_COUNTER,SCANSTATE_CT,SCANSTATE_LIMIT>"packets"		{ return PACKETS; }
 <SCANSTATE_COUNTER,SCANSTATE_CT,SCANSTATE_LIMIT,SCANSTATE_QUOTA>"bytes"	{ return BYTES; }
 
@@ -826,6 +826,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"erspan"		{ return ERSPAN; }
 	"egress"		{ return EGRESS; }
 	"ingress"		{ return INGRESS; }
+	"path"			{ return PATH; }
 }
 
 "notrack"		{ return NOTRACK; }
