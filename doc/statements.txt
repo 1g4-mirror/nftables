@@ -459,6 +459,11 @@ netfilter and therefore no reverse translation will take place.
 The optional *prefix* keyword allows to map *n* source addresses to *n*
 destination addresses.  See 'Advanced NAT examples' below.
 
+If the 'address' for *dnat* is an IPv4 loopback address
+(i.e. 127.0.0.0/8) the "net.ipv4.conf.*.route_localnet" sysctl for the
+input interface needs to be set to 1. Otherwise packets will be
+dropped by the routing code as "martians".
+
 .NAT statement values
 [options="header"]
 |==================
