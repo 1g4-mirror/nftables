@@ -5468,27 +5468,13 @@ static struct expr *expr_set_to_list(struct eval_ctx *ctx, struct expr *dev_expr
 		list_del(&expr->list);
 
 		switch (expr->etype) {
-		case EXPR_VARIABLE:
-			expr_set_context(&ctx->ectx, &ifname_type,
-					 IFNAMSIZ * BITS_PER_BYTE);
-			if (!evaluate_expr_variable(ctx, &expr))
-				return false;
-
-			if (expr->etype == EXPR_SET) {
-				expr = expr_set_to_list(ctx, expr);
-				list_splice_init(&expr_list(expr)->expressions, &tmp);
-				expr_free(expr);
-				continue;
-			}
-			break;
 		case EXPR_SET_ELEM:
 			key = expr_clone(expr->key);
 			expr_free(expr);
 			expr = key;
 			break;
-		case EXPR_VALUE:
-			break;
 		default:
+			BUG("invalid expression type %s\n", expr_name(expr));
 			break;
 		}
 
