@@ -411,6 +411,7 @@ int nft_lex(void *, void *, void *);
 %token LENGTH			"length"
 %token FRAG_OFF			"frag-off"
 %token TTL			"ttl"
+%token TOS			"tos"
 %token PROTOCOL			"protocol"
 %token CHECKSUM			"checksum"
 
@@ -605,9 +606,12 @@ int nft_lex(void *, void *, void *);
 %token LAST			"last"
 %token NEVER			"never"
 
+%token TUNNEL			"tunnel"
+
 %token COUNTERS			"counters"
 %token QUOTAS			"quotas"
 %token LIMITS			"limits"
+%token TUNNELS			"tunnels"
 %token SYNPROXYS		"synproxys"
 %token HELPERS			"helpers"
 
@@ -761,7 +765,7 @@ int nft_lex(void *, void *, void *);
 %type <flowtable>		flowtable_block_alloc flowtable_block
 %destructor { flowtable_free($$); }	flowtable_block_alloc
 
-%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block
+%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block
 %destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list stateful_stmt_list set_elem_stmt_list
@@ -880,8 +884,8 @@ int nft_lex(void *, void *, void *);
 %type <expr>			and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 %destructor { expr_free($$); }	and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 
-%type <obj>			counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj
-%destructor { obj_free($$); }	counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj
+%type <obj>			counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj
+%destructor { obj_free($$); }	counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj
 
 %type <expr>			relational_expr
 %destructor { expr_free($$); }	relational_expr
@@ -1084,6 +1088,7 @@ close_scope_udplite	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_EXPR_UDPL
 
 close_scope_log		: { scanner_pop_start_cond(nft->scanner, PARSER_SC_STMT_LOG); }
 close_scope_synproxy	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_STMT_SYNPROXY); }
+close_scope_tunnel	: { scanner_pop_start_cond(nft->scanner, PARSER_SC_TUNNEL); }
 close_scope_xt		: { scanner_pop_start_cond(nft->scanner, PARSER_SC_XT); }
 
 common_block		:	INCLUDE		QUOTED_STRING	stmt_separator
@@ -1300,6 +1305,10 @@ add_cmd			:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SYNPROXY, &$2, &@$, $3);
 			}
+			|	TUNNEL		obj_spec	tunnel_obj	'{' tunnel_block '}' close_scope_tunnel
+			{
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TUNNEL, &$2, &@$, $3);
+			}
 			;
 
 replace_cmd		:	RULE		ruleid_spec	rule
@@ -1403,6 +1412,10 @@ create_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_SYNPROXY, &$2, &@$, $3);
 			}
+			|	TUNNEL		obj_spec	tunnel_obj	'{' tunnel_block '}'	close_scope_tunnel
+			{
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_TUNNEL, &$2, &@$, $3);
+			}
 			;
 
 insert_cmd		:	RULE		rule_position	rule
@@ -1500,6 +1513,10 @@ delete_cmd		:	TABLE		table_or_id_spec
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SYNPROXY, &$2, &@$, NULL);
 			}
+			|	TUNNEL		obj_or_id_spec	close_scope_tunnel
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
+			}
 			;
 
 destroy_cmd		:	TABLE		table_or_id_spec
@@ -1566,6 +1583,10 @@ destroy_cmd		:	TABLE		table_or_id_spec
 			|	SYNPROXY	obj_or_id_spec	close_scope_synproxy
 			{
 				$$ = cmd_alloc(CMD_DESTROY, CMD_OBJ_SYNPROXY, &$2, &@$, NULL);
+			}
+			|	TUNNEL		obj_or_id_spec	close_scope_tunnel
+			{
+				$$ = cmd_alloc(CMD_DESTROY, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
 			}
 			;
 
@@ -2041,6 +2062,17 @@ table_block		:	/* empty */	{ $$ = $<table>-1; }
 			{
 				$4->location = @3;
 				$4->type = NFT_OBJECT_SYNPROXY;
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				list_add_tail(&$4->list, &$1->objs);
+				$$ = $1;
+			}
+			|	table_block	TUNNEL	obj_identifier
+					obj_block_alloc '{'     tunnel_block     '}'
+					stmt_separator close_scope_tunnel
+			{
+				$4->location = @3;
+				$4->type = NFT_OBJECT_TUNNEL;
 				handle_merge(&$4->handle, &$3);
 				handle_free(&$3);
 				list_add_tail(&$4->list, &$1->objs);
@@ -4923,6 +4955,72 @@ limit_obj		:	/* empty */
 			{
 				$$ = obj_alloc(&@$);
 				$$->type = NFT_OBJECT_LIMIT;
+			}
+			;
+
+tunnel_config		:	ID	NUM
+			{
+				$<obj>0->tunnel.id = $2;
+			}
+			|	IP	SADDR	expr	close_scope_ip
+			{
+				$<obj>0->tunnel.src = $3;
+				datatype_set($3, &ipaddr_type);
+			}
+			|	IP	DADDR	expr	close_scope_ip
+			{
+				$<obj>0->tunnel.dst = $3;
+				datatype_set($3, &ipaddr_type);
+			}
+			|	IP6	SADDR	expr	close_scope_ip6
+			{
+				$<obj>0->tunnel.src = $3;
+				datatype_set($3, &ip6addr_type);
+			}
+			|	IP6	DADDR	expr	close_scope_ip6
+			{
+				$<obj>0->tunnel.dst = $3;
+				datatype_set($3, &ip6addr_type);
+			}
+			|	SPORT	NUM
+			{
+				$<obj>0->tunnel.sport = $2;
+			}
+			|	DPORT	NUM
+			{
+				$<obj>0->tunnel.dport = $2;
+			}
+			|	TTL	NUM
+			{
+				$<obj>0->tunnel.ttl = $2;
+			}
+			|	TOS	NUM
+			{
+				$<obj>0->tunnel.tos = $2;
+			}
+			;
+
+tunnel_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       tunnel_block     common_block
+			|       tunnel_block     stmt_separator
+			|       tunnel_block     tunnel_config	stmt_separator
+			{
+				$$ = $1;
+			}
+			|       tunnel_block     comment_spec
+			{
+				if (already_set($<obj>1->comment, &@2, state)) {
+					free_const($2);
+					YYERROR;
+				}
+				$<obj>1->comment = $2;
+			}
+			;
+
+tunnel_obj		:	/* empty */
+			{
+				$$ = obj_alloc(&@$);
+				$$->type = NFT_OBJECT_TUNNEL;
 			}
 			;
 

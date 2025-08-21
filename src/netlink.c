@@ -1744,6 +1744,51 @@ void netlink_dump_obj(struct nftnl_obj *nln, struct netlink_ctx *ctx)
 	fprintf(fp, "\n");
 }
 
+static struct in6_addr all_zeroes;
+
+static struct expr *
+netlink_obj_tunnel_parse_addr(struct nftnl_obj *nlo, int attr)
+{
+	struct nft_data_delinearize nld;
+	const struct datatype *dtype;
+	const uint32_t *addr6;
+	struct expr *expr;
+	uint32_t addr;
+
+	memset(&nld, 0, sizeof(nld));
+
+	switch (attr) {
+	case NFTNL_OBJ_TUNNEL_IPV4_SRC:
+	case NFTNL_OBJ_TUNNEL_IPV4_DST:
+		addr = nftnl_obj_get_u32(nlo, attr);
+		if (!addr)
+			return NULL;
+
+		dtype = &ipaddr_type;
+		nld.value = &addr;
+		nld.len = sizeof(struct in_addr);
+		break;
+	case NFTNL_OBJ_TUNNEL_IPV6_SRC:
+	case NFTNL_OBJ_TUNNEL_IPV6_DST:
+		addr6 = nftnl_obj_get(nlo, attr);
+		if (!memcmp(addr6, &all_zeroes, sizeof(all_zeroes)))
+			return NULL;
+
+		dtype = &ip6addr_type;
+		nld.value = addr6;
+		nld.len = sizeof(struct in6_addr);
+		break;
+	default:
+		return NULL;
+	}
+
+	expr = netlink_alloc_value(&netlink_location, &nld);
+	expr->dtype     = dtype;
+	expr->byteorder = BYTEORDER_BIG_ENDIAN;
+
+	return expr;
+}
+
 static int obj_parse_udata_cb(const struct nftnl_udata *attr, void *data)
 {
 	unsigned char *value = nftnl_udata_get(attr);
@@ -1857,6 +1902,42 @@ struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 			nftnl_obj_get_u8(nlo, NFTNL_OBJ_SYNPROXY_WSCALE);
 		obj->synproxy.flags =
 			nftnl_obj_get_u32(nlo, NFTNL_OBJ_SYNPROXY_FLAGS);
+		break;
+	case NFT_OBJECT_TUNNEL:
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_ID))
+			obj->tunnel.id = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TUNNEL_ID);
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_SPORT)) {
+			obj->tunnel.sport =
+				nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_SPORT);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_DPORT)) {
+			obj->tunnel.dport =
+				nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_DPORT);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_TOS)) {
+			obj->tunnel.tos =
+				nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TOS);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_TTL)) {
+			obj->tunnel.ttl =
+				nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TTL);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV4_SRC)) {
+			obj->tunnel.src =
+				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV4_SRC);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV4_DST)) {
+			obj->tunnel.dst =
+				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV4_DST);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV6_SRC)) {
+			obj->tunnel.src =
+				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV6_SRC);
+		}
+		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST)) {
+			obj->tunnel.dst =
+				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST);
+		}
 		break;
 	default:
 		netlink_io_error(ctx, NULL, "Unknown object type %u", type);

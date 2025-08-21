@@ -1483,6 +1483,7 @@ int mnl_nft_obj_add(struct netlink_ctx *ctx, struct cmd *cmd,
 		    unsigned int flags)
 {
 	struct obj *obj = cmd->object;
+	struct nft_data_linearize nld;
 	struct nftnl_udata_buf *udbuf;
 	struct nftnl_obj *nlo;
 	struct nlmsghdr *nlh;
@@ -1570,6 +1571,45 @@ int mnl_nft_obj_add(struct netlink_ctx *ctx, struct cmd *cmd,
 				 obj->synproxy.wscale);
 		nftnl_obj_set_u32(nlo, NFTNL_OBJ_SYNPROXY_FLAGS,
 				  obj->synproxy.flags);
+		break;
+	case NFT_OBJECT_TUNNEL:
+		nftnl_obj_set_u32(nlo, NFTNL_OBJ_TUNNEL_ID, obj->tunnel.id);
+		if (obj->tunnel.sport)
+			nftnl_obj_set_u16(nlo, NFTNL_OBJ_TUNNEL_SPORT,
+					  obj->tunnel.sport);
+		if (obj->tunnel.dport)
+			nftnl_obj_set_u16(nlo, NFTNL_OBJ_TUNNEL_DPORT,
+					  obj->tunnel.dport);
+		if (obj->tunnel.tos)
+			nftnl_obj_set_u8(nlo, NFTNL_OBJ_TUNNEL_TOS,
+					  obj->tunnel.tos);
+		if (obj->tunnel.ttl)
+			nftnl_obj_set_u8(nlo, NFTNL_OBJ_TUNNEL_TTL,
+					  obj->tunnel.ttl);
+		if (obj->tunnel.src) {
+			netlink_gen_data(obj->tunnel.src, &nld);
+			if (nld.len == sizeof(struct in_addr)) {
+				nftnl_obj_set_u32(nlo,
+						  NFTNL_OBJ_TUNNEL_IPV4_SRC,
+						  nld.value[0]);
+			} else {
+				nftnl_obj_set_data(nlo,
+						   NFTNL_OBJ_TUNNEL_IPV6_SRC,
+						   nld.value, nld.len);
+			}
+		}
+		if (obj->tunnel.dst) {
+			netlink_gen_data(obj->tunnel.dst, &nld);
+			if (nld.len == sizeof(struct in_addr)) {
+				nftnl_obj_set_u32(nlo,
+						  NFTNL_OBJ_TUNNEL_IPV4_DST,
+						  nld.value[0]);
+		        } else {
+				nftnl_obj_set_data(nlo,
+						   NFTNL_OBJ_TUNNEL_IPV6_DST,
+						   nld.value, nld.len);
+			}
+		}
 		break;
 	default:
 		BUG("Unknown type %d\n", obj->type);

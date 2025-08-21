@@ -487,6 +487,9 @@ static json_t *obj_print_json(const struct obj *obj)
 		json_object_update(root, tmp);
 		json_decref(tmp);
 		break;
+	case NFT_OBJECT_TUNNEL:
+		/* TODO */
+		break;
 	}
 
 	return nft_json_pack("{s:o}", type, root);
@@ -2034,6 +2037,10 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SYNPROXY:
 	case CMD_OBJ_SYNPROXYS:
 		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_SYNPROXY);
+		break;
+	case CMD_OBJ_TUNNEL:
+	case CMD_OBJ_TUNNELS:
+		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_TUNNEL);
 		break;
 	case CMD_OBJ_FLOWTABLE:
 		root = do_list_flowtable_json(ctx, cmd, table);

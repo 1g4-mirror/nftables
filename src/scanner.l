@@ -223,6 +223,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 %s SCANSTATE_SECMARK
 %s SCANSTATE_TCP
 %s SCANSTATE_TYPE
+%s SCANSTATE_TUNNEL
 %s SCANSTATE_VLAN
 %s SCANSTATE_XT
 %s SCANSTATE_CMD_DESTROY
@@ -403,6 +404,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"maps"			{ return MAPS; }
 	"secmarks"		{ return SECMARKS; }
 	"synproxys"		{ return SYNPROXYS; }
+	"tunnel"		{ return TUNNEL; }
+	"tunnels"		{ return TUNNELS; }
 	"hooks"			{ return HOOKS; }
 }
 
@@ -809,6 +812,15 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"timestamp"		{ return TIMESTAMP; }
 	"sack-permitted"	{ return SACK_PERM; }
 	"sack-perm"		{ return SACK_PERM; }
+}
+
+"tunnel"		{ scanner_push_start_cond(yyscanner, SCANSTATE_TUNNEL); return TUNNEL; }
+<SCANSTATE_TUNNEL>{
+	"id"			{ return ID; }
+	"sport"			{ return SPORT; }
+	"dport"			{ return DPORT; }
+	"ttl"			{ return TTL; }
+	"tos"			{ return TOS; }
 }
 
 "notrack"		{ return NOTRACK; }

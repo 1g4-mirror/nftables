@@ -5856,6 +5856,29 @@ static int ct_timeout_evaluate(struct eval_ctx *ctx, struct obj *obj)
 	return 0;
 }
 
+static int tunnel_evaluate(struct eval_ctx *ctx, struct obj *obj)
+{
+	if (obj->tunnel.src) {
+		expr_set_context(&ctx->ectx, obj->tunnel.src->dtype,
+				 obj->tunnel.src->dtype->size);
+		if (expr_evaluate(ctx, &obj->tunnel.src) < 0)
+			return -1;
+	}
+
+	if (obj->tunnel.dst) {
+		expr_set_context(&ctx->ectx, obj->tunnel.dst->dtype,
+				 obj->tunnel.dst->dtype->size);
+		if (expr_evaluate(ctx, &obj->tunnel.dst) < 0)
+			return -1;
+	}
+
+	if (obj->tunnel.src->dtype != obj->tunnel.dst->dtype)
+		return __stmt_binary_error(ctx, &obj->location, NULL,
+					  "specify either ip or ip6 for address");
+
+	return 0;
+}
+
 static int obj_evaluate(struct eval_ctx *ctx, struct obj *obj)
 {
 	struct table *table;
@@ -5874,6 +5897,8 @@ static int obj_evaluate(struct eval_ctx *ctx, struct obj *obj)
 		return ct_timeout_evaluate(ctx, obj);
 	case NFT_OBJECT_CT_EXPECT:
 		return ct_expect_evaluate(ctx, obj);
+	case NFT_OBJECT_TUNNEL:
+		return tunnel_evaluate(ctx, obj);
 	default:
 		break;
 	}
@@ -5926,6 +5951,7 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SECMARK:
 	case CMD_OBJ_CT_EXPECT:
 	case CMD_OBJ_SYNPROXY:
+	case CMD_OBJ_TUNNEL:
 		handle_merge(&cmd->object->handle, &cmd->handle);
 		return obj_evaluate(ctx, cmd->object);
 	default:
