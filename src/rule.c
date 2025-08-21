@@ -2021,6 +2021,32 @@ static void obj_print_data(const struct obj *obj,
 				  opts->nl, opts->tab, opts->tab,
 				  obj->tunnel.ttl);
 		}
+		switch (obj->tunnel.type) {
+		case TUNNEL_ERSPAN:
+			nft_print(octx, "%s%s%serspan {",
+				  opts->nl, opts->tab, opts->tab);
+			nft_print(octx, "%s%s%s%sversion %u",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  obj->tunnel.erspan.version);
+			if (obj->tunnel.erspan.version == 1) {
+				nft_print(octx, "%s%s%s%sindex %u",
+					  opts->nl, opts->tab, opts->tab, opts->tab,
+					  obj->tunnel.erspan.v1.index);
+			} else {
+				nft_print(octx, "%s%s%s%sdirection %s",
+					  opts->nl, opts->tab, opts->tab, opts->tab,
+					  obj->tunnel.erspan.v2.direction ? "egress"
+									  : "ingress");
+				nft_print(octx, "%s%s%s%sid %u",
+					  opts->nl, opts->tab, opts->tab, opts->tab,
+					  obj->tunnel.erspan.v2.hwid);
+			}
+			nft_print(octx, "%s%s%s}",
+				  opts->nl, opts->tab, opts->tab);
+		default:
+			break;
+		}
+
 		nft_print(octx, "%s", opts->stmt_separator);
 		break;
 	default:

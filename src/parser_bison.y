@@ -607,6 +607,9 @@ int nft_lex(void *, void *, void *);
 %token NEVER			"never"
 
 %token TUNNEL			"tunnel"
+%token ERSPAN			"erspan"
+%token EGRESS			"egress"
+%token INGRESS			"ingress"
 
 %token COUNTERS			"counters"
 %token QUOTAS			"quotas"
@@ -765,7 +768,7 @@ int nft_lex(void *, void *, void *);
 %type <flowtable>		flowtable_block_alloc flowtable_block
 %destructor { flowtable_free($$); }	flowtable_block_alloc
 
-%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block
+%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc
 %destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list stateful_stmt_list set_elem_stmt_list
@@ -4958,6 +4961,43 @@ limit_obj		:	/* empty */
 			}
 			;
 
+erspan_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       erspan_block     common_block
+			|       erspan_block     stmt_separator
+			|       erspan_block     erspan_config	stmt_separator
+			{
+				$$ = $1;
+			}
+			;
+
+erspan_block_alloc	:	/* empty */
+			{
+				$$ = $<obj>-1;
+			}
+			;
+
+erspan_config		:	HDRVERSION	NUM
+			{
+				$<obj>0->tunnel.erspan.version = $2;
+			}
+			|	INDEX		NUM
+			{
+				$<obj>0->tunnel.erspan.v1.index = $2;
+			}
+			|	DIRECTION	INGRESS
+			{
+				$<obj>0->tunnel.erspan.v2.direction = 0;
+			}
+			|	DIRECTION	EGRESS
+			{
+				$<obj>0->tunnel.erspan.v2.direction = 1;
+			}
+			|	ID		NUM
+			{
+				$<obj>0->tunnel.erspan.v2.hwid = $2;
+			}
+			;
+
 tunnel_config		:	ID	NUM
 			{
 				$<obj>0->tunnel.id = $2;
@@ -4997,6 +5037,10 @@ tunnel_config		:	ID	NUM
 			|	TOS	NUM
 			{
 				$<obj>0->tunnel.tos = $2;
+			}
+			|	ERSPAN	erspan_block_alloc '{' erspan_block '}'
+			{
+				$<obj>0->tunnel.type = TUNNEL_ERSPAN;
 			}
 			;
 

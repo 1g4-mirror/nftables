@@ -1479,6 +1479,48 @@ err:
 	return NULL;
 }
 
+static void obj_tunnel_add_opts(struct nftnl_obj *nlo, struct tunnel *tunnel)
+{
+	struct nftnl_tunnel_opts *opts;
+	struct nftnl_tunnel_opt *opt;
+
+	switch (tunnel->type) {
+	case TUNNEL_ERSPAN:
+		opts = nftnl_tunnel_opts_alloc(NFTNL_TUNNEL_TYPE_ERSPAN);
+		if (!opts)
+			memory_allocation_error();
+
+		opt = nftnl_tunnel_opt_alloc(NFTNL_TUNNEL_TYPE_ERSPAN);
+		if (!opt)
+			memory_allocation_error();
+
+		nftnl_tunnel_opt_set(opt, NFTNL_TUNNEL_ERSPAN_VERSION,
+				     &tunnel->erspan.version,
+				     sizeof(tunnel->erspan.version));
+		switch (tunnel->erspan.version) {
+		case 1:
+			nftnl_tunnel_opt_set(opt, NFTNL_TUNNEL_ERSPAN_V1_INDEX,
+					     &tunnel->erspan.v1.index,
+					     sizeof(tunnel->erspan.v1.index));
+			break;
+		case 2:
+			nftnl_tunnel_opt_set(opt, NFTNL_TUNNEL_ERSPAN_V2_DIR,
+					     &tunnel->erspan.v2.direction,
+					     sizeof(tunnel->erspan.v2.direction));
+			nftnl_tunnel_opt_set(opt, NFTNL_TUNNEL_ERSPAN_V2_HWID,
+					     &tunnel->erspan.v2.hwid,
+					     sizeof(tunnel->erspan.v2.hwid));
+			break;
+		}
+
+		nftnl_tunnel_opts_add(opts, opt);
+		nftnl_obj_set_data(nlo, NFTNL_OBJ_TUNNEL_OPTS, &opts, sizeof(struct nftnl_tunnel_opts *));
+		break;
+	case TUNNEL_UNSPEC:
+		break;
+	}
+}
+
 int mnl_nft_obj_add(struct netlink_ctx *ctx, struct cmd *cmd,
 		    unsigned int flags)
 {
@@ -1610,6 +1652,7 @@ int mnl_nft_obj_add(struct netlink_ctx *ctx, struct cmd *cmd,
 						   nld.value, nld.len);
 			}
 		}
+		obj_tunnel_add_opts(nlo, &obj->tunnel);
 		break;
 	default:
 		BUG("Unknown type %d\n", obj->type);
