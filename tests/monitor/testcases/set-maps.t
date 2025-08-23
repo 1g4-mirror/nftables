@@ -3,7 +3,7 @@ I add table ip t
 I add map ip t portip { type inet_service: ipv4_addr; flags interval; }
 O -
 J {"add": {"table": {"family": "ip", "name": "t", "handle": 0}}}
-J {"add": {"map": {"family": "ip", "name": "portip", "table": "t", "type": "inet_service", "handle": 0, "map": "ipv4_addr", "flags": "interval"}}}
+J {"add": {"map": {"family": "ip", "name": "portip", "table": "t", "type": "inet_service", "handle": 0, "map": "ipv4_addr", "flags": ["interval"]}}}
 
 I add element ip t portip { 80-100: 10.0.0.1 }
 O -

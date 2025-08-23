@@ -4,7 +4,7 @@ I add set ip t portrange { type inet_service; flags interval; }
 I add set ip t ports { type inet_service; }
 O -
 J {"add": {"table": {"family": "ip", "name": "t", "handle": 0}}}
-J {"add": {"set": {"family": "ip", "name": "portrange", "table": "t", "type": "inet_service", "handle": 0, "flags": "interval"}}}
+J {"add": {"set": {"family": "ip", "name": "portrange", "table": "t", "type": "inet_service", "handle": 0, "flags": ["interval"]}}}
 J {"add": {"set": {"family": "ip", "name": "ports", "table": "t", "type": "inet_service", "handle": 0}}}
 
 # make sure concurrent adds work
