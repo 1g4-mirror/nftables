@@ -258,6 +258,7 @@ static struct expr *trace_alloc_list(const struct datatype *dtype,
 	v = mpz_get_uint32(value);
 	if (v == 0) {
 		mpz_clear(value);
+		expr_free(list_expr);
 		return NULL;
 	}
 
