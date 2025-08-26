@@ -449,8 +449,13 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list,
 			break;
 
 		ret = mnl_socket_recvfrom(nl, rcv_buf, sizeof(rcv_buf));
-		if (ret == -1)
+		if (ret == -1) {
+			/* Too many errors, not all errors are displayed. */
+			if (errno == ENOBUFS)
+				continue;
+
 			return -1;
+		}
 
 		/* Continue on error, make sure we get all acknowledgments */
 		ret = mnl_cb_run2(rcv_buf, ret, 0, portid,
