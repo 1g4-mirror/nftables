@@ -409,7 +409,11 @@ EXTRA_DIST += \
 EXTRA_DIST += \
 	files \
 	tests \
+	tools/nftables.service.8 \
+	tools/nftables.service.in \
 	$(NULL)
+
+CLEANFILES += tools/nftables.service
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnftables.pc
