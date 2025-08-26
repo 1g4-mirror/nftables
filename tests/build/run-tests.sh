@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $(dirname $0)
+
 log_file="$(pwd)/tests.log"
 dir=../..
 argument=( --without-cli --with-cli=linenoise --with-cli=editline --enable-debug --with-mini-gmp
