@@ -3,7 +3,7 @@
 log_file="$(pwd)/tests.log"
 dir=../..
 argument=( --without-cli --with-cli=linenoise --with-cli=editline --enable-debug --with-mini-gmp
-	   --enable-man-doc --with-xtables --with-json)
+	   --enable-man-doc --with-xtables --with-json --with-unitdir --with-unitdir=/lib/systemd/system)
 ok=0
 failed=0
 

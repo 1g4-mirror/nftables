@@ -115,14 +115,21 @@ AC_CHECK_DECLS([getprotobyname_r, getprotobynumber_r, getservbyport_r], [], [], 
 ]])
 
 AC_ARG_WITH([unitdir],
-	[AS_HELP_STRING([--with-unitdir=PATH], [Path to systemd service unit directory])],
-	[unitdir="$withval"],
+	[AS_HELP_STRING([--with-unitdir[=PATH]],
+	[Path to systemd service unit directory, or omit PATH to auto-detect])],
 	[
-		unitdir=$("$PKG_CONFIG" systemd --variable systemdsystemunitdir 2>/dev/null)
-		AS_IF([test -z "$unitdir"], [unitdir='${prefix}/lib/systemd/system'])
-	])
+		if test "x$withval" = "xyes"; then
+			unitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd 2>/dev/null)
+			AS_IF([test -z "$unitdir"], [unitdir='${prefix}/lib/systemd/system'])
+		elif test "x$withval" = "xno"; then
+			unitdir=""
+		else
+			unitdir="$withval"
+		fi
+	],
+	[unitdir=""]
+)
 AC_SUBST([unitdir])
-
 
 AC_CONFIG_FILES([					\
 		Makefile				\
@@ -137,5 +144,11 @@ nft configuration:
   use mini-gmp:			${with_mini_gmp}
   enable man page:              ${enable_man_doc}
   libxtables support:		${with_xtables}
-  json output support:          ${with_json}
-  systemd unit:			${unitdir}"
+  json output support:          ${with_json}"
+
+if test "x$unitdir" != "x"; then
+AC_SUBST([unitdir])
+echo "  systemd unit:                 ${unitdir}"
+else
+echo "  systemd unit:                 no"
+fi
