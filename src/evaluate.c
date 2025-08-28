@@ -5992,6 +5992,22 @@ static void chain_del_cache(struct eval_ctx *ctx, struct cmd *cmd)
 	chain_free(chain);
 }
 
+static int chain_del_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	struct chain *chain = cmd->chain;
+
+	if (chain && chain->flags & CHAIN_F_BASECHAIN && chain->hook.name) {
+		chain->hook.num = str2hooknum(chain->handle.family,
+					      chain->hook.name);
+		if (chain->hook.num == NF_INET_NUMHOOKS)
+			return __stmt_binary_error(ctx, &chain->hook.loc, NULL,
+						   "The %s family does not support this hook",
+						   family2str(chain->handle.family));
+	}
+	chain_del_cache(ctx, cmd);
+	return 0;
+}
+
 static void set_del_cache(struct eval_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table;
@@ -6069,8 +6085,7 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_RULE:
 		return 0;
 	case CMD_OBJ_CHAIN:
-		chain_del_cache(ctx, cmd);
-		return 0;
+		return chain_del_evaluate(ctx, cmd);
 	case CMD_OBJ_TABLE:
 		table_del_cache(ctx, cmd);
 		return 0;

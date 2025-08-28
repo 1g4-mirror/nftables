@@ -994,6 +994,8 @@ int mnl_nft_chain_del(struct netlink_ctx *ctx, struct cmd *cmd)
 		struct nlattr *nest;
 
 		nest = mnl_attr_nest_start(nlh, NFTA_CHAIN_HOOK);
+		mnl_attr_put_u32(nlh, NFTA_HOOK_HOOKNUM,
+				 htonl(cmd->chain->hook.num));
 		mnl_nft_chain_devs_build(nlh, cmd);
 		mnl_attr_nest_end(nlh, nest);
 	}
