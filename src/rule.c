@@ -1131,7 +1131,7 @@ void chain_print_plain(const struct chain *chain, struct output_ctx *octx)
 
 			nft_print(octx, "devices = { ");
 			for (i = 0; i < chain->dev_array_len; i++) {
-				nft_print(octx, "%s", chain->dev_array[i]);
+				nft_print(octx, "\"%s\"", chain->dev_array[i]);
 				if (i + 1 != chain->dev_array_len)
 					nft_print(octx, ", ");
 			}
