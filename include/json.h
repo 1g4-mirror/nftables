@@ -113,7 +113,7 @@ void monitor_print_set_json(struct netlink_mon_handler *monh,
 void monitor_print_element_json(struct netlink_mon_handler *monh,
 				const char *cmd, struct set *s);
 void monitor_print_obj_json(struct netlink_mon_handler *monh,
-			    const char *cmd, struct obj *o);
+			    const char *cmd, struct obj *o, bool delete);
 void monitor_print_flowtable_json(struct netlink_mon_handler *monh,
 				  const char *cmd, struct flowtable *ft);
 void monitor_print_rule_json(struct netlink_mon_handler *monh,
@@ -252,7 +252,8 @@ static inline void monitor_print_element_json(struct netlink_mon_handler *monh,
 }
 
 static inline void monitor_print_obj_json(struct netlink_mon_handler *monh,
-					  const char *cmd, struct obj *o)
+					  const char *cmd, struct obj *o,
+					  bool delete)
 {
 	/* empty */
 }

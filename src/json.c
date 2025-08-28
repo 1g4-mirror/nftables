@@ -397,7 +397,8 @@ static json_t *tunnel_erspan_print_json(const struct obj *obj)
 	return tunnel;
 }
 
-static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj)
+static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj,
+			      bool delete)
 {
 	const char *rate_unit = NULL, *burst_unit = NULL;
 	const char *type = obj_type_name(obj->type);
@@ -409,6 +410,9 @@ static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj)
 			"name", obj->handle.obj.name,
 			"table", obj->handle.table.name,
 			"handle", obj->handle.handle.id);
+
+	if (delete)
+		goto out;
 
 	if (obj->comment) {
 		tmp = nft_json_pack("{s:s}", "comment", obj->comment);
@@ -570,6 +574,7 @@ static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj)
 		break;
 	}
 
+out:
 	return nft_json_pack("{s:o}", type, root);
 }
 
@@ -1815,7 +1820,7 @@ static json_t *table_print_json_full(struct netlink_ctx *ctx,
 		json_array_append_new(root, tmp);
 	}
 	list_for_each_entry(obj, &table->obj_cache.list, cache.list) {
-		tmp = obj_print_json(&ctx->nft->output, obj);
+		tmp = obj_print_json(&ctx->nft->output, obj, false);
 		json_array_append_new(root, tmp);
 	}
 	list_for_each_entry(set, &table->set_cache.list, cache.list) {
@@ -1971,7 +1976,7 @@ static json_t *do_list_sets_json(struct netlink_ctx *ctx, struct cmd *cmd)
 static json_t *do_list_obj_json(struct netlink_ctx *ctx,
 				struct cmd *cmd, uint32_t type)
 {
-	json_t *root = json_array();
+	json_t *root = json_array(), *tmp;
 	struct table *table;
 	struct obj *obj;
 
@@ -1990,7 +1995,8 @@ static json_t *do_list_obj_json(struct netlink_ctx *ctx,
 			     strcmp(cmd->handle.obj.name, obj->handle.obj.name)))
 				continue;
 
-			json_array_append_new(root, obj_print_json(&ctx->nft->output, obj));
+			tmp = obj_print_json(&ctx->nft->output, obj, false);
+			json_array_append_new(root, tmp);
 		}
 	}
 
@@ -2207,11 +2213,11 @@ void monitor_print_element_json(struct netlink_mon_handler *monh,
 }
 
 void monitor_print_obj_json(struct netlink_mon_handler *monh,
-			    const char *cmd, struct obj *o)
+			    const char *cmd, struct obj *o, bool delete)
 {
 	struct output_ctx *octx = &monh->ctx->nft->output;
 
-	monitor_print_json(monh, cmd, obj_print_json(octx, o));
+	monitor_print_json(monh, cmd, obj_print_json(octx, o, delete));
 }
 
 void monitor_print_flowtable_json(struct netlink_mon_handler *monh,
