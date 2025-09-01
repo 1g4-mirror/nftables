@@ -1,4 +1,4 @@
-AC_INIT([nftables], [1.0.6], [netfilter-devel@vger.kernel.org])
+AC_INIT([nftables], [1.0.6.1], [netfilter-devel@vger.kernel.org])
 AC_DEFINE([RELEASE_NAME], ["Lester Gooch #5"], [Release name])
 
 AC_CONFIG_AUX_DIR([build-aux])
