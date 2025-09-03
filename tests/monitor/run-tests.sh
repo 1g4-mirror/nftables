@@ -5,7 +5,7 @@ debug=false
 test_json=false
 
 mydiff() {
-	diff -w -I '^# ' "$@"
+	diff -w -I '^# ' --label "expected" --label "got" "$@"
 }
 
 err() {
