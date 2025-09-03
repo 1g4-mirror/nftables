@@ -52,7 +52,7 @@ echo_output_append() {
 		grep '^\(add\|replace\|insert\)' $command_file >>$output_file
 		return
 	}
-	[[ "$*" =~ ^(add|replace|insert) ]] && echo "$*" >>$output_file
+	[[ "$*" =~ ^(\{\")?(add|replace|insert) ]] && echo "$*" >>$output_file
 }
 json_output_filter() { # (filename)
 	# unify handle values
@@ -96,16 +96,32 @@ monitor_run_test() {
 
 echo_run_test() {
 	echo_output=$(mktemp -p $testdir)
+	echo_args="-nn -e"
+	$test_json && echo_args+=" -j"
 	local rc=0
 
 	$debug && {
 		echo "command file:"
 		cat $command_file
 	}
-	$nft -nn -e -f - <$command_file >$echo_output || {
+	$nft $echo_args -f - <$command_file >$echo_output || {
 		err "nft command failed!"
 		rc=1
 	}
+	if $test_json; then
+		# Extract commands from the surrounding JSON object
+		sed -i -e 's/^{"nftables": \[//' -e 's/\]}$//' $echo_output
+		json_output_filter $echo_output
+
+		# Replace newlines by ", " in output file
+		readarray -t output_file_lines <$output_file
+		sep=""
+		for ((i = 0; i < ${#output_file_lines[*]}; i++)); do
+			printf "${sep}${output_file_lines[$i]}"
+			sep=", "
+		done >$output_file
+		[ $i -gt 0 ] && echo "" >>$output_file
+	fi
 	mydiff -q $echo_output $output_file >/dev/null 2>&1
 	if [[ $rc == 0 && $? != 0 ]]; then
 		err "echo output differs!"
@@ -159,12 +175,7 @@ while [ -n "$1" ]; do
 	esac
 done
 
-if $test_json; then
-	variants="monitor"
-else
-	variants="monitor echo"
-fi
-
+variants="monitor echo"
 rc=0
 for variant in $variants; do
 	run_test=${variant}_run_test
