@@ -1488,7 +1488,11 @@ def main():
 
     parser.add_argument('-j', '--enable-json', action='store_true',
                         dest='enable_json',
-                        help='test JSON functionality as well')
+                        help='test JSON functionality as well (default)')
+
+    parser.add_argument('-J', '--disable-json', action='store_true',
+                        dest='disable_json',
+                        help='Do not test JSON functionality as well')
 
     parser.add_argument('-l', '--library', default=None,
                         help='path to libntables.so.1, overrides --host')
@@ -1499,7 +1503,11 @@ def main():
 
     parser.add_argument('-s', '--schema', action='store_true',
                         dest='enable_schema',
-                        help='verify json input/output against schema')
+                        help='verify json input/output against schema (default)')
+
+    parser.add_argument('-S', '--no-schema', action='store_true',
+                        dest='disable_schema',
+                        help='Do not verify json input/output against schema')
 
     parser.add_argument('-v', '--version', action='version',
                         version='1.0',
@@ -1510,8 +1518,8 @@ def main():
     debug_option = args.debug
     need_fix_option = args.need_fix_line
     force_all_family_option = args.force_all_family
-    enable_json_option = args.enable_json
-    enable_json_schema = args.enable_schema
+    enable_json_option = not args.disable_json
+    enable_json_schema = not args.disable_json and not args.disable_schema
     specific_file = False
 
     signal.signal(signal.SIGINT, signal_handler)
