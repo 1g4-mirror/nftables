@@ -154,14 +154,28 @@ if $netns; then
 fi
 
 testcases=""
+variants=""
+syntaxes=""
 while [ -n "$1" ]; do
 	case "$1" in
 	-d|--debug)
 		debug=true
 		shift
 		;;
+	-s|--standard)
+		syntaxes+=" standard"
+		shift
+		;;
 	-j|--json)
-		test_json=true
+		syntaxes+=" json"
+		shift
+		;;
+	-e|--echo)
+		variants+=" echo"
+		shift
+		;;
+	-m|--monitor)
+		variants+=" monitor"
 		shift
 		;;
 	--no-netns)
@@ -179,64 +193,74 @@ while [ -n "$1" ]; do
 		echo "unknown option '$1'"
 		;&
 	-h|--help)
-		echo "Usage: $(basename $0) [-j|--json] [-d|--debug] [testcase ...]"
+		echo "Usage: $(basename $0) [(-e|--echo)|(-m|--monitor)] [(-j|--json)|(-s|--standard)] [-d|--debug] [testcase ...]"
 		exit 1
 		;;
 	esac
 done
 
-variants="monitor echo"
-rc=0
-for variant in $variants; do
-	run_test=${variant}_run_test
-	output_append=${variant}_output_append
+# run the single test in $1
+# expect $variant and $test_json to be set appropriately
+run_testcase() {
+	testcase="$1"
+	filename=$(basename $testcase)
+	rc=0
+	$test_json && printf "json-"
+	echo "$variant: running tests from file $filename"
 
-	for testcase in ${testcases:-testcases/*.t}; do
-		filename=$(basename $testcase)
-		echo "$variant: running tests from file $filename"
-		rc_start=$rc
+	# files are like this:
+	#
+	# I add table ip t
+	# O add table ip t
+	# I add chain ip t c
+	# O add chain ip t c
 
-		# files are like this:
-		#
-		# I add table ip t
-		# O add table ip t
-		# I add chain ip t c
-		# O add chain ip t c
+	$nft flush ruleset
 
-		$nft flush ruleset
+	input_complete=false
+	while read dir line; do
+		case $dir in
+		I)
+			$input_complete && {
+				${variant}_run_test
+				$run_test
+				let "rc += $?"
+			}
+			input_complete=false
+			cmd_append "$line"
+			;;
+		O)
+			input_complete=true
+			$test_json || ${variant}_output_append "$line"
+			;;
+		J)
+			input_complete=true
+			$test_json && ${variant}_output_append "$line"
+			;;
+		'#'|'')
+			# ignore comments and empty lines
+			;;
+		esac
+	done <$testcase
+	$input_complete && {
+		${variant}_run_test
+		let "rc += $?"
+	}
 
-		input_complete=false
-		while read dir line; do
-			case $dir in
-			I)
-				$input_complete && {
-					$run_test
-					let "rc += $?"
-				}
-				input_complete=false
-				cmd_append "$line"
-				;;
-			O)
-				input_complete=true
-				$test_json || $output_append "$line"
-				;;
-			J)
-				input_complete=true
-				$test_json && $output_append "$line"
-				;;
-			'#'|'')
-				# ignore comments and empty lines
-				;;
-			esac
-		done <$testcase
-		$input_complete && {
-			$run_test
-			let "rc += $?"
-		}
+	[[ $rc -ne 0 ]] && \
+		echo "$variant: $rc tests from file $filename failed"
+	return $rc
+}
 
-		let "rc_diff = rc - rc_start"
-		[[ $rc_diff -ne 0 ]] && \
-			echo "$variant: $rc_diff tests from file $filename failed"
+total_rc=0
+for syntax in ${syntaxes:-standard json}; do
+	[ $syntax == json ] && test_json=true || test_json=false
+	for variant in ${variants:-echo monitor}; do
+		for testcase in ${testcases:-testcases/*.t}; do
+			run_testcase "$testcase"
+			let "total_rc += $?"
+		done
 	done
 done
-exit $rc
+
+exit $total_rc
