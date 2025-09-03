@@ -101,8 +101,9 @@ echo_run_test() {
 	local rc=0
 
 	$debug && {
-		echo "command file:"
+		echo ">>> command file"
 		cat $command_file
+		echo "<<< command file"
 	}
 	$nft $echo_args -f - <$command_file >$echo_output || {
 		err "nft command failed!"
@@ -122,6 +123,15 @@ echo_run_test() {
 		done >$output_file
 		[ $i -gt 0 ] && echo "" >>$output_file
 	fi
+	$debug && {
+		echo ">>> output file"
+		cat $output_file
+		echo "<<< output file"
+		echo ">>> echo output"
+		cat $echo_output
+		echo "<<< echo output"
+	}
+
 	mydiff -q $echo_output $output_file >/dev/null 2>&1
 	if [[ $rc == 0 && $? != 0 ]]; then
 		err "echo output differs!"
