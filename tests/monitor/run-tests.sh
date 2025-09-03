@@ -52,7 +52,7 @@ echo_output_append() {
 		grep '^\(add\|replace\|insert\)' $command_file >>$output_file
 		return
 	}
-	[[ "$*" =~ ^add|replace|insert ]] && echo "$*" >>$output_file
+	[[ "$*" =~ ^(add|replace|insert) ]] && echo "$*" >>$output_file
 }
 json_output_filter() { # (filename)
 	# unify handle values
