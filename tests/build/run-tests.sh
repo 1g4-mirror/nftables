@@ -20,6 +20,10 @@ fi
 git clone "$dir" "$tmpdir" &>>"$log_file"
 cd "$tmpdir" || exit
 
+# do not leak data from a calling 'make check' run into the new build otherwise
+# this will defeat the test suite invocation prevention for 'make distcheck'
+unset MAKEFLAGS
+
 if ! autoreconf -fi &>>"$log_file" ; then
 	echo "Something went wrong. Check the log '${log_file}' for details."
 	exit 1
