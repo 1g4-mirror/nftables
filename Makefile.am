@@ -156,6 +156,8 @@ AM_CFLAGS = \
 	\
 	$(GCC_FVISIBILITY_HIDDEN) \
 	\
+	-DMAKE_STAMP=$(MAKE_STAMP) \
+	\
 	$(NULL)
 
 AM_YFLAGS = -d -Wno-yacc

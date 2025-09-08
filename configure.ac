@@ -153,7 +153,6 @@ AC_CONFIG_COMMANDS([nftversion.h], [
 # Current date should be fetched exactly once per build,
 # so have 'make' call date and pass the value to every 'gcc' call
 AC_SUBST([MAKE_STAMP], ["\$(shell date +%s)"])
-CFLAGS="${CFLAGS} -DMAKE_STAMP=\${MAKE_STAMP}"
 
 AC_CONFIG_FILES([					\
 		Makefile				\
