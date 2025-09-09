@@ -3002,6 +3002,7 @@ static int expr_evaluate_fib(struct eval_ctx *ctx, struct expr **exprp)
 	if (expr->flags & EXPR_F_BOOLEAN) {
 		expr->fib.flags |= NFTA_FIB_F_PRESENT;
 		datatype_set(expr, &boolean_type);
+		expr->len = BITS_PER_BYTE;
 	}
 	return expr_evaluate_primary(ctx, exprp);
 }
