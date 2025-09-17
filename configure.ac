@@ -130,6 +130,7 @@ AC_ARG_WITH([unitdir],
 	[unitdir=""]
 )
 AC_SUBST([unitdir])
+AM_CONDITIONAL([BUILD_SERVICE], [test "x$unitdir" != x])
 
 AC_ARG_WITH([stable-release], [AS_HELP_STRING([--with-stable-release],
             [Stable release number])],

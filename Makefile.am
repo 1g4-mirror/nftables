@@ -421,10 +421,14 @@ EXTRA_DIST += \
 	tools/nftables.service.in \
 	$(NULL)
 
+if BUILD_SERVICE
 CLEANFILES += tools/nftables.service
+endif
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnftables.pc
+
+if BUILD_SERVICE
 unit_DATA = tools/nftables.service
 man_MANS = tools/nftables.service.8
 doc_DATA = files/nftables/main.nft
@@ -432,6 +436,7 @@ doc_DATA = files/nftables/main.nft
 tools/nftables.service: tools/nftables.service.in ${top_builddir}/config.status
 	${AM_V_GEN}${MKDIR_P} tools
 	${AM_V_at}sed -e 's|@''sbindir''@|${sbindir}|g;s|@''pkgsysconfdir''@|${pkgsysconfdir}|g' <${srcdir}/tools/nftables.service.in >$@
+endif
 
 if !BUILD_DISTCHECK
 TESTS = tests/build/run-tests.sh \
