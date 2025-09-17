@@ -469,7 +469,7 @@ Before kernel 4.18 nat statements require both prerouting and postrouting base c
 to be present since otherwise packets on the return path won't be seen by
 netfilter and therefore no reverse translation will take place.
 
-The optional *prefix* keyword allows to map *n* source addresses to *n*
+The optional *prefix* keyword allows one to map *n* source addresses to *n*
 destination addresses.  See 'Advanced NAT examples' below.
 
 If the 'address' for *dnat* is an IPv4 loopback address

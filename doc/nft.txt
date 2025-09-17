@@ -810,7 +810,7 @@ map policy |
 string: performance [default], memory
 |=================
 
-Users can specifiy the properties/features that the set/map must support.
+Users can specify the properties/features that the set/map must support.
 This allows the kernel to pick an optimal internal representation.
 If a required flag is missing, the ruleset might still work, as
 nftables will auto-enable features if it can infer this from the ruleset.

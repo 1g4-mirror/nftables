@@ -562,7 +562,7 @@ GRE HEADER EXPRESSION
 *gre* *ip6* {*version* | *dscp* | *ecn* | *flowlabel* | *length* | *nexthdr* | *hoplimit* | *saddr* | *daddr*}
 
 The gre expression is used to match on the gre header fields. This expression
-also allows to match on the IPv4 or IPv6 packet within the gre header.
+also allows one to match on the IPv4 or IPv6 packet within the gre header.
 
 .GRE header expression
 [options="header"]
