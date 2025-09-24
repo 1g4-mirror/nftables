@@ -176,6 +176,9 @@ static bool nft_ctx_find_include_path(struct nft_ctx *ctx, const char *path)
 			return true;
 	}
 
+	if (!strcmp(path, DEFAULT_INCLUDE_PATH))
+		return true;
+
 	return false;
 }
 
