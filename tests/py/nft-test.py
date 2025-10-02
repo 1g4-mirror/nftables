@@ -817,9 +817,10 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
     for table in table_list:
         if rule[1].strip() == "ok":
             table_payload_expected = None
+            table_payload_path = payload_path
             try:
                 payload_log = open("%s.payload.%s" % (filename_path, table.family))
-                payload_path = payload_log.name
+                table_payload_path = payload_log.name
                 table_payload_expected = payload_find_expected(payload_log, rule[0])
             except:
                 if not payload_log:
@@ -868,14 +869,14 @@ def rule_add(rule, filename, lineno, force_all_family_option, filename_path):
                 error += 1
 
                 try:
-                    gotf = open("%s.got" % payload_path)
+                    gotf = open("%s.got" % table_payload_path)
                     gotf_payload_expected = payload_find_expected(gotf, rule[0])
                     gotf.close()
                 except:
                     gotf_payload_expected = None
                 payload_log.seek(0, 0)
                 if not payload_check(gotf_payload_expected, payload_log, cmd):
-                    gotf = open("%s.got" % payload_path, 'a')
+                    gotf = open("%s.got" % table_payload_path, 'a')
                     payload_log.seek(0, 0)
                     gotf.write("# %s\n" % rule[0])
                     while True:
