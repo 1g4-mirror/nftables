@@ -6117,6 +6117,9 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SYNPROXY:
 		obj_del_cache(ctx, cmd, NFT_OBJECT_SYNPROXY);
 		return 0;
+	case CMD_OBJ_TUNNEL:
+		obj_del_cache(ctx, cmd, NFT_OBJECT_TUNNEL);
+		return 0;
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
