@@ -2,7 +2,7 @@
 
 # NFT_TEST_REQUIRES(NFT_TEST_HAVE_ifname_based_hooks)
 
-cspec=' chain netdev t c '
+cspec=' chain netdev t c'
 $NFT add table netdev t
 $NFT add $cspec '{ type filter hook ingress priority 0; devices = { lo, foo* }; }'
 $NFT list hooks netdev device lo | grep -q "$cspec" || {

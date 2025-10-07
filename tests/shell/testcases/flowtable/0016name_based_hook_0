@@ -3,7 +3,7 @@
 # NFT_TEST_REQUIRES(NFT_TEST_HAVE_ifname_based_hooks)
 # NFT_TEST_REQUIRES(NFT_TEST_HAVE_list_hooks_flowtable_info)
 
-ftspec=' flowtable ip t ft '
+ftspec=' flowtable ip t ft'
 $NFT add table t
 $NFT add $ftspec '{ hook ingress priority 0; devices = { lo, foo* }; }'
 $NFT list hooks netdev device lo | grep -q "$ftspec" || {
