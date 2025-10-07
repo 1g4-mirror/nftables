@@ -815,9 +815,16 @@ static bool is_wildcard_str(const char *str)
 
 static void mnl_nft_attr_put_ifname(struct nlmsghdr *nlh, const char *ifname)
 {
-	uint16_t attr = is_wildcard_str(ifname) ?
-			NFTA_DEVICE_PREFIX : NFTA_DEVICE_NAME;
+	uint16_t attr = NFTA_DEVICE_NAME;
+	char pfx[IFNAMSIZ];
 
+	if (is_wildcard_str(ifname)) {
+		snprintf(pfx, IFNAMSIZ, "%s", ifname);
+		pfx[strlen(pfx) - 1] = '\0';
+
+		attr = NFTA_DEVICE_PREFIX;
+		ifname = pfx;
+	}
 	mnl_attr_put_strz(nlh, attr, ifname);
 }
 
