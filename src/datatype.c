@@ -1559,7 +1559,7 @@ static struct error_record *boolean_type_parse(struct parse_ctx *ctx,
 					       struct expr **res)
 {
 	struct error_record *erec;
-	int num;
+	uint8_t num;
 
 	erec = integer_type_parse(ctx, sym, res);
 	if (erec)
