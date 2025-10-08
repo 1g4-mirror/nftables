@@ -139,17 +139,22 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 			netlink_gen_key(key, &nld);
 			key->flags &= ~EXPR_F_INTERVAL;
 
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, nld.value, nld.len);
+			nftnl_set_elem_set_imm(nlse, NFTNL_SET_ELEM_KEY,
+					       nld.value, nld.len,
+					       nld.byteorder, nld.sizes);
 
 			key->flags |= EXPR_F_INTERVAL_END;
 			netlink_gen_key(key, &nld);
 			key->flags &= ~EXPR_F_INTERVAL_END;
 
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY_END,
-					   nld.value, nld.len);
+			nftnl_set_elem_set_imm(nlse, NFTNL_SET_ELEM_KEY_END,
+					       nld.value, nld.len,
+					       nld.byteorder, nld.sizes);
 		} else {
 			netlink_gen_key(key, &nld);
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, nld.value, nld.len);
+			nftnl_set_elem_set_imm(nlse, NFTNL_SET_ELEM_KEY,
+					       nld.value, nld.len,
+					       nld.byteorder, nld.sizes);
 		}
 		break;
 	}
@@ -217,8 +222,9 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 		case EXPR_RANGE:
 		case EXPR_RANGE_VALUE:
 		case EXPR_PREFIX:
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_DATA,
-					   nld.value, nld.len);
+			nftnl_set_elem_set_imm(nlse, NFTNL_SET_ELEM_DATA,
+					       nld.value, nld.len,
+					       nld.byteorder, nld.sizes);
 			break;
 		default:
 			BUG("unexpected set element expression");
