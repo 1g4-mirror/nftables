@@ -254,15 +254,19 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 	mpz_export_data(constant_data_ptr(val, expr->len), expr->value,
 			expr->byteorder, len);
 
+	if (nft_output_numeric_symbol(octx) || !tbl)
+		goto basetype_print;
+
 	for (s = tbl->symbols; s->identifier != NULL; s++) {
 		if (val == s->value)
 			break;
 	}
-
-	if (s->identifier == NULL || nft_output_numeric_symbol(octx))
-		return expr_basetype(expr)->print(expr, octx);
-
-	nft_print(octx, quotes ? "\"%s\"" : "%s", s->identifier);
+	if (s->identifier) {
+		nft_print(octx, quotes ? "\"%s\"" : "%s", s->identifier);
+		return;
+	}
+basetype_print:
+	expr_basetype(expr)->print(expr, octx);
 }
 
 static void switch_byteorder(void *data, unsigned int len)
