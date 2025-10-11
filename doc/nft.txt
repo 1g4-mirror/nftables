@@ -465,8 +465,10 @@ status.
 
 The *priority* parameter accepts a signed integer value or a standard priority
 name which specifies the order in which chains with the same *hook* value are
-traversed. The ordering is ascending, i.e. lower priority values have precedence
-over higher ones.
+traversed (regardless of the table to which they belong). The ordering is
+ascending: for each hook, chains with lower priority values are evaluated
+before those with higher ones. The ordering of chains with identical priority
+is undefined.
 
 With *nat* type chains, there's a lower excluding limit of -200 for *priority*
 values, because conntrack hooks at this priority and NAT requires it.
