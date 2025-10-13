@@ -691,8 +691,7 @@ needed for selective acknowledgement and window scaling).
 ---------------------------------------
 Determine tcp options used by backend, from an external system
 
-              tcpdump -pni eth0 -c 1 'tcp[tcpflags] == (tcp-syn|tcp-ack)'
-                  port 80 &
+              tcpdump -pni eth0 -c 1 'tcp[tcpflags] == (tcp-syn|tcp-ack) && port 80' &
               telnet 192.0.2.42 80
               18:57:24.693307 IP 192.0.2.42.80 > 192.0.2.43.48757:
                   Flags [S.], seq 360414582, ack 788841994, win 14480,
