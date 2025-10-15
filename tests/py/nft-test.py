@@ -686,7 +686,7 @@ def output_clean(pre_output, chain):
 def payload_check_elems_to_set(elems):
     newset = set()
 
-    for n, line in enumerate(elems.split('[end]')):
+    for n, line in enumerate(elems.split("element")):
         e = line.strip()
         if e in newset:
             print_error("duplicate", e, n)
@@ -698,17 +698,17 @@ def payload_check_elems_to_set(elems):
 
 
 def payload_check_set_elems(want, got):
-    if want.find('element') < 0 or want.find('[end]') < 0:
-        return 0
-
-    if got.find('element') < 0 or got.find('[end]') < 0:
-        return 0
+    if not want.strip().startswith("element") or \
+       not got.strip().startswith("element"):
+        return False
 
     set_want = payload_check_elems_to_set(want)
     set_got = payload_check_elems_to_set(got)
 
     return set_want == set_got
 
+def payload_line_relevant(line):
+    return line.startswith('  [ ') or line.strip().startswith("element")
 
 def payload_check(payload_buffer, file, cmd):
     file.seek(0, 0)
@@ -719,11 +719,11 @@ def payload_check(payload_buffer, file, cmd):
 
     for lineno, want_line in enumerate(payload_buffer):
         # skip irreleant parts, such as "ip test-ipv4 output"
-        if want_line.find("[") < 0 or want_line.find("]") < 0:
-             continue
+        if not payload_line_relevant(want_line):
+            continue
 
         line = file.readline()
-        while line.find("[") < 0 or line.find("]") < 0 or (line.startswith("family ") and line.find(" [nf_tables]") > 0):
+        while not payload_line_relevant(line):
             line = file.readline()
             if line == "":
                 break
