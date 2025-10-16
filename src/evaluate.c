@@ -1347,6 +1347,7 @@ static int expr_evaluate_range(struct eval_ctx *ctx, struct expr **exprp)
 
 	datatype_set(range, left->dtype);
 	range->flags |= EXPR_F_CONSTANT;
+	range->len = left->len;
 	return 0;
 }
 

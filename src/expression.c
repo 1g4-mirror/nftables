@@ -1018,6 +1018,7 @@ struct expr *range_expr_alloc(const struct location *loc,
 			  BYTEORDER_INVALID, 0);
 	expr->left  = left;
 	expr->right = right;
+	expr->len = left->len;
 	return expr;
 }
 
