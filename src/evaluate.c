@@ -5865,11 +5865,12 @@ static int tunnel_evaluate(struct eval_ctx *ctx, struct obj *obj)
 				 obj->tunnel.dst->dtype->size);
 		if (expr_evaluate(ctx, &obj->tunnel.dst) < 0)
 			return -1;
-	}
 
-	if (obj->tunnel.src->dtype != obj->tunnel.dst->dtype)
-		return __stmt_binary_error(ctx, &obj->location, NULL,
-					  "specify either ip or ip6 for address");
+		if (obj->tunnel.src &&
+		    obj->tunnel.src->dtype != obj->tunnel.dst->dtype)
+			return __stmt_binary_error(ctx, &obj->location, NULL,
+						  "specify either ip or ip6 for address");
+	}
 
 	return 0;
 }
