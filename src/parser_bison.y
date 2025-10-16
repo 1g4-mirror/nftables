@@ -144,6 +144,19 @@ static bool already_set(const void *attr, const struct location *loc,
 	return true;
 }
 
+static bool tunnel_set_type(const struct location *loc,
+			    struct obj *obj, enum tunnel_type type, const char *name,
+			    struct parser_state *state)
+{
+	if (obj->tunnel.type) {
+		erec_queue(error(loc, "Cannot create new %s section inside another tunnel", name), state->msgs);
+		return false;
+	}
+
+	obj->tunnel.type = type;
+	return true;
+}
+
 static struct expr *ifname_expr_alloc(const struct location *location,
 				      struct list_head *queue,
 				      const char *name)
@@ -4980,11 +4993,15 @@ erspan_block		:	/* empty */	{ $$ = $<obj>-1; }
 erspan_block_alloc	:	/* empty */
 			{
 				$$ = $<obj>-1;
+
+				if (!tunnel_set_type(&$$->location, $$, TUNNEL_ERSPAN, "erspan", state))
+					YYERROR;
 			}
 			;
 
 erspan_config		:	HDRVERSION	NUM
 			{
+				assert($<obj>0->tunnel.type == TUNNEL_ERSPAN);
 				$<obj>0->tunnel.erspan.version = $2;
 			}
 			|	INDEX		NUM
@@ -5017,12 +5034,18 @@ geneve_block		:	/* empty */	{ $$ = $<obj>-1; }
 geneve_block_alloc	:	/* empty */
 			{
 				$$ = $<obj>-1;
+				if (!tunnel_set_type(&$$->location, $$, TUNNEL_GENEVE, "geneve", state))
+					YYERROR;
+
+				init_list_head(&$$->tunnel.geneve_opts);
 			}
 			;
 
 geneve_config		:	CLASS	NUM	OPTTYPE	NUM	DATA	string
 			{
 				struct tunnel_geneve *geneve;
+
+				assert($<obj>0->tunnel.type == TUNNEL_GENEVE);
 
 				geneve = xmalloc(sizeof(struct tunnel_geneve));
 				geneve->geneve_class = $2;
@@ -5034,10 +5057,6 @@ geneve_config		:	CLASS	NUM	OPTTYPE	NUM	DATA	string
 					YYERROR;
 				}
 
-				if (!$<obj>0->tunnel.type) {
-					$<obj>0->tunnel.type = TUNNEL_GENEVE;
-					init_list_head(&$<obj>0->tunnel.geneve_opts);
-				}
 				list_add_tail(&geneve->list, &$<obj>0->tunnel.geneve_opts);
 				free_const($6);
 			}
@@ -5055,11 +5074,15 @@ vxlan_block		:	/* empty */	{ $$ = $<obj>-1; }
 vxlan_block_alloc	:	/* empty */
 			{
 				$$ = $<obj>-1;
+
+				if (!tunnel_set_type(&$$->location, $$, TUNNEL_VXLAN, "vxlan", state))
+					YYERROR;
 			}
 			;
 
 vxlan_config		:	GBP	NUM
 			{
+				assert($<obj>0->tunnel.type == TUNNEL_VXLAN);
 				$<obj>0->tunnel.vxlan.gbp = $2;
 			}
 			;
@@ -5123,13 +5146,16 @@ tunnel_config		:	ID	NUM
 			}
 			|	ERSPAN	erspan_block_alloc '{' erspan_block '}'
 			{
-				$<obj>0->tunnel.type = TUNNEL_ERSPAN;
+				$2->location = @2;
 			}
 			|	VXLAN	vxlan_block_alloc '{' vxlan_block '}'
 			{
-				$<obj>0->tunnel.type = TUNNEL_VXLAN;
+				$2->location = @2;
 			}
 			|	GENEVE	geneve_block_alloc '{' geneve_block '}'
+			{
+				$2->location = @2;
+			}
 			;
 
 tunnel_block		:	/* empty */	{ $$ = $<obj>-1; }
