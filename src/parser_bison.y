@@ -5070,21 +5070,38 @@ tunnel_config		:	ID	NUM
 			}
 			|	IP	SADDR	symbol_expr	close_scope_ip
 			{
+				if (already_set($<obj>0->tunnel.src, &@3, state)) {
+					expr_free($3);
+					YYERROR;
+				}
+
 				$<obj>0->tunnel.src = $3;
 				datatype_set($3, &ipaddr_type);
 			}
 			|	IP	DADDR	symbol_expr	close_scope_ip
 			{
+				if (already_set($<obj>0->tunnel.dst, &@3, state)) {
+					expr_free($3);
+					YYERROR;
+				}
 				$<obj>0->tunnel.dst = $3;
 				datatype_set($3, &ipaddr_type);
 			}
 			|	IP6	SADDR	symbol_expr	close_scope_ip6
 			{
+				if (already_set($<obj>0->tunnel.src, &@3, state)) {
+					expr_free($3);
+					YYERROR;
+				}
 				$<obj>0->tunnel.src = $3;
 				datatype_set($3, &ip6addr_type);
 			}
 			|	IP6	DADDR	symbol_expr	close_scope_ip6
 			{
+				if (already_set($<obj>0->tunnel.dst, &@3, state)) {
+					expr_free($3);
+					YYERROR;
+				}
 				$<obj>0->tunnel.dst = $3;
 				datatype_set($3, &ip6addr_type);
 			}
