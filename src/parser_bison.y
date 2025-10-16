@@ -5068,22 +5068,22 @@ tunnel_config		:	ID	NUM
 			{
 				$<obj>0->tunnel.id = $2;
 			}
-			|	IP	SADDR	expr	close_scope_ip
+			|	IP	SADDR	symbol_expr	close_scope_ip
 			{
 				$<obj>0->tunnel.src = $3;
 				datatype_set($3, &ipaddr_type);
 			}
-			|	IP	DADDR	expr	close_scope_ip
+			|	IP	DADDR	symbol_expr	close_scope_ip
 			{
 				$<obj>0->tunnel.dst = $3;
 				datatype_set($3, &ipaddr_type);
 			}
-			|	IP6	SADDR	expr	close_scope_ip6
+			|	IP6	SADDR	symbol_expr	close_scope_ip6
 			{
 				$<obj>0->tunnel.src = $3;
 				datatype_set($3, &ip6addr_type);
 			}
-			|	IP6	DADDR	expr	close_scope_ip6
+			|	IP6	DADDR	symbol_expr	close_scope_ip6
 			{
 				$<obj>0->tunnel.dst = $3;
 				datatype_set($3, &ip6addr_type);

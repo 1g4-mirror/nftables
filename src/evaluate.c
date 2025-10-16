@@ -5851,19 +5851,35 @@ static int ct_timeout_evaluate(struct eval_ctx *ctx, struct obj *obj)
 	return 0;
 }
 
+static int tunnel_evaluate_addr(struct eval_ctx *ctx, struct expr **exprp)
+{
+	struct expr *e;
+	int ret;
+
+	ret = expr_evaluate(ctx, exprp);
+	if (ret < 0)
+		return ret;
+
+	e = *exprp;
+	if (e->etype != EXPR_VALUE)
+		return expr_error(ctx->msgs, e, "must be a value, not %s", expr_name(e));
+
+	return 0;
+}
+
 static int tunnel_evaluate(struct eval_ctx *ctx, struct obj *obj)
 {
 	if (obj->tunnel.src) {
 		expr_set_context(&ctx->ectx, obj->tunnel.src->dtype,
 				 obj->tunnel.src->dtype->size);
-		if (expr_evaluate(ctx, &obj->tunnel.src) < 0)
+		if (tunnel_evaluate_addr(ctx, &obj->tunnel.src) < 0)
 			return -1;
 	}
 
 	if (obj->tunnel.dst) {
 		expr_set_context(&ctx->ectx, obj->tunnel.dst->dtype,
 				 obj->tunnel.dst->dtype->size);
-		if (expr_evaluate(ctx, &obj->tunnel.dst) < 0)
+		if (tunnel_evaluate_addr(ctx, &obj->tunnel.dst) < 0)
 			return -1;
 
 		if (obj->tunnel.src &&
