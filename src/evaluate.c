@@ -1273,6 +1273,16 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 	if (expr_evaluate(ctx, &prefix->prefix) < 0)
 		return -1;
 	base = prefix->prefix;
+
+	/* expr_evaluate may simplify EXPR_AND to another
+	 * prefix expression for inputs like "2.2.2.2.3*1"/80.
+	 *
+	 * Recurse until all the expressions have been simplified.
+	 * This also gets us the error checks for the expression
+	 * chain.
+	 */
+	if (base->etype == EXPR_PREFIX)
+		return expr_evaluate_prefix(ctx, &prefix->prefix);
 	assert(expr_is_constant(base));
 
 	prefix->dtype	  = datatype_get(base->dtype);
