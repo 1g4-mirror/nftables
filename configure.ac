@@ -91,6 +91,18 @@ AC_MSG_ERROR([unexpected CLI value: $with_cli])
 ])
 AM_CONDITIONAL([BUILD_CLI], [test "x$with_cli" != xno])
 
+AC_ARG_ENABLE([fuzzer],
+	      AS_HELP_STRING([--enable-fuzzer], [Enable fuzzer support.  NEVER use this unless you work on nftables project]),
+	      [enable_fuzzer=yes], [enable_fuzzer=no])
+
+AM_CONDITIONAL([BUILD_AFL], [test "x$enable_fuzzer" = xyes])
+
+HAVE_FUZZER_BUILD=0
+AS_IF([test "x$enable_fuzzer" != xno], [
+	HAVE_FUZZER_BUILD=1
+])
+AC_DEFINE_UNQUOTED([HAVE_FUZZER_BUILD], [$HAVE_FUZZER_BUILD], [Whether to build with fuzzer support])
+
 AC_ARG_WITH([xtables], [AS_HELP_STRING([--with-xtables],
             [Use libxtables for iptables interaction])],
 	    [], [with_xtables=no])
@@ -181,3 +193,8 @@ echo "  systemd unit:                 ${unitdir}"
 else
 echo "  systemd unit:                 no"
 fi
+
+# Do not print "fuzzer support:		no", this is development-only.
+AS_IF([test "x$enable_fuzzer" = xyes ], [
+	echo "  fuzzer support:		yes"
+	], [ ])

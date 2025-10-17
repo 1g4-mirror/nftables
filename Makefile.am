@@ -64,6 +64,7 @@ noinst_HEADERS = \
 	include/linux/netfilter_ipv6.h \
 	include/linux/netfilter_ipv6/ip6_tables.h \
 	\
+	include/afl++.h	\
 	include/cache.h \
 	include/cli.h \
 	include/cmd.h \
@@ -292,6 +293,10 @@ endif
 sbin_PROGRAMS += src/nft
 
 src_nft_SOURCES = src/main.c
+
+if BUILD_AFL
+src_nft_SOURCES += src/afl++.c
+endif
 
 if BUILD_CLI
 src_nft_SOURCES += src/cli.c

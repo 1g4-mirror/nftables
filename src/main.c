@@ -21,6 +21,7 @@
 #include <nftables/libnftables.h>
 #include <utils.h>
 #include <cli.h>
+#include <afl++.h>
 
 static struct nft_ctx *nft;
 
@@ -55,6 +56,9 @@ enum opt_indices {
         IDX_ECHO,
 #define IDX_CMD_OUTPUT_START	IDX_ECHO
         IDX_JSON,
+#if HAVE_FUZZER_BUILD
+        IDX_FUZZER,
+#endif
         IDX_DEBUG,
 #define IDX_CMD_OUTPUT_END	IDX_DEBUG
 };
@@ -83,6 +87,11 @@ enum opt_vals {
 	OPT_TERSE		= 't',
 	OPT_OPTIMIZE		= 'o',
 	OPT_INVALID		= '?',
+
+#if HAVE_FUZZER_BUILD
+	/* keep last */
+        OPT_FUZZER		= 254
+#endif
 };
 
 struct nft_opt {
@@ -140,6 +149,10 @@ static const struct nft_opt nft_options[] = {
 				     "Specify debugging level (scanner, parser, eval, netlink, mnl, proto-ctx, segtree, all)"),
 	[IDX_OPTIMIZE]	    = NFT_OPT("optimize",		OPT_OPTIMIZE,		NULL,
 				     "Optimize ruleset"),
+#if HAVE_FUZZER_BUILD
+	[IDX_FUZZER]	    = NFT_OPT("fuzzer",			OPT_FUZZER,		"stage",
+				      "fuzzer stage to run (parser, eval, netlink-ro, netlink-rw)"),
+#endif
 };
 
 #define NR_NFT_OPTIONS (sizeof(nft_options) / sizeof(nft_options[0]))
@@ -230,6 +243,7 @@ static void show_help(const char *name)
 		print_option(&nft_options[i]);
 
 	fputs("\n", stdout);
+	nft_afl_print_build_info(stdout);
 }
 
 static void show_version(void)
@@ -271,6 +285,8 @@ static void show_version(void)
 	       "  libxtables:	%s\n",
 	       PACKAGE_NAME, PACKAGE_VERSION, RELEASE_NAME,
 	       cli, json, minigmp, xt);
+
+	nft_afl_print_build_info(stdout);
 }
 
 static const struct {
@@ -310,6 +326,38 @@ static const struct {
 		.level		= ~0,
 	},
 };
+
+#if HAVE_FUZZER_BUILD
+static const struct {
+	const char			*name;
+	enum nft_afl_fuzzer_stage	stage;
+} fuzzer_stage_param[] = {
+	{
+		.name		= "parser",
+		.stage		= NFT_AFL_FUZZER_PARSER,
+	},
+	{
+		.name		= "eval",
+		.stage		= NFT_AFL_FUZZER_EVALUATION,
+	},
+	{
+		.name		= "netlink-ro",
+		.stage		= NFT_AFL_FUZZER_NETLINK_RO,
+	},
+	{
+		.name		= "netlink-rw",
+		.stage		= NFT_AFL_FUZZER_NETLINK_RW,
+	},
+};
+static void afl_exit(const char *err)
+{
+	fprintf(stderr, "Error: fuzzer: %s\n", err);
+	sleep(60);	/* assume we're running under afl-fuzz and would be restarted right away */
+	exit(EXIT_FAILURE);
+}
+#else
+static inline void afl_exit(const char *err) { }
+#endif
 
 static void nft_options_error(int argc, char * const argv[], int pos)
 {
@@ -359,6 +407,7 @@ static bool nft_options_check(int argc, char * const argv[])
 int main(int argc, char * const *argv)
 {
 	const struct option *options = get_options();
+	enum nft_afl_fuzzer_stage fuzzer_stage = 0;
 	bool interactive = false, define = false;
 	const char *optstring = get_optstring();
 	unsigned int output_flags = 0;
@@ -500,6 +549,26 @@ int main(int argc, char * const *argv)
 		case OPT_OPTIMIZE:
 			nft_ctx_set_optimize(nft, 0x1);
 			break;
+#if HAVE_FUZZER_BUILD
+		case OPT_FUZZER:
+			{
+				unsigned int i;
+
+				for (i = 0; i < array_size(fuzzer_stage_param); i++) {
+					if (strcmp(fuzzer_stage_param[i].name, optarg))
+						continue;
+					fuzzer_stage = fuzzer_stage_param[i].stage;
+					break;
+				}
+
+				if (i == array_size(fuzzer_stage_param)) {
+					fprintf(stderr, "invalid fuzzer stage `%s'\n",
+						optarg);
+					goto out_fail;
+				}
+			}
+			break;
+#endif
 		case OPT_INVALID:
 			goto out_fail;
 		}
@@ -511,6 +580,38 @@ int main(int argc, char * const *argv)
 	}
 
 	nft_ctx_output_set_flags(nft, output_flags);
+
+	if (fuzzer_stage) {
+		unsigned int input_flags;
+
+		if (filename || define || interactive)
+			afl_exit("-D/--define, -f/--filename and -i/--interactive are incompatible options");
+
+		rc = nft_afl_init(nft, fuzzer_stage);
+		if (rc != 0)
+			afl_exit("cannot initialize");
+
+		input_flags = nft_ctx_input_get_flags(nft);
+
+		/* DNS lookups can result in severe fuzzer slowdown */
+		input_flags |= NFT_CTX_INPUT_NO_DNS;
+		nft_ctx_input_set_flags(nft, input_flags);
+
+		if (fuzzer_stage < NFT_AFL_FUZZER_NETLINK_RW)
+			nft_ctx_set_dry_run(nft, true);
+
+		fprintf(stderr, "Awaiting fuzzer-generated inputs\n");
+	}
+
+	__AFL_INIT();
+
+	if (fuzzer_stage) {
+		rc = nft_afl_main(nft);
+		if (rc != 0)
+			afl_exit("fatal error");
+
+		return EXIT_SUCCESS;
+	}
 
 	if (optind != argc) {
 		char *buf;
