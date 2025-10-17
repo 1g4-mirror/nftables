@@ -139,17 +139,17 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 			netlink_gen_key(key, &nld);
 			key->flags &= ~EXPR_F_INTERVAL;
 
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, &nld.value, nld.len);
+			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, nld.value, nld.len);
 
 			key->flags |= EXPR_F_INTERVAL_END;
 			netlink_gen_key(key, &nld);
 			key->flags &= ~EXPR_F_INTERVAL_END;
 
 			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY_END,
-					   &nld.value, nld.len);
+					   nld.value, nld.len);
 		} else {
 			netlink_gen_key(key, &nld);
-			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, &nld.value, nld.len);
+			nftnl_set_elem_set(nlse, NFTNL_SET_ELEM_KEY, nld.value, nld.len);
 		}
 		break;
 	}

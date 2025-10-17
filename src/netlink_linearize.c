@@ -482,8 +482,8 @@ static struct expr *netlink_gen_prefix(struct netlink_linearize_ctx *ctx,
 	netlink_put_register(nle, NFTNL_EXPR_BITWISE_SREG, sreg);
 	netlink_put_register(nle, NFTNL_EXPR_BITWISE_DREG, sreg);
 	nftnl_expr_set_u32(nle, NFTNL_EXPR_BITWISE_LEN, nld.len);
-	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, &nld.value, nld.len);
-	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, &zero.value, zero.len);
+	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, nld.value, nld.len);
+	nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, zero.value, zero.len);
 	nft_rule_add_expr(ctx, nle, &expr->location);
 
 	return expr->right->prefix;
@@ -558,8 +558,8 @@ static void netlink_gen_flagcmp(struct netlink_linearize_ctx *ctx,
 		netlink_put_register(nle, NFTNL_EXPR_BITWISE_SREG, sreg);
 		netlink_put_register(nle, NFTNL_EXPR_BITWISE_DREG, sreg);
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_BITWISE_LEN, len);
-		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, &nld2.value, nld2.len);
-		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, &nld.value, nld.len);
+		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_MASK, nld2.value, nld2.len);
+		nftnl_expr_set(nle, NFTNL_EXPR_BITWISE_XOR, nld.value, nld.len);
 		nft_rule_add_expr(ctx, nle, &expr->location);
 
 		nle = alloc_nft_expr("cmp");
