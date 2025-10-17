@@ -563,6 +563,8 @@ static void netlink_gen_prefix(const struct expr *expr,
 static void netlink_gen_key(const struct expr *expr,
 			    struct nft_data_linearize *data)
 {
+	memset(data, 0, sizeof(*data));
+
 	switch (expr->etype) {
 	case EXPR_VALUE:
 		return netlink_gen_constant_data(expr, data);
@@ -580,6 +582,8 @@ static void netlink_gen_key(const struct expr *expr,
 static void __netlink_gen_data(const struct expr *expr,
 			       struct nft_data_linearize *data, bool expand)
 {
+	memset(data, 0, sizeof(*data));
+
 	switch (expr->etype) {
 	case EXPR_VALUE:
 		return netlink_gen_constant_data(expr, data);
