@@ -173,7 +173,7 @@ static struct error_record *__symbol_parse_fuzzy(const struct expr *sym,
 	if (st.obj) {
 		return error(&sym->location,
 			     "Could not parse %s expression; did you you mean `%s`?",
-			     sym->dtype->desc, st.obj);
+			     sym->dtype->desc, (const char *)st.obj);
 	}
 
 	return NULL;
@@ -403,7 +403,7 @@ static struct error_record *verdict_type_error(const struct expr *sym)
 
 	if (st.obj) {
 		return error(&sym->location, "Could not parse %s; did you mean `%s'?",
-			     sym->dtype->desc, st.obj);
+			     sym->dtype->desc, (const char *)st.obj);
 	}
 
 	/* assume user would like to jump to chain as a hint. */

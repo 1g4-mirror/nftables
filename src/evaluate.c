@@ -229,7 +229,7 @@ static int byteorder_conversion(struct eval_ctx *ctx, struct expr **expr,
 		return 0;
 	default:
 		return expr_error(ctx->msgs, *expr,
-				  "Byteorder mismatch: %s expected %s, %s got %s",
+				  "Byteorder mismatch: expected %s, %s got %s",
 				  byteorder_names[byteorder],
 				  expr_name(*expr),
 				  byteorder_names[(*expr)->byteorder]);
@@ -1811,7 +1811,7 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 		ctx->inner_desc = NULL;
 
 		if (size > NFT_MAX_EXPR_LEN_BITS)
-			return expr_error(ctx->msgs, i, "Concatenation of size %u exceeds maximum size of %u",
+			return expr_error(ctx->msgs, i, "Concatenation of size %u exceeds maximum size of %lu",
 					  size, NFT_MAX_EXPR_LEN_BITS);
 	}
 
@@ -3507,7 +3507,7 @@ static int stmt_evaluate_payload(struct eval_ctx *ctx, struct stmt *stmt)
 
 	if (payload_byte_size > sizeof(data))
 		return expr_error(ctx->msgs, stmt->payload.expr,
-				  "uneven load cannot span more than %u bytes, got %u",
+				  "uneven load cannot span more than %zu bytes, got %u",
 				  sizeof(data), payload_byte_size);
 
 	if (aligned_fetch && payload_byte_size & 1) {
@@ -5187,7 +5187,7 @@ static int set_expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 		size += netlink_padded_len(i->len);
 
 		if (size > NFT_MAX_EXPR_LEN_BITS)
-			return expr_error(ctx->msgs, i, "Concatenation of size %u exceeds maximum size of %u",
+			return expr_error(ctx->msgs, i, "Concatenation of size %u exceeds maximum size of %lu",
 					  size, NFT_MAX_EXPR_LEN_BITS);
 	}
 

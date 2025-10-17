@@ -441,7 +441,7 @@ extern void expr_set_type(struct expr *expr, const struct datatype *dtype,
 struct eval_ctx;
 extern int expr_binary_error(struct list_head *msgs,
 			     const struct expr *e1, const struct expr *e2,
-			     const char *fmt, ...) __gmp_fmtstring(4, 5);
+			     const char *fmt, ...) __fmtstring(4, 5);
 
 #define expr_error(msgs, expr, fmt, args...) \
 	expr_binary_error(msgs, expr, NULL, fmt, ## args)

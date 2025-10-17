@@ -27,11 +27,6 @@
 #endif
 
 #define __fmtstring(x, y)	__attribute__((format(printf, x, y)))
-#if 0
-#define __gmp_fmtstring(x, y)	__fmtstring(x, y)
-#else
-#define __gmp_fmtstring(x, y)
-#endif
 
 #define __must_check		__attribute__((warn_unused_result))
 #define __noreturn		__attribute__((__noreturn__))
