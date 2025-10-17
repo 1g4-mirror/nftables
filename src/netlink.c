@@ -382,7 +382,7 @@ static void netlink_gen_concat_key(const struct expr *expr,
 		if (byteorder == BYTEORDER_HOST_ENDIAN &&
 		    expr_basetype(i)->type != TYPE_STRING)
 			nld->byteorder |= 1 << n;
-		n++;
+		nld->sizes[n++] = div_round_up(i->len, BITS_PER_BYTE);
 	}
 
 	nft_data_memcpy(nld, data, len);
@@ -452,7 +452,7 @@ static void __netlink_gen_concat_expand(const struct expr *expr,
 		if (i->byteorder == BYTEORDER_HOST_ENDIAN &&
 		    expr_basetype(i)->type != TYPE_STRING)
 			nld->byteorder |= 1 << n;
-		n++;
+		nld->sizes[n++] = div_round_up(i->len, BITS_PER_BYTE);
 	}
 
 	list_for_each_entry(i, &expr_concat(expr)->expressions, list) {
@@ -460,7 +460,7 @@ static void __netlink_gen_concat_expand(const struct expr *expr,
 		if (i->byteorder == BYTEORDER_HOST_ENDIAN &&
 		    expr_basetype(i)->type != TYPE_STRING)
 			nld->byteorder |= 1 << n;
-		n++;
+		nld->sizes[n++] = div_round_up(i->len, BITS_PER_BYTE);
 	}
 
 	nft_data_memcpy(nld, data, len);
@@ -485,7 +485,7 @@ static void __netlink_gen_concat(const struct expr *expr,
 		if (i->byteorder == BYTEORDER_HOST_ENDIAN &&
 		    expr_basetype(i)->type != TYPE_STRING)
 			nld->byteorder |= 1 << n;
-		n++;
+		nld->sizes[n++] = div_round_up(i->len, BITS_PER_BYTE);
 	}
 
 	nft_data_memcpy(nld, data, len);
@@ -563,6 +563,8 @@ static void netlink_gen_range(const struct expr *expr,
 	offset = netlink_export_pad(data, expr->left->value, expr->left);
 	netlink_export_pad(data + offset, expr->right->value, expr->right);
 	nft_data_memcpy(nld, data, len);
+	nld->sizes[0] = div_round_up(expr->left->len, BITS_PER_BYTE);
+	nld->sizes[1] = div_round_up(expr->right->len, BITS_PER_BYTE);
 }
 
 static void netlink_gen_range_value(const struct expr *expr,
@@ -579,6 +581,8 @@ static void netlink_gen_range_value(const struct expr *expr,
 	offset = netlink_export_pad(data, expr->range.low, expr);
 	netlink_export_pad(data + offset, expr->range.high, expr);
 	nft_data_memcpy(nld, data, len);
+	nld->sizes[0] = div_round_up(expr->len, BITS_PER_BYTE);
+	nld->sizes[1] = nld->sizes[0];
 }
 
 static void netlink_gen_prefix(const struct expr *expr,
@@ -599,6 +603,8 @@ static void netlink_gen_prefix(const struct expr *expr,
 	mpz_clear(v);
 
 	nft_data_memcpy(nld, data, len);
+	nld->sizes[0] = div_round_up(expr->prefix->len, BITS_PER_BYTE);
+	nld->sizes[1] = nld->sizes[0];
 }
 
 static void netlink_gen_key(const struct expr *expr,
