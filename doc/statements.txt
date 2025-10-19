@@ -25,7 +25,7 @@ are not evaluated anymore for the packet.
 *queue*:: Terminate ruleset evaluation and queue the packet to userspace.
 Userspace must provide a drop or accept verdict.  In case of accept, processing
 resumes with the next base chain hook, not the rule following the queue verdict.
-*continue*:: Continue ruleset evaluation with the next rule. This
+*continue*:: Continue evaluation with the next rule. This
  is the default behaviour in case a rule issues no verdict.
 *return*:: Return from the current chain and continue evaluation at the
  next rule in the last chain. If issued in a base chain, it is equivalent to the

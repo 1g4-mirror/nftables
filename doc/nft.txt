@@ -932,7 +932,7 @@ actions, such as logging, rejecting a packet, etc. +
 Statements exist in two kinds. Terminal statements unconditionally terminate
 evaluation of the current rule, non-terminal statements either only
 conditionally or never terminate evaluation of the current rule, in other words,
-they are passive from the ruleset evaluation perspective. There can be an
+they are passive from the rule evaluation perspective. There can be an
 arbitrary amount of non-terminal statements in a rule, but only a single
 terminal statement as the final statement.
 
