@@ -409,16 +409,16 @@ void concat_range_aggregate(struct expr *set)
 			if (prefix_len >= 0 &&
 			    (prefix_len % BITS_PER_BYTE) == 0 &&
 			    string_type) {
+				unsigned int r1len = div_round_up(r1->len, BITS_PER_BYTE);
 				unsigned int str_len = prefix_len / BITS_PER_BYTE;
-				char data[str_len + 2];
+				char data[r1len + 1] = {};
 
-				mpz_export_data(data, r1->value, BYTEORDER_HOST_ENDIAN, str_len);
+				mpz_export_data(data, r1->value, BYTEORDER_HOST_ENDIAN, r1len);
 				data[str_len] = '*';
 
 				tmp = constant_expr_alloc(&r1->location, r1->dtype,
 							  BYTEORDER_HOST_ENDIAN,
 							  (str_len + 1) * BITS_PER_BYTE, data);
-				tmp->len = r2->len;
 				list_replace(&r2->list, &tmp->list);
 				r2_next = tmp->list.next;
 				expr_free(r2);
