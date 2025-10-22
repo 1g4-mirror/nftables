@@ -341,13 +341,18 @@ static bool __stmt_type_eq(const struct stmt *stmt_a, const struct stmt *stmt_b,
 
 static bool expr_verdict_eq(const struct expr *expr_a, const struct expr *expr_b)
 {
+	char chain_a[NFT_CHAIN_MAXNAMELEN];
+	char chain_b[NFT_CHAIN_MAXNAMELEN];
+
 	if (expr_a->verdict != expr_b->verdict)
 		return false;
 	if (expr_a->chain && expr_b->chain) {
-		if (expr_a->chain->etype != expr_b->chain->etype)
+		if (expr_a->chain->etype != EXPR_VALUE ||
+		    expr_a->chain->etype != expr_b->chain->etype)
 			return false;
-		if (expr_a->chain->etype == EXPR_VALUE &&
-		    strcmp(expr_a->chain->identifier, expr_b->chain->identifier))
+		expr_chain_export(expr_a->chain, chain_a);
+		expr_chain_export(expr_b->chain, chain_b);
+		if (strcmp(chain_a, chain_b))
 			return false;
 	} else if (expr_a->chain || expr_b->chain) {
 		return false;
