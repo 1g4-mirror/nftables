@@ -2474,7 +2474,7 @@ static void binop_adjust_one(const struct expr *binop, struct expr *value,
 		value->len = left->len;
 		break;
 	default:
-		BUG("unknown expression type %s\n", expr_name(left));
+		BUG("unknown expression type %s", expr_name(left));
 		break;
 	}
 }
@@ -2505,7 +2505,8 @@ static void binop_adjust(const struct expr *binop, struct expr *right,
 				binop_adjust(binop, i->key->key, shift);
 				break;
 			default:
-				BUG("unknown expression type %s\n", expr_name(i->key));
+				BUG("unknown expression type %s",
+				    expr_name(i->key));
 			}
 		}
 		break;
@@ -2514,7 +2515,7 @@ static void binop_adjust(const struct expr *binop, struct expr *right,
 		binop_adjust_one(binop, right->right, shift);
 		break;
 	default:
-		BUG("unknown expression type %s\n", expr_name(right));
+		BUG("unknown expression type %s", expr_name(right));
 		break;
 	}
 }
@@ -2645,7 +2646,7 @@ static void relational_binop_postprocess(struct rule_pp_ctx *ctx,
 			expr->op = OP_NEG;
 			break;
 		default:
-			BUG("unknown operation type %d\n", expr->op);
+			BUG("unknown operation type %d", expr->op);
 		}
 		expr_free(binop);
 	} else if (datatype_prefix_notation(binop->left->dtype) &&
@@ -3051,7 +3052,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 		ct_expr_update_type(&dl->pctx, expr);
 		break;
 	default:
-		BUG("unknown expression type %s\n", expr_name(expr));
+		BUG("unknown expression type %s", expr_name(expr));
 	}
 }
 

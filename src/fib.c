@@ -195,7 +195,7 @@ struct expr *fib_expr_alloc(const struct location *loc,
 		type = &fib_addr_type;
 		break;
 	default:
-		BUG("Unknown result %d\n", result);
+		BUG("Unknown result %d", result);
 	}
 
 	if (flags & NFTA_FIB_F_PRESENT) {

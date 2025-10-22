@@ -172,7 +172,7 @@ static enum ops byteorder_conversion_op(struct expr *expr,
 	default:
 		break;
 	}
-	BUG("invalid byte order conversion %u => %u\n",
+	BUG("invalid byte order conversion %u => %u",
 	    expr->byteorder, byteorder);
 }
 
@@ -587,7 +587,7 @@ static int expr_evaluate_bits(struct eval_ctx *ctx, struct expr **exprp)
 					  &extra_len);
 		break;
 	default:
-		BUG("Unknown expression %s\n", expr_name(expr));
+		BUG("Unknown expression %s", expr_name(expr));
 	}
 
 	masklen = len + shift;
@@ -1375,7 +1375,7 @@ static int expr_evaluate_unary(struct eval_ctx *ctx, struct expr **expr)
 		byteorder = BYTEORDER_HOST_ENDIAN;
 		break;
 	default:
-		BUG("invalid unary operation %u\n", unary->op);
+		BUG("invalid unary operation %u", unary->op);
 	}
 
 	__datatype_set(unary, datatype_clone(arg->dtype));
@@ -1426,7 +1426,7 @@ static int constant_binop_simplify(struct eval_ctx *ctx, struct expr **expr)
 		mpz_rshift_ui(val, mpz_get_uint32(right->value));
 		break;
 	default:
-		BUG("invalid binary operation %u\n", op->op);
+		BUG("invalid binary operation %u", op->op);
 	}
 
 	new = constant_expr_alloc(&op->location, op->dtype, op->byteorder,
@@ -1615,7 +1615,7 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 		ret = expr_evaluate_bitwise(ctx, expr);
 		break;
 	default:
-		BUG("invalid binary operation %u\n", op->op);
+		BUG("invalid binary operation %u", op->op);
 	}
 
 
@@ -2053,7 +2053,7 @@ static int interval_set_eval(struct eval_ctx *ctx, struct set *set,
 	case CMD_RESET:
 		break;
 	default:
-		BUG("unhandled op %d\n", ctx->cmd->op);
+		BUG("unhandled op %d", ctx->cmd->op);
 		break;
 	}
 
@@ -2278,7 +2278,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 
 		if (ectx.len && mappings->set->data->len != ectx.len)
-			BUG("%d vs %d\n", mappings->set->data->len, ectx.len);
+			BUG("%d vs %d", mappings->set->data->len, ectx.len);
 
 		map->mappings = mappings;
 
@@ -2643,7 +2643,7 @@ static int binop_transfer_one(struct eval_ctx *ctx,
 					    *right, expr_get(left->right));
 		break;
 	default:
-		BUG("invalid binary operation %u\n", left->op);
+		BUG("invalid binary operation %u", left->op);
 	}
 
 	return expr_evaluate(ctx, right);
@@ -2965,7 +2965,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 						 "Use concatenations with sets and maps, not singleton values");
 			break;
 		default:
-			BUG("invalid expression type %s\n", expr_name(right));
+			BUG("invalid expression type %s", expr_name(right));
 		}
 		break;
 	case OP_LT:
@@ -2996,7 +2996,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 		break;
 	default:
-		BUG("invalid relational operation %u\n", rel->op);
+		BUG("invalid relational operation %u", rel->op);
 	}
 
 	if (binop_transfer(ctx, expr) < 0)
@@ -3232,7 +3232,7 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_RANGE_SYMBOL:
 		return expr_evaluate_symbol_range(ctx, expr);
 	default:
-		BUG("unknown expression type %s\n", expr_name(*expr));
+		BUG("unknown expression type %s", expr_name(*expr));
 	}
 }
 
@@ -3393,7 +3393,7 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 	case EXPR_MAP:
 		break;
 	default:
-		BUG("invalid verdict expression %s\n", expr_name(stmt->expr));
+		BUG("invalid verdict expression %s", expr_name(stmt->expr));
 	}
 	return 0;
 }
@@ -5094,7 +5094,7 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	case STMT_OPTSTRIP:
 		return stmt_evaluate_optstrip(ctx, stmt);
 	default:
-		BUG("unknown statement type %d\n", stmt->type);
+		BUG("unknown statement type %d", stmt->type);
 	}
 }
 
@@ -5485,7 +5485,7 @@ static struct expr *expr_set_to_list(struct eval_ctx *ctx, struct expr *dev_expr
 			expr = key;
 			break;
 		default:
-			BUG("invalid expression type %s\n", expr_name(expr));
+			BUG("invalid expression type %s", expr_name(expr));
 			break;
 		}
 
@@ -5537,7 +5537,7 @@ static bool evaluate_device_expr(struct eval_ctx *ctx, struct expr **dev_expr)
 		case EXPR_VALUE:
 			break;
 		default:
-			BUG("invalid expression type %s\n", expr_name(expr));
+			BUG("invalid expression type %s", expr_name(expr));
 			break;
 		}
 
@@ -5977,7 +5977,7 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 		handle_merge(&cmd->object->handle, &cmd->handle);
 		return obj_evaluate(ctx, cmd->object);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -6148,7 +6148,7 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 		obj_del_cache(ctx, cmd, NFT_OBJECT_TUNNEL);
 		return 0;
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -6158,7 +6158,7 @@ static int cmd_evaluate_get(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_ELEMENTS:
 		return setelem_evaluate(ctx, cmd);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -6313,7 +6313,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		}
 		return 0;
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -6342,7 +6342,7 @@ static int cmd_evaluate_reset(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_MAP:
 		return cmd_evaluate_list(ctx, cmd);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -6422,7 +6422,7 @@ static int cmd_evaluate_flush(struct eval_ctx *ctx, struct cmd *cmd)
 
 		return 0;
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -6444,7 +6444,7 @@ static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
 
 		break;
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -6634,5 +6634,5 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 		break;
 	};
 
-	BUG("invalid command operation %u\n", cmd->op);
+	BUG("invalid command operation %u", cmd->op);
 }

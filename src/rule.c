@@ -1460,7 +1460,7 @@ void cmd_free(struct cmd *cmd)
 			flowtable_free(cmd->flowtable);
 			break;
 		default:
-			BUG("invalid command object type %u\n", cmd->obj);
+			BUG("invalid command object type %u", cmd->obj);
 		}
 	}
 	free(cmd->attr);
@@ -1559,7 +1559,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_add(ctx, cmd, flags);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -1570,7 +1570,7 @@ static int do_command_replace(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_RULE:
 		return mnl_nft_rule_replace(ctx, cmd);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -1586,7 +1586,7 @@ static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_RULE:
 		return mnl_nft_rule_add(ctx, cmd, flags);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -1640,7 +1640,7 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_del(ctx, cmd);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 
@@ -2668,7 +2668,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		break;
 	}
 
-	BUG("invalid command object type %u\n", cmd->obj);
+	BUG("invalid command object type %u", cmd->obj);
 	return 0;
 }
 
@@ -2708,7 +2708,7 @@ static int do_command_get(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_ELEMENTS:
 		return do_get_setelems(ctx, cmd, false);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 
 	return 0;
@@ -2739,7 +2739,7 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_RULESET:
 		return mnl_nft_table_del(ctx, cmd);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -2757,7 +2757,7 @@ static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 
 		return mnl_nft_chain_rename(ctx, cmd, chain);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 	return 0;
 }
@@ -2844,7 +2844,7 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_DESCRIBE:
 		return do_command_describe(ctx, cmd, &ctx->nft->output);
 	default:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 	}
 }
 

@@ -120,7 +120,7 @@ static struct expr *expr_value(struct expr *expr)
 	case EXPR_VALUE:
 		return expr;
 	default:
-		BUG("invalid expression type %s\n", expr_name(expr));
+		BUG("invalid expression type %s", expr_name(expr));
 	}
 }
 

@@ -70,7 +70,7 @@ static void setelem_expr_to_range(struct expr *expr)
 		expr->key = key;
 		break;
 	default:
-		BUG("unhandled key type %s\n", expr_name(expr->key));
+		BUG("unhandled key type %s", expr_name(expr->key));
 	}
 }
 
@@ -226,7 +226,7 @@ static struct expr *interval_expr_key(struct expr *i)
 		elem = i;
 		break;
 	default:
-		BUG("unhandled expression type %d\n", i->etype);
+		BUG("unhandled expression type %d", i->etype);
 		return NULL;
 	}
 
@@ -756,7 +756,7 @@ static struct expr *setelem_key(struct expr *expr)
 		key = expr->key;
 		break;
 	default:
-		BUG("unhandled expression type %d\n", expr->etype);
+		BUG("unhandled expression type %d", expr->etype);
 		return NULL;
 	}
 
@@ -780,7 +780,7 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 	}
 
 	if (key->etype != EXPR_RANGE_VALUE)
-		BUG("key must be RANGE_VALUE, not %s\n", expr_name(key));
+		BUG("key must be RANGE_VALUE, not %s", expr_name(key));
 
 	assert(!next_key || next_key->etype == EXPR_RANGE_VALUE);
 

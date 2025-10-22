@@ -125,7 +125,7 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 		elem = expr;
 	}
 	if (elem->etype != EXPR_SET_ELEM)
-		BUG("Unexpected expression type: got %d\n", elem->etype);
+		BUG("Unexpected expression type: got %d", elem->etype);
 
 	key = elem->key;
 
@@ -221,7 +221,7 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 					   nld.value, nld.len);
 			break;
 		default:
-			BUG("unexpected set element expression\n");
+			BUG("unexpected set element expression");
 			break;
 		}
 	}
@@ -341,7 +341,8 @@ static void nft_data_memcpy(struct nft_data_linearize *nld,
 			    const void *src, unsigned int len)
 {
 	if (len > sizeof(nld->value))
-		BUG("nld buffer overflow: want to copy %u, max %u\n", len, (unsigned int)sizeof(nld->value));
+		BUG("nld buffer overflow: want to copy %u, max %u",
+		    len, (unsigned int)sizeof(nld->value));
 
 	memcpy(nld->value, src, len);
 	nld->len = len;
@@ -575,7 +576,7 @@ static void netlink_gen_key(const struct expr *expr,
 	case EXPR_PREFIX:
 		return netlink_gen_prefix(expr, data);
 	default:
-		BUG("invalid data expression type %s\n", expr_name(expr));
+		BUG("invalid data expression type %s", expr_name(expr));
 	}
 }
 
@@ -598,7 +599,7 @@ static void __netlink_gen_data(const struct expr *expr,
 	case EXPR_PREFIX:
 		return netlink_gen_prefix(expr, data);
 	default:
-		BUG("invalid data expression type %s\n", expr_name(expr));
+		BUG("invalid data expression type %s", expr_name(expr));
 	}
 }
 

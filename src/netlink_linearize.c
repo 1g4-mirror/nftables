@@ -76,7 +76,7 @@ static enum nft_registers __get_register(struct netlink_linearize_ctx *ctx,
 
 	n = netlink_register_space(size);
 	if (ctx->reg_low + n > NFT_REG_1 + NFT_REG32_15 - NFT_REG32_00 + 1)
-		BUG("register reg_low %u invalid\n", ctx->reg_low);
+		BUG("register reg_low %u invalid", ctx->reg_low);
 
 	reg = ctx->reg_low;
 	ctx->reg_low += n;
@@ -90,7 +90,7 @@ static void __release_register(struct netlink_linearize_ctx *ctx,
 
 	n = netlink_register_space(size);
 	if (ctx->reg_low < NFT_REG_1 + n)
-		BUG("register reg_low %u invalid\n", ctx->reg_low);
+		BUG("register reg_low %u invalid", ctx->reg_low);
 
 	ctx->reg_low -= n;
 }
@@ -457,7 +457,7 @@ static enum nft_cmp_ops netlink_gen_cmp_op(enum ops op)
 	case OP_GTE:
 		return NFT_CMP_GTE;
 	default:
-		BUG("invalid comparison operation %u\n", op);
+		BUG("invalid comparison operation %u", op);
 	}
 }
 
@@ -519,7 +519,7 @@ static void netlink_gen_range(struct netlink_linearize_ctx *ctx,
 		nft_rule_add_expr(ctx, nle, &expr->location);
 		break;
 	default:
-		BUG("invalid range operation %u\n", expr->op);
+		BUG("invalid range operation %u", expr->op);
 
 	}
 
@@ -600,7 +600,7 @@ static void netlink_gen_relational(struct netlink_linearize_ctx *ctx,
 	case OP_NEG:
 		break;
 	default:
-		BUG("invalid relational operation %u\n", expr->op);
+		BUG("invalid relational operation %u", expr->op);
 	}
 
 	switch (expr->right->etype) {
@@ -734,7 +734,7 @@ static void netlink_gen_bitwise_mask_xor(struct netlink_linearize_ctx *ctx,
 			combine_binop(mask, xor, tmp, val);
 			break;
 		default:
-			BUG("invalid binary operation %u\n", i->op);
+			BUG("invalid binary operation %u", i->op);
 		}
 	}
 
@@ -780,7 +780,7 @@ static void netlink_gen_bitwise_bool(struct netlink_linearize_ctx *ctx,
 		nftnl_expr_set_u32(nle, NFTNL_EXPR_BITWISE_OP, NFT_BITWISE_OR);
 		break;
 	default:
-		BUG("invalid binary operation %u\n", expr->op);
+		BUG("invalid binary operation %u", expr->op);
 	}
 
 	netlink_gen_expr(ctx, expr->left, dreg);
@@ -824,7 +824,7 @@ static enum nft_byteorder_ops netlink_gen_unary_op(enum ops op)
 	case OP_NTOH:
 		return NFT_BYTEORDER_NTOH;
 	default:
-		BUG("invalid unary operation %u\n", op);
+		BUG("invalid unary operation %u", op);
 	}
 }
 
@@ -951,7 +951,7 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 	case EXPR_XFRM:
 		return netlink_gen_xfrm(ctx, expr, dreg);
 	default:
-		BUG("unknown expression type %s\n", expr_name(expr));
+		BUG("unknown expression type %s", expr_name(expr));
 	}
 }
 
@@ -984,7 +984,7 @@ static void netlink_gen_objref_stmt(struct netlink_linearize_ctx *ctx,
 				   stmt->objref.type);
 		break;
 	default:
-		BUG("unsupported expression %u\n", expr->etype);
+		BUG("unsupported expression %u", expr->etype);
 	}
 	nft_rule_add_expr(ctx, nle, &expr->location);
 }
@@ -1072,7 +1072,7 @@ struct nftnl_expr *netlink_gen_stmt_stateful(const struct stmt *stmt)
 	case STMT_LAST:
 		return netlink_gen_last_stmt(stmt);
 	default:
-		BUG("unknown stateful statement type %d\n", stmt->type);
+		BUG("unknown stateful statement type %d", stmt->type);
 	}
 }
 
@@ -1231,7 +1231,7 @@ static unsigned int nat_addrlen(uint8_t family)
 	case NFPROTO_IPV6: return 128;
 	}
 
-	BUG("invalid nat family %u\n", family);
+	BUG("invalid nat family %u", family);
 	return 0;
 }
 
@@ -1274,7 +1274,7 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 		nftnl_reg_pmax = NFTNL_EXPR_REDIR_REG_PROTO_MAX;
 		break;
 	default:
-		BUG("unknown nat type %d\n", stmt->nat.type);
+		BUG("unknown nat type %d", stmt->nat.type);
 		break;
 	}
 
@@ -1762,7 +1762,7 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 	case STMT_OPTSTRIP:
 		return netlink_gen_optstrip_stmt(ctx, stmt);
 	default:
-		BUG("unknown statement type %d\n", stmt->type);
+		BUG("unknown statement type %d", stmt->type);
 	}
 }
 

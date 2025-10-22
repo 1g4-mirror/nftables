@@ -1181,7 +1181,7 @@ static void rule_optimize_print(struct output_ctx *octx,
 	case INDESC_NETLINK:
 		break;
 	default:
-		BUG("invalid input descriptor type %u\n", indesc->type);
+		BUG("invalid input descriptor type %u", indesc->type);
 	}
 
 	print_location(octx->error_fp, indesc, loc);

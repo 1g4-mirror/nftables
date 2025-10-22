@@ -1138,7 +1138,7 @@ const struct stmt_ops *stmt_ops(const struct stmt *stmt)
 
 	ops = __stmt_ops_by_type(stmt->type);
 	if (!ops)
-		BUG("Unknown statement type %d\n", stmt->type);
+		BUG("Unknown statement type %d", stmt->type);
 
 	return ops;
 }

@@ -119,7 +119,7 @@ void datatype_print(const struct expr *expr, struct output_ctx *octx)
 						       false, octx);
 	} while ((dtype = dtype->basetype));
 
-	BUG("datatype %s has no print method or symbol table\n",
+	BUG("datatype %s has no print method or symbol table",
 	    expr->dtype->name);
 }
 

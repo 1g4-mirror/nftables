@@ -1117,7 +1117,7 @@ static json_t *datatype_json(const struct expr *expr, struct output_ctx *octx)
 		}
 	} while ((dtype = dtype->basetype));
 
-	BUG("datatype %s has no print method or symbol table\n",
+	BUG("datatype %s has no print method or symbol table",
 	    expr->dtype->name);
 }
 
@@ -2149,7 +2149,7 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 		errno = EOPNOTSUPP;
 		return -1;
 	case CMD_OBJ_INVALID:
-		BUG("invalid command object type %u\n", cmd->obj);
+		BUG("invalid command object type %u", cmd->obj);
 		break;
 	}
 

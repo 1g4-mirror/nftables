@@ -1774,7 +1774,7 @@ void range_expr_value_low(mpz_t rop, const struct expr *expr)
 	case EXPR_SET_ELEM:
 		return range_expr_value_low(rop, expr->key);
 	default:
-		BUG("invalid range expression type %s\n", expr_name(expr));
+		BUG("invalid range expression type %s", expr_name(expr));
 	}
 }
 
@@ -1801,7 +1801,7 @@ void range_expr_value_high(mpz_t rop, const struct expr *expr)
 	case EXPR_SET_ELEM:
 		return range_expr_value_high(rop, expr->key);
 	default:
-		BUG("invalid range expression type %s\n", expr_name(expr));
+		BUG("invalid range expression type %s", expr_name(expr));
 	}
 }
 
@@ -1852,7 +1852,7 @@ const struct expr_ops *expr_ops(const struct expr *e)
 
 	ops = __expr_ops_by_type(e->etype);
 	if (!ops)
-		BUG("Unknown expression type %d\n", e->etype);
+		BUG("Unknown expression type %d", e->etype);
 
 	return ops;
 }
