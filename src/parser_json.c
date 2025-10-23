@@ -128,7 +128,7 @@ static void json_lib_error(struct json_ctx *ctx, json_error_t *err)
 		.last_column = err->column,
 	};
 
-	erec_queue(error(&loc, err->text), ctx->msgs);
+	erec_queue(error(&loc, "%s", err->text), ctx->msgs);
 }
 
 __attribute__((format(printf, 2, 3)))
@@ -4558,6 +4558,7 @@ int nft_parse_json_filename(struct nft_ctx *nft, const char *filename,
 	return ret;
 }
 
+__attribute__((format(printf, 2, 3)))
 static int json_echo_error(struct netlink_mon_handler *monh,
 			   const char *fmt, ...)
 {
@@ -4630,7 +4631,7 @@ int json_events_cb(const struct nlmsghdr *nlh, struct netlink_mon_handler *monh)
 
 	json = seqnum_to_json(nlh->nlmsg_seq);
 	if (!json) {
-		json_echo_error(monh, "No JSON command found with seqnum %lu\n",
+		json_echo_error(monh, "No JSON command found with seqnum %u\n",
 				nlh->nlmsg_seq);
 		return MNL_CB_OK;
 	}
