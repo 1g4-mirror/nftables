@@ -572,6 +572,7 @@ table inet filter {
 nft delete rule inet filter input handle 5
 -------------------------
 
+[[OVERALL_EVALUATION_OF_THE_RULESET]]
 OVERALL EVALUATION OF THE RULESET
 ---------------------------------
 This is a summary of how the ruleset is evaluated.

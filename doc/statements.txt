@@ -10,18 +10,22 @@ ____
 'CHAIN' := 'chain_name' | *{* 'statement' ... *}*
 ____
 
-*accept* and *drop* are absolute verdicts -- they terminate ruleset evaluation immediately.
+*accept* and *drop* are absolute verdicts -- they terminate chain evaluation,
+as if the packet would have reached the end of the base chain with the equivalent
+policy decision set.  See <<OVERALL_EVALUATION_OF_THE_RULESET>> for more details.
 
 [horizontal]
-*accept*:: Terminate ruleset evaluation and accept the packet.
-The packet can still be dropped later by another hook, for instance accept
-in the forward hook still allows one to drop the packet later in the postrouting hook,
-or another forward base chain that has a higher priority number and is evaluated
-afterwards in the processing pipeline.
-*drop*:: Terminate ruleset evaluation and drop the packet.
-The drop occurs instantly, no further chains or hooks are evaluated.
-It is not possible to accept the packet in a later chain again, as those
-are not evaluated anymore for the packet.
+*accept*:: Terminate evaluation early.
+ Evaluation continues in the next base chain of higher or possibly equal
+ priority from the same hook or in the first base chain of a later hook, if any.
+ This means the packet can still be dropped in another base chain as well as
+ any chain called from it.
+ For example, an *accept* verdict in a chain of the *forward* hook still allows one to
+ *drop* the packet in another *forward* hook base chain (or a chain called from it)
+ that has a higher priority number or in a chain attached to the *postrouting* hook.
+*drop*:: Immediately drop the packet and terminate ruleset evaluation.
+ No further evaluation takes place.  It is not possible to override a *drop*
+ verdict.
 *jump* 'CHAIN':: Store the current position in the call stack of chains and
  continue evaluation at the first rule of 'CHAIN'.
  When the end of 'CHAIN' is reached, an implicit *return* verdict is issued.
