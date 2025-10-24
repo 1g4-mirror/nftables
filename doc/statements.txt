@@ -1,3 +1,4 @@
+[[VERDICT_STATEMENTS]]
 VERDICT STATEMENTS
 ~~~~~~~~~~~~~~~~~~
 The verdict statements alter control flow in the ruleset and issue policy decisions for packets.
@@ -201,11 +202,12 @@ ____
                  *tcp reset*
 ____
 
-A reject statement is used to send back an error packet in response to the
-matched packet otherwise it is equivalent to drop so it is a terminating
-statement, ending rule traversal. This statement is only valid in base chains
-using the *prerouting*, *input*,
-*forward* or *output* hooks, and user-defined chains which are only called from
+A reject statement tries to send back an error packet in response to the matched
+packet and then interally issues a *drop* verdict.
+It’s thus a terminating statement with all consequences of the latter (see
+<<OVERALL_EVALUATION_OF_THE_RULESET>> respectively <<VERDICT_STATEMENTS>>).
+This statement is only valid in base chains using the *prerouting*, *input*,
+*forward* or *output* hooks, and regular chains which are only called from
 those chains.
 
 .Keywords may be used to reject when specifying the ICMP code
