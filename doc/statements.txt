@@ -1,6 +1,6 @@
-VERDICT STATEMENT
-~~~~~~~~~~~~~~~~~
-The verdict statement alters control flow in the ruleset and issues policy decisions for packets.
+VERDICT STATEMENTS
+~~~~~~~~~~~~~~~~~~
+The verdict statements alter control flow in the ruleset and issue policy decisions for packets.
 
 [verse]
 ____
@@ -25,24 +25,34 @@ are not evaluated anymore for the packet.
 *queue*:: Terminate ruleset evaluation and queue the packet to userspace.
 Userspace must provide a drop or accept verdict.  In case of accept, processing
 resumes with the next base chain hook, not the rule following the queue verdict.
+*jump* 'CHAIN':: Store the current position in the call stack of chains and
+ continue evaluation at the first rule of 'CHAIN'.
+ When the end of 'CHAIN' is reached, an implicit *return* verdict is issued.
+ When an absolute verdict is issued (respectively implied by a verdict-like
+ statement) in 'CHAIN', evaluation terminates as described above.
+*goto* 'CHAIN':: Equal to *jump* except that the current position is not stored
+ in the call stack of chains.
+*return*:: End evaluation of the current chain, pop the most recently added
+ position from the call stack of chains and continue evaluation after that
+ position.
+ When there’s no position to pop (which is the case when the current chain is
+ either the base chain or a regular chain that was reached solely via *goto*
+ verdicts) end evaluation of the current base chain (and any regular chains
+ called from it) using the base chain’s policy as implicit verdict.
 *continue*:: Continue evaluation with the next rule. This
  is the default behaviour in case a rule issues no verdict.
-*return*:: Return from the current chain and continue evaluation at the
- next rule in the last chain. If issued in a base chain, it is equivalent to the
- base chain policy.
-*jump* 'CHAIN':: Continue evaluation at the first rule in 'CHAIN'. The current
- position in the ruleset is pushed to a call stack and evaluation will continue
- there when the new chain is entirely evaluated or a *return* verdict is issued.
- In case an absolute verdict is issued by a rule in the chain, ruleset evaluation
- terminates immediately and the specific action is taken.
-*goto* 'CHAIN':: Similar to *jump*, but the current position is not pushed to the
- call stack, meaning that after the new chain evaluation will continue at the last
- chain instead of the one containing the goto statement.
 
 An alternative to specifying the name of an existing, regular chain in 'CHAIN'
 is to specify an anonymous chain ad-hoc. Like with anonymous sets, it can't be
 referenced from another rule and will be removed along with the rule containing
 it.
+
+All the above applies analogously to statements that imply a verdict:
+*redirect*, *dnat*, *snat* and *masquerade* internally issue an *accept*
+verdict at the end of their respective actions.
+*reject* and *synproxy* internally issue a *drop* verdict at the end of their
+respective actions.
+These statements thus behave like their implied verdicts, but with side effects.
 
 .Using verdict statements
 -------------------
