@@ -674,6 +674,11 @@ Example: When the set contains range *1.2.3.1-1.2.3.4*, then adding element *1.2
 effect.  Adding *1.2.3.5* changes the existing range to cover *1.2.3.1-1.2.3.5*.
 Without this flag, *1.2.3.2* can not be added and *1.2.3.5* is inserted as a new entry.
 
+Equality of a value with a set is given if the value matches exactly one value
+in the set (which for intervals means that it’s contained in any of them).
+See <<BITMASK_TYPE>> for the subtle differences between syntactically similarly
+looking equiality checks of sets and bitmasks.
+
 MAPS
 -----
 [verse]
