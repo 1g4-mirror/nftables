@@ -4,7 +4,7 @@ The verdict statements alter control flow in the ruleset and issue policy decisi
 
 [verse]
 ____
-{*accept* | *drop* | *queue* | *continue* | *return*}
+{*accept* | *drop* | *continue* | *return*}
 {*jump* | *goto*} 'CHAIN'
 
 'CHAIN' := 'chain_name' | *{* 'statement' ... *}*
@@ -22,9 +22,6 @@ afterwards in the processing pipeline.
 The drop occurs instantly, no further chains or hooks are evaluated.
 It is not possible to accept the packet in a later chain again, as those
 are not evaluated anymore for the packet.
-*queue*:: Terminate ruleset evaluation and queue the packet to userspace.
-Userspace must provide a drop or accept verdict.  In case of accept, processing
-resumes with the next base chain hook, not the rule following the queue verdict.
 *jump* 'CHAIN':: Store the current position in the call stack of chains and
  continue evaluation at the first rule of 'CHAIN'.
  When the end of 'CHAIN' is reached, an implicit *return* verdict is issued.
@@ -751,9 +748,10 @@ QUEUE STATEMENT
 ~~~~~~~~~~~~~~~
 This statement passes the packet to userspace using the nfnetlink_queue handler.
 The packet is put into the queue identified by its 16-bit queue number.
-Userspace can inspect and modify the packet if desired. Userspace must then drop
-or re-inject the packet into the kernel. See libnetfilter_queue documentation
-for details.
+Userspace can inspect and optionally modify the packet if desired.
+Userspace must provide a drop or accept verdict.  In case of accept, processing
+resumes with the next base chain hook, not the rule following the queue verdict.
+See libnetfilter_queue documentation for details.
 
 [verse]
 ____
