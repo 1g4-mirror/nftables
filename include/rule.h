@@ -674,6 +674,9 @@ enum cmd_ops {
  * @CMD_OBJ_SECMARKS:	multiple secmarks
  * @CMD_OBJ_SYNPROXY:	synproxy
  * @CMD_OBJ_SYNPROXYS:	multiple synproxys
+ * @CMD_OBJ_TUNNEL:	tunnel
+ * @CMD_OBJ_TUNNELS:	multiple tunnels
+ * @CMD_OBJ_HOOKS:	hooks, used only for dumping
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
