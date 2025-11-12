@@ -1737,6 +1737,14 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_HOOKS, &$2, &@$, NULL);
 			}
+			|	TUNNELS	list_cmd_spec_any
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TUNNELS, &$2, &@$, NULL);
+			}
+			|	TUNNEL	obj_spec	close_scope_tunnel
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
+			}
 			;
 
 basehook_device_name	:	DEVICE STRING

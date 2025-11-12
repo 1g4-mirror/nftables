@@ -404,7 +404,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"maps"			{ return MAPS; }
 	"secmarks"		{ return SECMARKS; }
 	"synproxys"		{ return SYNPROXYS; }
-	"tunnel"		{ return TUNNEL; }
 	"tunnels"		{ return TUNNELS; }
 	"hooks"			{ return HOOKS; }
 }
