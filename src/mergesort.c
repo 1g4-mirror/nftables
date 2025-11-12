@@ -37,6 +37,13 @@ static mpz_srcptr expr_msort_value(const struct expr *expr, mpz_t value)
 	case EXPR_RANGE:
 		return expr_msort_value(expr->left, value);
 	case EXPR_VALUE:
+		if (expr_basetype(expr)->type == TYPE_STRING) {
+			char buf[expr->len];
+
+			mpz_export_data(buf, expr->value, BYTEORDER_HOST_ENDIAN, expr->len);
+			mpz_import_data(value, buf, BYTEORDER_BIG_ENDIAN, expr->len);
+			return value;
+		}
 		return expr->value;
 	case EXPR_RANGE_VALUE:
 		return expr->range.low;

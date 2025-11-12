@@ -260,8 +260,8 @@
               },
               "right": {
                 "set": [
-                  "eth0",
-                  "abcdef0"
+                  "abcdef0",
+                  "eth0"
                 ]
               }
             }

@@ -50,8 +50,8 @@ table inet t {
 
 	set helpname {
 		typeof ct helper
-		elements = { "sip",
-			     "ftp" }
+		elements = { "ftp",
+			     "sip" }
 	}
 
 	chain y {

@@ -39,7 +39,7 @@ table inet testifsets {
 	chain v4icmp {
 		iifname @simple counter packets 0 bytes 0
 		iifname @simple_wild counter packets 0 bytes 0
-		iifname { "eth0", "abcdef0" } counter packets 0 bytes 0
+		iifname { "abcdef0", "eth0" } counter packets 0 bytes 0
 		iifname { "abcdef*", "eth0" } counter packets 0 bytes 0
 		iifname vmap @map_wild
 	}
