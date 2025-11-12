@@ -20,11 +20,11 @@ static void concat_expr_msort_value(const struct expr *expr, mpz_t value)
 
 	list_for_each_entry(i, &expr_concat(expr)->expressions, list) {
 		ilen = div_round_up(i->len, BITS_PER_BYTE);
-		mpz_export_data(data + len, i->value, i->byteorder, ilen);
+		mpz_export_data(data + len, i->value, BYTEORDER_BIG_ENDIAN, ilen);
 		len += ilen;
 	}
 
-	mpz_import_data(value, data, BYTEORDER_HOST_ENDIAN, len);
+	mpz_import_data(value, data, BYTEORDER_BIG_ENDIAN, len);
 }
 
 static mpz_srcptr expr_msort_value(const struct expr *expr, mpz_t value)
