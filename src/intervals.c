@@ -798,11 +798,8 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 	}
 
 	low = constant_expr_alloc(&key->location, set->key->dtype,
-				  set->key->byteorder, set->key->len, NULL);
-
+				  BYTEORDER_BIG_ENDIAN, set->key->len, NULL);
 	mpz_set(low->value, key->range.low);
-	if (set->key->byteorder == BYTEORDER_HOST_ENDIAN)
-		mpz_switch_byteorder(low->value, set->key->len / BITS_PER_BYTE);
 
 	low = set_elem_expr_alloc(&key->location, low);
 	set_elem_expr_copy(low, interval_expr_key(elem));
@@ -824,12 +821,11 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 	}
 
 	high = constant_expr_alloc(&key->location, set->key->dtype,
-				   set->key->byteorder, set->key->len,
+				   BYTEORDER_BIG_ENDIAN, set->key->len,
 				   NULL);
 	mpz_set(high->value, key->range.high);
 	mpz_add_ui(high->value, high->value, 1);
-	if (set->key->byteorder == BYTEORDER_HOST_ENDIAN)
-		mpz_switch_byteorder(high->value, set->key->len / BITS_PER_BYTE);
+	high->byteorder = BYTEORDER_BIG_ENDIAN;
 
 	high = set_elem_expr_alloc(&key->location, high);
 
