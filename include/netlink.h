@@ -106,6 +106,7 @@ struct nft_data_linearize {
 	char		chain[NFT_CHAIN_MAXNAMELEN];
 	uint32_t	chain_id;
 	int		verdict;
+	uint32_t	byteorder;
 };
 
 struct nft_data_delinearize {
