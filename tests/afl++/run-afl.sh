@@ -3,7 +3,7 @@
 set -e
 
 ME=$(dirname $0)
-SRC_NFT="$(dirname $0)/../../src/nft"
+SRC_NFT="$(dirname $0)/../../tools/nft-afl"
 
 cd $ME/../..
 
@@ -43,5 +43,5 @@ done
 
 echo "built initial set of inputs to fuzz from shell test case dump files."
 echo "sample invocations:"
-echo "unshare -n afl-fuzz -g 16 -G 2000 -t 5000 -i tests/afl++/in -o tests/afl++/out -- src/nft --fuzzer netlink-ro"
-echo "unshare -n afl-fuzz -g 16 -G 2000 -t 5000 -i tests/afl++/in-json -o tests/afl++/out -- src/nft -j --check --fuzzer netlink-rw"
+echo "unshare -n afl-fuzz -g 16 -G 2000 -t 5000 -i tests/afl++/in -o tests/afl++/out -- "$SRC_NFT" --fuzzer netlink-ro"
+echo "unshare -n afl-fuzz -g 16 -G 2000 -t 5000 -i tests/afl++/in-json -o tests/afl++/out -- "$SRC_NFT" -j --check --fuzzer netlink-rw"

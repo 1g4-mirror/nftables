@@ -17,15 +17,26 @@ Important options are:
 --disable-shared, so that libnftables is instrumented too.
 --enable-fuzzer
 
---enable-fuzzer is not strictly required, you can run normal nft builds under
-afl-fuzz too.  But the execution speed will be much slower.
+--enable-fuzzer provides tools/nft-afl that allows more fine-grained control
+nft-afl provides a few options to guide the fuzzing process, some are shared
+with nft binary:
 
---enable-fuzzer also provides the nft --fuzzer command line option that allows
-more fine-grained control over what code paths should be covered by the fuzzing
-process.
+--check
 
-When fuzzing in this mode, then each new input passes through the following
-processing stages:
+Prevents the fuzzer-generated rulesets from being committed to the kernel.
+
+--random-outflags
+
+Periodically alter output behaviour by enabling or disabling --terse,
+--numeric, --echo and so on.
+
+--json
+
+Format output in JSON
+
+--fuzzer <stage>
+
+Instruct nft-afl to stop fuzzing after reaching the given stage.  Stages are:
 
 1: 'parser':
     Only run / exercise the flex/bison parser.
@@ -38,6 +49,7 @@ processing stages:
 3: 'netlink-ro':
     Also build/serialize the ruleset into netlink-commands to send to the
     kernel, but omit the final write so the kernel will not see the message.
+    This is the default mode.
 
 4: 'netlink-rw':
     Same as 3 but the message will be sent to the kernel.
@@ -56,17 +68,17 @@ and its libraries.
 All --fuzzer modes EXCEPT 'netlink-rw' do imply --check as these modes never
 alter state in the kernel.
 
-In rw mode, before each input, nft checks the kernel "taint" status as provided
+Before each input, nft-afl checks the kernel "taint" status as provided
 by "/proc/sys/kernel/tainted".  If this is non-zero, fuzzing stops.
 
-To run nftables under afl++, run nftables like this:
+To run libnftables under afl++, run nft-afl like this:
 
 unshare -n \
   afl-fuzz -g 16 -G 2000 -t 5000 -i tests/afl++/in -o tests/afl++/out \
-  -- src/nft --fuzzer <arg>
+  -- tools/nft-afl
 
-arg should be either "netlink-ro" (if you only want to exercise nft userspace)
-or "netlink-rw" (if you want to test kernel code paths too).
+arg should be either "netlink-ro" (if you only want to exercise libnftables
+userspace) or "netlink-rw" (if you want to test kernel code paths too).
 
 Its also a good idea to do this from tmux/screen so you can disconnect/reattach
 later.  You can also spawn multiple instances.

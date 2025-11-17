@@ -31,6 +31,7 @@ LDADD =
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 sbin_PROGRAMS =
+noinst_PROGRAMS =
 check_PROGRAMS =
 dist_man_MANS =
 CLEANFILES =
@@ -294,10 +295,6 @@ sbin_PROGRAMS += src/nft
 
 src_nft_SOURCES = src/main.c
 
-if BUILD_AFL
-src_nft_SOURCES += src/afl++.c
-endif
-
 if BUILD_CLI
 src_nft_SOURCES += src/cli.c
 endif
@@ -315,6 +312,16 @@ check_PROGRAMS += examples/nft-json-file
 
 examples_nft_json_file_AM_CPPFLAGS = -I$(srcdir)/include
 examples_nft_json_file_LDADD = src/libnftables.la
+
+###############################################################################
+
+if BUILD_AFL
+noinst_PROGRAMS += tools/nft-afl
+
+tools_nft_afl_SOURCES = tools/nft-afl.c
+tools_nft_afl_SOURCES += -I$(srcdir)/include
+tools_nft_afl_LDADD = src/libnftables.la
+endif
 
 ###############################################################################
 
