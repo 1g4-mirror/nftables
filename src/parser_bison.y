@@ -643,6 +643,15 @@ int nft_lex(void *, void *, void *);
 %token SNAPLEN			"snaplen"
 %token QUEUE_THRESHOLD		"queue-threshold"
 %token LEVEL			"level"
+%token EMERG			"emerg"
+%token ALERT			"alert"
+%token CRIT			"crit"
+%token ERR			"err"
+%token WARN			"warn"
+%token NOTICE			"notice"
+%token INFO			"info"
+%token DEBUG_TOKEN		"debug"
+%token AUDIT			"audit"
 
 %token LIMIT			"limit"
 %token RATE			"rate"
@@ -3490,34 +3499,15 @@ log_arg			:	PREFIX			string
 			}
 			;
 
-level_type		:	string
-			{
-				if (!strcmp("emerg", $1))
-					$$ = NFT_LOGLEVEL_EMERG;
-				else if (!strcmp("alert", $1))
-					$$ = NFT_LOGLEVEL_ALERT;
-				else if (!strcmp("crit", $1))
-					$$ = NFT_LOGLEVEL_CRIT;
-				else if (!strcmp("err", $1))
-					$$ = NFT_LOGLEVEL_ERR;
-				else if (!strcmp("warn", $1))
-					$$ = NFT_LOGLEVEL_WARNING;
-				else if (!strcmp("notice", $1))
-					$$ = NFT_LOGLEVEL_NOTICE;
-				else if (!strcmp("info", $1))
-					$$ = NFT_LOGLEVEL_INFO;
-				else if (!strcmp("debug", $1))
-					$$ = NFT_LOGLEVEL_DEBUG;
-				else if (!strcmp("audit", $1))
-					$$ = NFT_LOGLEVEL_AUDIT;
-				else {
-					erec_queue(error(&@1, "invalid log level"),
-						   state->msgs);
-					free_const($1);
-					YYERROR;
-				}
-				free_const($1);
-			}
+level_type		:	EMERG		{ $$ = NFT_LOGLEVEL_EMERG; }
+			|	ALERT		{ $$ = NFT_LOGLEVEL_ALERT; }
+			|	CRIT		{ $$ = NFT_LOGLEVEL_CRIT; }
+			|	ERR		{ $$ = NFT_LOGLEVEL_ERR; }
+			|	WARN		{ $$ = NFT_LOGLEVEL_WARNING; }
+			|	NOTICE		{ $$ = NFT_LOGLEVEL_NOTICE; }
+			|	INFO		{ $$ = NFT_LOGLEVEL_INFO; }
+			|	DEBUG_TOKEN	{ $$ = NFT_LOGLEVEL_DEBUG; }
+			|	AUDIT		{ $$ = NFT_LOGLEVEL_AUDIT; }
 			;
 
 log_flags		:	TCP	log_flags_tcp	close_scope_tcp

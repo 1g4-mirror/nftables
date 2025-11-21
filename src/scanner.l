@@ -433,6 +433,15 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"queue-threshold"	{ return QUEUE_THRESHOLD; }
 	"level"			{ return LEVEL; }
 	"group"			{ return GROUP; }
+	"emerg"			{ return EMERG; }
+	"alert"			{ return ALERT; }
+	"crit"			{ return CRIT; }
+	"err"			{ return ERR; }
+	"warn"			{ return WARN; }
+	"notice"		{ return NOTICE; }
+	"info"			{ return INFO; }
+	"debug"			{ return DEBUG_TOKEN; }
+	"audit"			{ return AUDIT; }
 }
 
 "queue"			{ scanner_push_start_cond(yyscanner, SCANSTATE_EXPR_QUEUE); return QUEUE;}
