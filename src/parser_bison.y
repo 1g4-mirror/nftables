@@ -719,6 +719,9 @@ int nft_lex(void *, void *, void *);
 %token NAT		"nat"
 %token ROUTE		"route"
 
+%token LOOSE		"loose"
+%token SKIP		"skip"
+
 %type <limit_rate>		limit_rate_pkts
 %type <limit_rate>		limit_rate_bytes
 
@@ -4485,24 +4488,9 @@ osf_expr		:	OSF	osf_ttl		HDRVERSION	close_scope_osf
 			}
 			;
 
-osf_ttl			:	/* empty */
-			{
-				$$ = NF_OSF_TTL_TRUE;
-			}
-			|	TTL	STRING
-			{
-				if (!strcmp($2, "loose"))
-					$$ = NF_OSF_TTL_LESS;
-				else if (!strcmp($2, "skip"))
-					$$ = NF_OSF_TTL_NOCHECK;
-				else {
-					erec_queue(error(&@2, "invalid ttl option"),
-						   state->msgs);
-					free_const($2);
-					YYERROR;
-				}
-				free_const($2);
-			}
+osf_ttl			:	/* empty */	{ $$ = NF_OSF_TTL_TRUE; }
+			|	TTL	LOOSE	{ $$ = NF_OSF_TTL_LESS; }
+			|	TTL	SKIP	{ $$ = NF_OSF_TTL_NOCHECK; }
 			;
 
 shift_expr		:	primary_expr
