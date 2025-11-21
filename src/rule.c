@@ -1389,7 +1389,8 @@ void markup_free(struct markup *m)
 	free(m);
 }
 
-struct monitor *monitor_alloc(uint32_t format, uint32_t type, const char *event)
+struct monitor *monitor_alloc(uint32_t format, uint32_t type,
+			      enum cmd_monitor_event event)
 {
 	struct monitor *mon;
 
@@ -1404,7 +1405,6 @@ struct monitor *monitor_alloc(uint32_t format, uint32_t type, const char *event)
 
 void monitor_free(struct monitor *m)
 {
-	free_const(m->event);
 	free(m);
 }
 

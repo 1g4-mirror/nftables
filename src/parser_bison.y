@@ -353,6 +353,7 @@ int nft_lex(void *, void *, void *);
 %token DESCRIBE			"describe"
 %token IMPORT			"import"
 %token EXPORT			"export"
+%token NEW			"new"
 %token DESTROY			"destroy"
 
 %token MONITOR			"monitor"
@@ -985,9 +986,7 @@ int nft_lex(void *, void *, void *);
 %destructor { expr_free($$); }	osf_expr
 
 %type <val>			markup_format
-%type <string>			monitor_event
-%destructor { free_const($$); }	monitor_event
-%type <val>			monitor_object	monitor_format
+%type <val>			monitor_event monitor_object monitor_format
 
 %type <val>			synproxy_ts	synproxy_sack
 
@@ -1892,8 +1891,9 @@ monitor_cmd		:	monitor_event	monitor_object	monitor_format
 			}
 			;
 
-monitor_event		:	/* empty */	{ $$ = NULL; }
-			|       STRING		{ $$ = $1; }
+monitor_event		:	/* empty */	{ $$ = CMD_MONITOR_EVENT_ANY; }
+			|	NEW		{ $$ = CMD_MONITOR_EVENT_NEW; }
+			|       DESTROY		{ $$ = CMD_MONITOR_EVENT_DEL; }
 			;
 
 monitor_object		:	/* empty */	{ $$ = CMD_MONITOR_OBJ_ANY; }

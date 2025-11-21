@@ -322,6 +322,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 <SCANSTATE_CMD_MONITOR>{
 	"rules"			{ return RULES; }
 	"trace"			{ return TRACE; }
+	"new"			{ return NEW; }
+	"destroy"		{ return DESTROY; }
 }
 "hook"			{ return HOOK; }
 "device"		{ return DEVICE; }

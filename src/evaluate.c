@@ -6452,13 +6452,6 @@ static int cmd_evaluate_rename(struct eval_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
-enum {
-	CMD_MONITOR_EVENT_ANY,
-	CMD_MONITOR_EVENT_NEW,
-	CMD_MONITOR_EVENT_DEL,
-	CMD_MONITOR_EVENT_MAX
-};
-
 static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
 	[CMD_MONITOR_EVENT_ANY] = {
 		[CMD_MONITOR_OBJ_ANY]		= 0xffffffff,
@@ -6528,20 +6521,9 @@ static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
 
 static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
 {
-	uint32_t event;
+	uint32_t *monitor_event_flags = monitor_flags[cmd->monitor->event];
 
-	if (cmd->monitor->event == NULL)
-		event = CMD_MONITOR_EVENT_ANY;
-	else if (strcmp(cmd->monitor->event, "new") == 0)
-		event = CMD_MONITOR_EVENT_NEW;
-	else if (strcmp(cmd->monitor->event, "destroy") == 0)
-		event = CMD_MONITOR_EVENT_DEL;
-	else {
-		return monitor_error(ctx, cmd->monitor, "invalid event %s",
-				     cmd->monitor->event);
-	}
-
-	cmd->monitor->flags = monitor_flags[event][cmd->monitor->type];
+	cmd->monitor->flags = monitor_event_flags[cmd->monitor->type];
 	return 0;
 }
 
