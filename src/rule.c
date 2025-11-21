@@ -676,25 +676,6 @@ struct symbol *symbol_lookup_fuzzy(const struct scope *scope,
 	return st.obj;
 }
 
-static const char * const chain_type_str_array[] = {
-	"filter",
-	"nat",
-	"route",
-	NULL,
-};
-
-const char *chain_type_name_lookup(const char *name)
-{
-	int i;
-
-	for (i = 0; chain_type_str_array[i]; i++) {
-		if (!strcmp(name, chain_type_str_array[i]))
-			return chain_type_str_array[i];
-	}
-
-	return NULL;
-}
-
 static const char * const chain_hookname_str_array[] = {
 	"prerouting",
 	"input",

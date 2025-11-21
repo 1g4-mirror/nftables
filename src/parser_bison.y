@@ -715,6 +715,10 @@ int nft_lex(void *, void *, void *);
 
 %token XT		"xt"
 
+%token FILTER		"filter"
+%token NAT		"nat"
+%token ROUTE		"route"
+
 %type <limit_rate>		limit_rate_pkts
 %type <limit_rate>		limit_rate_bytes
 
@@ -1033,6 +1037,9 @@ int nft_lex(void *, void *, void *);
 
 %type <expr>			set_elem_key_expr
 %destructor { expr_free($$); }	set_elem_key_expr
+
+%type <string>			chain_type
+%destructor { free_const($$); }	chain_type
 
 %%
 
@@ -2736,22 +2743,10 @@ type_identifier		:	STRING	{ $$ = $1; }
 			|	CLASSID { $$ = xstrdup("classid"); }
 			;
 
-hook_spec		:	TYPE		close_scope_type	STRING		HOOK		STRING		dev_spec	prio_spec
+hook_spec		:	TYPE		chain_type	close_scope_type	HOOK		STRING		dev_spec	prio_spec
 			{
-				const char *chain_type = chain_type_name_lookup($3);
-
-				if (chain_type == NULL) {
-					erec_queue(error(&@3, "unknown chain type"),
-						   state->msgs);
-					free_const($3);
-					free_const($5);
-					expr_free($6);
-					expr_free($7.expr);
-					YYERROR;
-				}
 				$<chain>0->type.loc = @3;
-				$<chain>0->type.str = xstrdup(chain_type);
-				free_const($3);
+				$<chain>0->type.str = $2;
 
 				$<chain>0->loc = @$;
 				$<chain>0->hook.loc = @5;
@@ -2770,6 +2765,11 @@ hook_spec		:	TYPE		close_scope_type	STRING		HOOK		STRING		dev_spec	prio_spec
 				$<chain>0->priority	= $7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
+			;
+
+chain_type		:	FILTER	{ $$ = xstrdup("filter"); }
+			|	NAT	{ $$ = xstrdup("nat"); }
+			|	ROUTE	{ $$ = xstrdup("route"); }
 			;
 
 prio_spec		:	PRIORITY extended_prio_spec

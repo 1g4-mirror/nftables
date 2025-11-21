@@ -858,6 +858,12 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"out"			{ return OUT; }
 }
 
+<SCANSTATE_TYPE>{
+	"filter"		{ return FILTER; }
+	"nat"			{ return NAT; }
+	"route"			{ return ROUTE; }
+}
+
 "secmark"		{ scanner_push_start_cond(yyscanner, SCANSTATE_SECMARK); return SECMARK; }
 
 "xt"			{ scanner_push_start_cond(yyscanner, SCANSTATE_XT); return XT; }

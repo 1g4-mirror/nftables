@@ -260,7 +260,6 @@ struct chain {
 
 #define STD_PRIO_BUFSIZE 100
 extern int std_prio_lookup(const char *std_prio_name, int family, int hook);
-extern const char *chain_type_name_lookup(const char *name);
 extern const char *chain_hookname_lookup(const char *name);
 extern struct chain *chain_alloc(void);
 extern struct chain *chain_get(struct chain *chain);
