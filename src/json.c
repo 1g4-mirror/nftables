@@ -584,6 +584,15 @@ static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj,
 		json_object_update(root, tmp);
 		json_decref(tmp);
 		break;
+	case NFT_OBJECT_CONNLIMIT:
+		tmp = json_pack("{s:i}", "val", obj->connlimit.count);
+
+		if (obj->connlimit.flags & NFT_CONNLIMIT_F_INV)
+			json_object_set_new(root, "inv", json_true());
+
+		json_object_update(root, tmp);
+		json_decref(tmp);
+		break;
 	}
 
 out:
@@ -2166,6 +2175,10 @@ int do_command_list_json(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TUNNEL:
 	case CMD_OBJ_TUNNELS:
 		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_TUNNEL);
+		break;
+	case CMD_OBJ_CONNLIMIT:
+	case CMD_OBJ_CONNLIMITS:
+		root = do_list_obj_json(ctx, cmd, NFT_OBJECT_CONNLIMIT);
 		break;
 	case CMD_OBJ_FLOWTABLE:
 		root = do_list_flowtable_json(ctx, cmd, table);

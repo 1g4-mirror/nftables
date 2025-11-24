@@ -488,6 +488,11 @@ struct synproxy {
 	uint32_t	flags;
 };
 
+struct connlimit {
+	uint32_t	count;
+	uint32_t	flags;
+};
+
 struct secmark {
 	char		ctx[NFT_SECMARK_CTX_MAXLEN];
 };
@@ -565,6 +570,7 @@ struct obj {
 		struct ct_expect	ct_expect;
 		struct synproxy		synproxy;
 		struct tunnel		tunnel;
+		struct connlimit	connlimit;
 	};
 };
 
@@ -676,6 +682,8 @@ enum cmd_ops {
  * @CMD_OBJ_TUNNEL:	tunnel
  * @CMD_OBJ_TUNNELS:	multiple tunnels
  * @CMD_OBJ_HOOKS:	hooks, used only for dumping
+ * @CMD_OBJ_CONNLIMIT:	connlimit
+ * @CMD_OBJ_CONNLIMITS: connlimits
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
@@ -717,6 +725,8 @@ enum cmd_obj {
 	CMD_OBJ_TUNNEL,
 	CMD_OBJ_TUNNELS,
 	CMD_OBJ_HOOKS,
+	CMD_OBJ_CONNLIMIT,
+	CMD_OBJ_CONNLIMITS
 };
 
 struct markup {

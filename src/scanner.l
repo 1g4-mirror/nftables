@@ -408,11 +408,13 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 	"secmarks"		{ return SECMARKS; }
 	"synproxys"		{ return SYNPROXYS; }
 	"tunnels"		{ return TUNNELS; }
+	"count"			{ return COUNT; }
+	"counts"		{ return COUNTS; }
 	"hooks"			{ return HOOKS; }
 }
 
 <*>"counter"		{ scanner_push_start_cond(yyscanner, SCANSTATE_COUNTER); return COUNTER; }
-<SCANSTATE_COUNTER,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_STMT_SYNPROXY,SCANSTATE_EXPR_OSF,SCANSTATE_TUNNEL>"name"			{ return NAME; }
+<SCANSTATE_COUNTER,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_STMT_SYNPROXY,SCANSTATE_EXPR_OSF,SCANSTATE_TUNNEL,SCANSTATE_CT>"name"			{ return NAME; }
 <SCANSTATE_COUNTER,SCANSTATE_CT,SCANSTATE_LIMIT,SCANSTATE_RATE>"packets"		{ return PACKETS; }
 <SCANSTATE_COUNTER,SCANSTATE_CT,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_RATE>"bytes"	{ return BYTES; }
 <SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_RATE>"kbytes"	{ return KBYTES; }
@@ -466,7 +468,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 <SCANSTATE_CT,SCANSTATE_LIMIT,SCANSTATE_QUOTA,SCANSTATE_RATE>"over"		{ return OVER; }
 
 <*>"quota"		{ scanner_push_start_cond(yyscanner, SCANSTATE_QUOTA); return QUOTA; }
-<SCANSTATE_QUOTA,SCANSTATE_RATE>{
+<SCANSTATE_QUOTA,SCANSTATE_RATE,SCANSTATE_CT>{
 	"until"		{ return UNTIL; }
 }
 

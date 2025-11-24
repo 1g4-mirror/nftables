@@ -2087,6 +2087,12 @@ struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 			nftnl_obj_tunnel_opts_foreach(nlo, tunnel_parse_opt_cb, obj);
 		}
 		break;
+	case NFT_OBJECT_CONNLIMIT:
+		obj->connlimit.count =
+			nftnl_obj_get_u32(nlo, NFTNL_OBJ_CONNLIMIT_COUNT);
+		obj->connlimit.flags =
+			nftnl_obj_get_u32(nlo, NFTNL_OBJ_CONNLIMIT_FLAGS);
+		break;
 	default:
 		netlink_io_error(ctx, NULL, "Unknown object type %u", type);
 		obj_free(obj);

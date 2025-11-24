@@ -77,3 +77,15 @@ ip test-ip4 input
   [ cmp eq reg 1 0x06 ]
   [ payload load 2b @ transport header + 2 => reg 1 ]
   [ objref sreg 1 set __objmap%d ]
+
+# ct count name tcp dport map {22 : "connlimit1", 80 : "connlimit2"}
+	element 0016 : connlimit1	element 0050 : connlimit2
+ip test-ip4 input
+  [ meta load l4proto => reg 1 ]
+  [ cmp eq reg 1 0x06 ]
+  [ payload load 2b @ transport header + 2 => reg 1 ]
+  [ objref sreg 1 set __objmap%d ]
+
+# ct count name "connlimit1"
+ip test-ip4 input
+  [ objref type 5 name connlimit1 ]

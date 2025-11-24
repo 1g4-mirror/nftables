@@ -2848,17 +2848,26 @@ static struct stmt *json_parse_queue_stmt(struct json_ctx *ctx,
 static struct stmt *json_parse_connlimit_stmt(struct json_ctx *ctx,
 					      const char *key, json_t *value)
 {
-	struct stmt *stmt = connlimit_stmt_alloc(int_loc);
+	struct stmt *stmt;
+	uint32_t tmp;
 
-	if (json_unpack_err(ctx, value, "{s:i}",
-			    "val", &stmt->connlimit.count)) {
+	if (!json_unpack(value, "{s:i}", "val", &tmp)) {
+		stmt = connlimit_stmt_alloc(int_loc);
+		stmt->connlimit.count = tmp;
+		json_unpack(value, "{s:b}", "inv", &stmt->connlimit.flags);
+		if (stmt->connlimit.flags)
+			stmt->connlimit.flags = NFT_CONNLIMIT_F_INV;
+		return stmt;
+	}
+
+	stmt = objref_stmt_alloc(int_loc);
+	stmt->objref.type = NFT_OBJECT_CONNLIMIT;
+	stmt->objref.expr = json_parse_stmt_expr(ctx, value);
+	if (!stmt->objref.expr) {
+		json_error(ctx, "Invalid connlimit reference.");
 		stmt_free(stmt);
 		return NULL;
 	}
-
-	json_unpack(value, "{s:b}", "inv", &stmt->connlimit.flags);
-	if (stmt->connlimit.flags)
-		stmt->connlimit.flags = NFT_CONNLIMIT_F_INV;
 
 	return stmt;
 }
@@ -3274,6 +3283,7 @@ static int string_to_nft_object(const char *str)
 		[NFT_OBJECT_CT_EXPECT]	= "ct expectation",
 		[NFT_OBJECT_SYNPROXY]	= "synproxy",
 		[NFT_OBJECT_TUNNEL]	= "tunnel",
+		[NFT_OBJECT_CONNLIMIT]	= "ct count",
 	};
 	unsigned int i;
 
@@ -3978,6 +3988,15 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 		if (json_parse_tunnel(ctx, root, obj))
 			goto err_free_obj;
 		break;
+	case CMD_OBJ_CONNLIMIT:
+		obj->type = NFT_OBJECT_CONNLIMIT;
+		if (json_unpack_err(ctx, root, "{s:i}", "val", &obj->connlimit.count))
+			goto err_free_obj;
+
+		json_unpack(root, "{s:b}", "inv", &obj->connlimit.flags);
+		if (obj->connlimit.flags)
+			obj->connlimit.flags = NFT_CONNLIMIT_F_INV;
+		break;
 	default:
 		BUG("Invalid CMD '%d'", cmd_obj);
 	}
@@ -4017,7 +4036,8 @@ static struct cmd *json_parse_cmd_add(struct json_ctx *ctx,
 		{ "tunnel", NFT_OBJECT_TUNNEL, json_parse_cmd_add_object },
 		{ "limit", CMD_OBJ_LIMIT, json_parse_cmd_add_object },
 		{ "secmark", CMD_OBJ_SECMARK, json_parse_cmd_add_object },
-		{ "synproxy", CMD_OBJ_SYNPROXY, json_parse_cmd_add_object }
+		{ "synproxy", CMD_OBJ_SYNPROXY, json_parse_cmd_add_object },
+		{ "ct count", CMD_OBJ_CONNLIMIT, json_parse_cmd_add_object },
 	};
 	unsigned int i;
 	json_t *tmp;

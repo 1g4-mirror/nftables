@@ -1435,6 +1435,7 @@ void cmd_free(struct cmd *cmd)
 		case CMD_OBJ_SECMARK:
 		case CMD_OBJ_SYNPROXY:
 		case CMD_OBJ_TUNNEL:
+		case CMD_OBJ_CONNLIMIT:
 			obj_free(cmd->object);
 			break;
 		case CMD_OBJ_FLOWTABLE:
@@ -1539,6 +1540,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 	case CMD_OBJ_SECMARK:
 	case CMD_OBJ_SYNPROXY:
 	case CMD_OBJ_TUNNEL:
+	case CMD_OBJ_CONNLIMIT:
 		return mnl_nft_obj_add(ctx, cmd, flags);
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_add(ctx, cmd, flags);
@@ -1621,6 +1623,8 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_SYNPROXY);
 	case CMD_OBJ_TUNNEL:
 		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_TUNNEL);
+	case CMD_OBJ_CONNLIMIT:
+		return mnl_nft_obj_del(ctx, cmd, NFT_OBJECT_CONNLIMIT);
 	case CMD_OBJ_FLOWTABLE:
 		return mnl_nft_flowtable_del(ctx, cmd);
 	default:
@@ -2096,6 +2100,16 @@ static void obj_print_data(const struct obj *obj,
 		tunnel_obj_print_data(obj, opts, octx);
 		nft_print(octx, "%s", opts->stmt_separator);
 		break;
+	case NFT_OBJECT_CONNLIMIT:
+		obj_print_header(obj, opts, octx);
+		nft_print(octx, "%s%s%s", opts->nl, opts->tab, opts->tab);
+		if (obj->connlimit.flags & NFT_CONNLIMIT_F_INV)
+			nft_print(octx, "over %u", obj->connlimit.count);
+		else
+			nft_print(octx, "until %u", obj->connlimit.count);
+
+		nft_print(octx, "%s", opts->stmt_separator);
+		break;
 	default:
 		nft_print(octx, " unknown {%s", opts->nl);
 		break;
@@ -2112,6 +2126,7 @@ static const char * const obj_type_name_array[] = {
 	[NFT_OBJECT_SYNPROXY]	= "synproxy",
 	[NFT_OBJECT_CT_EXPECT]	= "ct expectation",
 	[NFT_OBJECT_TUNNEL]	= "tunnel",
+	[NFT_OBJECT_CONNLIMIT]	= "ct count"
 };
 
 const char *obj_type_name(unsigned int type)
@@ -2131,6 +2146,7 @@ static uint32_t obj_type_cmd_array[NFT_OBJECT_MAX + 1] = {
 	[NFT_OBJECT_SYNPROXY]	= CMD_OBJ_SYNPROXY,
 	[NFT_OBJECT_CT_EXPECT]	= CMD_OBJ_CT_EXPECT,
 	[NFT_OBJECT_TUNNEL]	= CMD_OBJ_TUNNEL,
+	[NFT_OBJECT_CONNLIMIT]	= CMD_OBJ_CONNLIMIT,
 };
 
 enum cmd_obj obj_type_to_cmd(uint32_t type)
@@ -2605,6 +2621,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TUNNEL:
 	case CMD_OBJ_TUNNELS:
 		return do_list_obj(ctx, cmd, NFT_OBJECT_TUNNEL);
+	case CMD_OBJ_CONNLIMIT:
+	case CMD_OBJ_CONNLIMITS:
+		return do_list_obj(ctx, cmd, NFT_OBJECT_CONNLIMIT);
 	case CMD_OBJ_FLOWTABLE:
 		return do_list_flowtable(ctx, cmd, table);
 	case CMD_OBJ_FLOWTABLES:

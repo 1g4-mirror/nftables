@@ -1253,6 +1253,10 @@ def obj_process(obj_line, filename, lineno):
        obj_type = "ct expectation"
        tokens[3] = ""
 
+    if obj_type == "ct" and tokens[3] == "count":
+       obj_type = "ct count"
+       tokens[3] = ""
+
     if len(tokens) > 3:
         obj_spcf = " ".join(tokens[3:])
 

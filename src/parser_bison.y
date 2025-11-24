@@ -645,6 +645,7 @@ int nft_lex(void *, void *, void *);
 %token LIMITS			"limits"
 %token TUNNELS			"tunnels"
 %token SYNPROXYS		"synproxys"
+%token COUNTS			"counts"
 %token HELPERS			"helpers"
 
 %token LOG			"log"
@@ -813,7 +814,7 @@ int nft_lex(void *, void *, void *);
 %type <flowtable>		flowtable_block_alloc flowtable_block
 %destructor { flowtable_free($$); }	flowtable_block_alloc
 
-%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc vxlan_block vxlan_block_alloc geneve_block geneve_block_alloc
+%type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc vxlan_block vxlan_block_alloc geneve_block geneve_block_alloc connlimit_block
 %type <val>			synproxy_wscale
 %destructor { obj_free($$); }	obj_block_alloc
 
@@ -933,8 +934,8 @@ int nft_lex(void *, void *, void *);
 %type <expr>			and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 %destructor { expr_free($$); }	and_rhs_expr exclusive_or_rhs_expr inclusive_or_rhs_expr
 
-%type <obj>			counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj
-%destructor { obj_free($$); }	counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj
+%type <obj>			counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj connlimit_obj
+%destructor { obj_free($$); }	counter_obj quota_obj ct_obj_alloc limit_obj secmark_obj synproxy_obj tunnel_obj connlimit_obj
 
 %type <expr>			relational_expr
 %destructor { expr_free($$); }	relational_expr
@@ -1360,6 +1361,10 @@ add_cmd			:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TUNNEL, &$2, &@$, $3);
 			}
+			|	CT	COUNT	obj_spec	connlimit_obj	'{' connlimit_block '}' close_scope_ct
+			{
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CONNLIMIT, &$3, &@$, $4);
+			}
 			;
 
 replace_cmd		:	RULE		ruleid_spec	rule
@@ -1467,6 +1472,10 @@ create_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_TUNNEL, &$2, &@$, $3);
 			}
+			|	CT	COUNT	obj_spec	connlimit_obj	'{' connlimit_block '}' close_scope_ct
+			{
+				$$ = cmd_alloc(CMD_CREATE, CMD_OBJ_CONNLIMIT, &$3, &@$, $4);
+			}
 			;
 
 insert_cmd		:	RULE		rule_position	rule
@@ -1568,6 +1577,10 @@ delete_cmd		:	TABLE		table_or_id_spec
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
 			}
+			|	CT	COUNT	obj_or_id_spec	close_scope_ct
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_CONNLIMIT, &$3, &@$, NULL);
+			}
 			;
 
 destroy_cmd		:	TABLE		table_or_id_spec
@@ -1638,6 +1651,10 @@ destroy_cmd		:	TABLE		table_or_id_spec
 			|	TUNNEL		obj_or_id_spec	close_scope_tunnel
 			{
 				$$ = cmd_alloc(CMD_DESTROY, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
+			}
+			|	CT	COUNT	obj_or_id_spec	close_scope_ct
+			{
+				$$ = cmd_alloc(CMD_DESTROY, CMD_OBJ_CONNLIMIT, &$3, &@$, NULL);
 			}
 			;
 
@@ -1774,6 +1791,15 @@ list_cmd		:	TABLE		table_spec
 			|	TUNNEL	obj_spec	close_scope_tunnel
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TUNNEL, &$2, &@$, NULL);
+			}
+			|	CT	COUNT	obj_spec	close_scope_ct
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CONNLIMIT, &$3, &@$, NULL);
+			}
+			|	CT	COUNTS	list_cmd_spec_any
+			{
+
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CONNLIMITS, &$3, &@$, NULL);
 			}
 			;
 
@@ -2138,6 +2164,17 @@ table_block		:	/* empty */	{ $$ = $<table>-1; }
 				list_add_tail(&$4->list, &$1->objs);
 				$$ = $1;
 			}
+			|	table_block	CT	COUNT	obj_identifier
+					obj_block_alloc '{'	connlimit_block	 '}'
+					stmt_separator	close_scope_ct
+			{
+				$5->location = @4;
+				$5->type = NFT_OBJECT_CONNLIMIT;
+				handle_merge(&$5->handle, &$4);
+				handle_free(&$4);
+				list_add_tail(&$5->list, &$1->objs);
+				$$ = $1;
+			}
 			;
 
 chain_block_alloc	:	/* empty */
@@ -2367,6 +2404,7 @@ map_block_alloc		:	/* empty */
 
 ct_obj_type_map		: 	TIMEOUT		{ $$ = NFT_OBJECT_CT_TIMEOUT; }
 			|	EXPECTATION	{ $$ = NFT_OBJECT_CT_EXPECT; }
+			|	COUNT		{ $$ = NFT_OBJECT_CONNLIMIT; }
 			;
 
 map_block_obj_type	:	COUNTER	close_scope_counter { $$ = NFT_OBJECT_COUNTER; }
@@ -2700,6 +2738,23 @@ ct_expect_block		:	/*empty */	{ $$ = $<obj>-1; }
 				$$ = $1;
 			}
 			|       ct_expect_block     comment_spec
+			{
+				if (already_set($<obj>1->comment, &@2, state)) {
+					free_const($2);
+					YYERROR;
+				}
+				$<obj>1->comment = $2;
+			}
+			;
+
+connlimit_block		:	/* empty */	{ $$ = $<obj>-1; }
+			|       connlimit_block     common_block
+			|       connlimit_block     stmt_separator
+			|       connlimit_block     connlimit_config
+			{
+				$$ = $1;
+			}
+			|       connlimit_block     comment_spec
 			{
 				if (already_set($<obj>1->comment, &@2, state)) {
 					free_const($2);
@@ -3268,6 +3323,12 @@ objref_stmt_ct		:	CT	TIMEOUT		SET	stmt_expr	close_scope_ct
 				$$->objref.type = NFT_OBJECT_CT_EXPECT;
 				$$->objref.expr = $4;
 			}
+			|	CT	COUNT	NAME	stmt_expr	close_scope_ct
+			{
+				$$ = objref_stmt_alloc(&@$);
+				$$->objref.type = NFT_OBJECT_CONNLIMIT;
+				$$->objref.expr = $4;
+			}
 			;
 
 objref_stmt		:	objref_stmt_counter
@@ -3383,6 +3444,32 @@ verdict_map_list_member_expr:	opt_newline	set_elem_expr	COLON	verdict_expr	opt_n
 ct_limit_stmt_alloc	:	CT	COUNT
 			{
 				$$ = connlimit_stmt_alloc(&@$);
+			}
+			;
+
+connlimit_obj		:	/* empty */
+			{
+				$$ = obj_alloc(&@$);
+				$$->type = NFT_OBJECT_CONNLIMIT;
+			}
+			;
+
+connlimit_config	:	UNTIL	NUM
+			{
+				struct connlimit *connlimit;
+
+				connlimit = &$<obj>0->connlimit;
+				connlimit->count = $2;
+				connlimit->flags = 0;
+
+			}
+			|	OVER	NUM
+			{
+				struct connlimit *connlimit;
+
+				connlimit = &$<obj>0->connlimit;
+				connlimit->count = $2;
+				connlimit->flags = NFT_CONNLIMIT_F_INV;
 			}
 			;
 

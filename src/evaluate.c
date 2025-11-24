@@ -5962,6 +5962,7 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CT_EXPECT:
 	case CMD_OBJ_SYNPROXY:
 	case CMD_OBJ_TUNNEL:
+	case CMD_OBJ_CONNLIMIT:
 		handle_merge(&cmd->object->handle, &cmd->handle);
 		return obj_evaluate(ctx, cmd->object);
 	default:
@@ -6135,6 +6136,8 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TUNNEL:
 		obj_del_cache(ctx, cmd, NFT_OBJECT_TUNNEL);
 		return 0;
+	case CMD_OBJ_CONNLIMIT:
+		obj_del_cache(ctx, cmd, NFT_OBJECT_CONNLIMIT);
 	default:
 		BUG("invalid command object type %u", cmd->obj);
 	}
@@ -6269,6 +6272,8 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 		return cmd_evaluate_list_obj(ctx, cmd, NFT_OBJECT_SYNPROXY);
 	case CMD_OBJ_TUNNEL:
 		return cmd_evaluate_list_obj(ctx, cmd, NFT_OBJECT_TUNNEL);
+	case CMD_OBJ_CONNLIMIT:
+		return cmd_evaluate_list_obj(ctx, cmd, NFT_OBJECT_CONNLIMIT);
 	case CMD_OBJ_COUNTERS:
 	case CMD_OBJ_QUOTAS:
 	case CMD_OBJ_CT_HELPERS:
@@ -6277,6 +6282,7 @@ static int cmd_evaluate_list(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_FLOWTABLES:
 	case CMD_OBJ_SECMARKS:
 	case CMD_OBJ_SYNPROXYS:
+	case CMD_OBJ_CONNLIMITS:
 	case CMD_OBJ_CT_TIMEOUTS:
 	case CMD_OBJ_CT_EXPECTATIONS:
 	case CMD_OBJ_TUNNELS:

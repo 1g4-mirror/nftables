@@ -1752,6 +1752,12 @@ int mnl_nft_obj_add(struct netlink_ctx *ctx, struct cmd *cmd,
 		}
 		obj_tunnel_add_opts(nlo, &obj->tunnel);
 		break;
+	case NFT_OBJECT_CONNLIMIT:
+		nftnl_obj_set_u32(nlo, NFTNL_OBJ_CONNLIMIT_COUNT,
+				  obj->connlimit.count);
+		nftnl_obj_set_u32(nlo, NFTNL_OBJ_CONNLIMIT_FLAGS,
+				  obj->connlimit.flags);
+		break;
 	default:
 		BUG("Unknown type %d", obj->type);
 		break;
