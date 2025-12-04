@@ -221,7 +221,8 @@ int nft_lex(void *, void *, void *);
 %parse-param		{ void *scanner }
 %parse-param		{ struct parser_state *state }
 %lex-param		{ scanner }
-%define parse.error verbose
+%define parse.error custom
+%define parse.lac full
 %locations
 
 %initial-action {
@@ -6529,3 +6530,59 @@ exthdr_key		:	HBH	close_scope_hbh	{ $$ = IPPROTO_HOPOPTS; }
 			;
 
 %%
+
+static int
+yyreport_syntax_error(const yypcontext_t *yyctx, struct nft_ctx *nft,
+                      void *scanner, struct parser_state *state)
+{
+	const char *bad_token = yysymbol_name(yypcontext_token(yyctx));
+	struct location *loc = yypcontext_location(yyctx);
+	yysymbol_kind_t *exp_tokens;
+	int exp_tokens_cnt;
+	size_t errbufsz;
+	FILE *errfp;
+	char *msg;
+
+	errfp = open_memstream(&msg, &errbufsz);
+	if (!errfp)
+		memory_allocation_error();
+
+	exp_tokens_cnt = yypcontext_expected_tokens(yyctx, NULL, 0);
+	exp_tokens = xmalloc_array(exp_tokens_cnt, sizeof(yysymbol_kind_t));
+	yypcontext_expected_tokens(yyctx, exp_tokens, exp_tokens_cnt);
+
+	fprintf(errfp, "syntax error, unexpected %s\nexpected any of: ", bad_token);
+
+	for (int i = 0; i < exp_tokens_cnt; i++) {
+		const char *token_name = yysymbol_name(exp_tokens[i]);
+		bool is_keyword = true;
+
+		/* tokens that name generic things shall be printed as <foo>; detect them */
+		switch (exp_tokens[i]) {
+		case YYSYMBOL_NUM:
+		case YYSYMBOL_STRING:
+		case YYSYMBOL_QUOTED_STRING:
+		case YYSYMBOL_ASTERISK_STRING:
+			is_keyword = false;
+			break;
+		default:
+			break;
+		}
+
+		if (i > 0)
+			fputs(", ", errfp);
+		if (!is_keyword)
+			fputc('<', errfp);
+		fputs(token_name, errfp);
+		if (!is_keyword)
+			fputc('>', errfp);
+	}
+
+	free(exp_tokens);
+	fclose(errfp);
+	/* no newline on the end of the error message; this is intended */
+	yyerror(loc, nft, scanner, state, msg);
+
+	free(msg);
+	return 0;
+}
