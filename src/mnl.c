@@ -1880,16 +1880,17 @@ static int set_elem_cb(const struct nlmsghdr *nlh, void *data)
 
 static bool mnl_nft_attr_nest_overflow(struct nlmsghdr *nlh,
 				       const struct nlattr *from,
-				       const struct nlattr *to)
+				       const struct nlattr *to,
+				       unsigned int nest_len)
 {
-	int len = (void *)to + to->nla_len - (void *)from;
+	int len = (void *)to + nest_len - (void *)from;
 
 	/* The attribute length field is 16 bits long, thus the maximum payload
 	 * that an attribute can convey is UINT16_MAX. In case of overflow,
 	 * discard the last attribute that did not fit into the nest.
 	 */
 	if (len > UINT16_MAX) {
-		nlh->nlmsg_len -= to->nla_len;
+		nlh->nlmsg_len -= nest_len;
 		return true;
 	}
 	return false;
@@ -1955,8 +1956,9 @@ static int mnl_nft_setelem_batch(const struct nftnl_set *nls, struct cmd *cmd,
 				 struct netlink_ctx *ctx)
 {
 	struct nftnl_set_elem *nlse, *nlse_high = NULL;
+	struct nlattr *nest1, *nest2, *nest3;
 	struct expr *expr = NULL, *next;
-	struct nlattr *nest1, *nest2;
+	unsigned int nest_len = 0;
 	struct nlmsghdr *nlh;
 	int i = 0;
 
@@ -1998,21 +2000,12 @@ next:
 			else
 				next = NULL;
 
-			if (!nlse_high) {
-				nlse = alloc_nftnl_setelem_interval(set, init, expr, next, &nlse_high);
-			} else {
-				nlse = nlse_high;
-				nlse_high = NULL;
-			}
+			nlse = alloc_nftnl_setelem_interval(set, init, expr, next, &nlse_high);
 		} else {
 			nlse = alloc_nftnl_setelem(init, expr);
 		}
 
 		cmd_add_loc(cmd, nlh, &expr->location);
-
-		/* remain with this element, range high still needs to be added. */
-		if (nlse_high)
-			expr = list_prev_entry(expr, list);
 
 		nest2 = mnl_attr_nest_start(nlh, ++i);
 		nftnl_set_elem_nlmsg_build_payload(nlh, nlse);
@@ -2020,11 +2013,22 @@ next:
 
 		netlink_dump_setelem(nlse, ctx);
 		nftnl_set_elem_free(nlse);
-		if (mnl_nft_attr_nest_overflow(nlh, nest1, nest2)) {
-			if (nlse_high) {
-				nftnl_set_elem_free(nlse_high);
-				nlse_high = NULL;
-			}
+
+		nest_len = nest2->nla_len;
+
+		if (nlse_high) {
+			nest3 = mnl_attr_nest_start(nlh, ++i);
+			nftnl_set_elem_nlmsg_build_payload(nlh, nlse_high);
+			mnl_attr_nest_end(nlh, nest3);
+
+			netlink_dump_setelem(nlse_high, ctx);
+			nftnl_set_elem_free(nlse_high);
+			nlse_high = NULL;
+
+			nest_len += nest3->nla_len;
+		}
+
+		if (mnl_nft_attr_nest_overflow(nlh, nest1, nest2, nest_len)) {
 			mnl_attr_nest_end(nlh, nest1);
 			mnl_nft_batch_continue(batch);
 			mnl_seqnum_inc(seqnum);
