@@ -584,8 +584,6 @@ int nft_lex(void *, void *, void *);
 %token SKGID			"skgid"
 %token NFTRACE			"nftrace"
 %token RTCLASSID		"rtclassid"
-%token IBRIPORT			"ibriport"
-%token OBRIPORT			"obriport"
 %token IBRIDGENAME		"ibrname"
 %token OBRIDGENAME		"obrname"
 %token PKTTYPE			"pkttype"
@@ -594,6 +592,17 @@ int nft_lex(void *, void *, void *);
 %token OIFGROUP			"oifgroup"
 %token CGROUP			"cgroup"
 %token TIME			"time"
+
+%token NFPROTO			"nfproto"
+%token L4PROTO			"l4proto"
+%token IIFKIND			"iifkind"
+%token OIFKIND			"oifkind"
+%token IBRPVID			"ibrpvid"
+%token IBRVPROTO		"ibrvproto"
+%token SDIF			"sdif"
+%token SDIFNAME			"sdifname"
+%token BROUTE			"broute"
+%token BRIFHWADDR		"ibrhwaddr"
 
 %token CLASSID			"classid"
 %token NEXTHOP			"nexthop"
@@ -5421,20 +5430,6 @@ meta_expr		:	META	meta_key	close_scope_meta
 			{
 				$$ = meta_expr_alloc(&@$, $1);
 			}
-			|	META	STRING	close_scope_meta
-			{
-				struct error_record *erec;
-				unsigned int key;
-
-				erec = meta_key_parse(&@$, $2, &key);
-				free_const($2);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					YYERROR;
-				}
-
-				$$ = meta_expr_alloc(&@$, key);
-			}
 			;
 
 meta_key		:	meta_key_qualified
@@ -5446,6 +5441,16 @@ meta_key_qualified	:	LENGTH		{ $$ = NFT_META_LEN; }
 			|	PRIORITY	{ $$ = NFT_META_PRIORITY; }
 			|	RANDOM		{ $$ = NFT_META_PRANDOM; }
 			|	SECMARK	close_scope_secmark { $$ = NFT_META_SECMARK; }
+			|	NFPROTO		{ $$ = NFT_META_NFPROTO; }
+			|	L4PROTO		{ $$ = NFT_META_L4PROTO; }
+			|	IIFKIND		{ $$ = NFT_META_IIFKIND; }
+			|	OIFKIND		{ $$ = NFT_META_OIFKIND; }
+			|	IBRPVID		{ $$ = NFT_META_BRI_IIFPVID; }
+			|	IBRVPROTO	{ $$ = NFT_META_BRI_IIFVPROTO; }
+			|	SDIF		{ $$ = NFT_META_SDIF; }
+			|	SDIFNAME	{ $$ = NFT_META_SDIFNAME; }
+			|	BROUTE		{ $$ = NFT_META_BRI_BROUTE; }
+			|	BRIFHWADDR	{ $$ = NFT_META_BRI_IIFHWADDR; }
 			;
 
 meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
@@ -5459,8 +5464,6 @@ meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
 			|	SKGID		{ $$ = NFT_META_SKGID; }
 			|	NFTRACE		{ $$ = NFT_META_NFTRACE; }
 			|	RTCLASSID	{ $$ = NFT_META_RTCLASSID; }
-			|	IBRIPORT	{ $$ = NFT_META_BRI_IIFNAME; }
-			|       OBRIPORT	{ $$ = NFT_META_BRI_OIFNAME; }
 			|	IBRIDGENAME	{ $$ = NFT_META_BRI_IIFNAME; }
 			|       OBRIDGENAME	{ $$ = NFT_META_BRI_OIFNAME; }
 			|       PKTTYPE		{ $$ = NFT_META_PKTTYPE; }
@@ -5497,21 +5500,6 @@ meta_stmt		:	META	meta_key	SET	stmt_expr	close_scope_meta
 			|	meta_key_unqualified	SET	stmt_expr
 			{
 				$$ = meta_stmt_alloc(&@$, $1, $3);
-			}
-			|	META	STRING	SET	stmt_expr	close_scope_meta
-			{
-				struct error_record *erec;
-				unsigned int key;
-
-				erec = meta_key_parse(&@$, $2, &key);
-				free_const($2);
-				if (erec != NULL) {
-					erec_queue(erec, state->msgs);
-					expr_free($4);
-					YYERROR;
-				}
-
-				$$ = meta_stmt_alloc(&@$, key, $4);
 			}
 			|	NOTRACK
 			{

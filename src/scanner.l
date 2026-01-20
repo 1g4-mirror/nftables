@@ -754,15 +754,30 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "skgid"			{ return SKGID; }
 "nftrace"		{ return NFTRACE; }
 "rtclassid"		{ return RTCLASSID; }
-"ibriport"		{ return IBRIPORT; }
+"ibriport"		{ return IBRIDGENAME; } /* backwards compat */
 "ibrname"		{ return IBRIDGENAME; }
-"obriport"		{ return OBRIPORT; }
+"obriport"		{ return OBRIDGENAME; }	/* backwards compat */
 "obrname"		{ return OBRIDGENAME; }
 "pkttype"		{ return PKTTYPE; }
 "cpu"			{ return CPU; }
 "iifgroup"		{ return IIFGROUP; }
 "oifgroup"		{ return OIFGROUP; }
 "cgroup"		{ return CGROUP; }
+<SCANSTATE_META>{
+	"nfproto"	{ return NFPROTO; }
+	"l4proto"	{ return L4PROTO; }
+	"iifkind"	{ return IIFKIND; }
+	"oifkind"	{ return OIFKIND; }
+	"ibrpvid"	{ return IBRPVID; }
+	"ibrvproto"	{ return IBRVPROTO; }
+	"sdif"		{ return SDIF; }
+	"sdifname"	{ return SDIFNAME; }
+	"broute"	{ return BROUTE; }
+	"ibrhwaddr"	{ return BRIFHWADDR; }
+
+	/* backwards compat */
+	"secpath"	{ scanner_push_start_cond(yyscanner, SCANSTATE_EXPR_IPSEC); return IPSEC; }
+}
 
 <SCANSTATE_EXPR_RT>{
 	"nexthop"		{ return NEXTHOP; }

@@ -1269,7 +1269,7 @@ ____
 'META_KEY' := *"length"* | *"protocol"* | *"priority"* | *"random"* | *"mark"* |
               *"iif"* | *"iifname"* | *"iiftype"* | *"oif"* | *"oifname"* |
 	      *"oiftype"* | *"skuid"* | *"skgid"* | *"nftrace"* |
-	      *"rtclassid"* | *"ibriport"* | *"obriport"* | *"ibridgename"* |
+	      *"rtclassid"* | *"ibrname"* | *"obrname"* | *"ibridgename"* |
 	      *"obridgename"* | *"pkttype"* | *"cpu"* | *"iifgroup"* |
 	      *"oifgroup"* | *"cgroup"* | *"nfproto"* | *"l4proto"* |
 	      *"secpath"*
