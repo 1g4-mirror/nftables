@@ -51,6 +51,10 @@
 #define CTX_F_MAP	(1 << 7)	/* LHS of map_expr */
 #define CTX_F_CONCAT	(1 << 8)	/* inside concat_expr */
 #define CTX_F_COLLAPSED	(1 << 9)
+#define CTX_F_IMPLICIT	(1 << 10)	/* implicit add (export/import format) */
+
+/* Mask for flags that affect expression parsing context (all except command-level flags) */
+#define CTX_F_EXPR_MASK	(UINT32_MAX & ~(CTX_F_COLLAPSED | CTX_F_IMPLICIT))
 
 struct json_ctx {
 	struct nft_ctx *nft;
@@ -1725,10 +1729,14 @@ static struct expr *json_parse_expr(struct json_ctx *ctx, json_t *root)
 		return NULL;
 
 	for (i = 0; i < array_size(cb_tbl); i++) {
+		uint32_t expr_flags;
+
 		if (strcmp(type, cb_tbl[i].name))
 			continue;
 
-		if ((cb_tbl[i].flags & ctx->flags) != ctx->flags) {
+		/* Only check expression context flags, not command-level flags */
+		expr_flags = ctx->flags & CTX_F_EXPR_MASK;
+		if ((cb_tbl[i].flags & expr_flags) != expr_flags) {
 			json_error(ctx, "Expression type %s not allowed in context (%s).",
 				   type, ctx_flags_to_string(ctx));
 			return NULL;
@@ -3201,6 +3209,17 @@ static struct cmd *json_parse_cmd_add_rule(struct json_ctx *ctx, json_t *root,
 		h.index.id++;
 	}
 
+	/* For explicit add/insert/create commands, handle is used for positioning.
+	 * Convert handle to position for proper rule placement.
+	 * Skip this for implicit adds (export/import format).
+	 */
+	if (!(ctx->flags & CTX_F_IMPLICIT) &&
+	    (op == CMD_INSERT || op == CMD_ADD || op == CMD_CREATE) &&
+	    !json_unpack(root, "{s:I}", "handle", &h.handle.id)) {
+		h.position.id = h.handle.id;
+		h.handle.id = 0;
+	}
+
 	rule = rule_alloc(int_loc, NULL);
 
 	json_unpack(root, "{s:s}", "comment", &comment);
@@ -4342,6 +4361,8 @@ static struct cmd *json_parse_cmd(struct json_ctx *ctx, json_t *root)
 		//{ "monitor", CMD_MONITOR, json_parse_cmd_monitor },
 		//{ "describe", CMD_DESCRIBE, json_parse_cmd_describe }
 	};
+	uint32_t old_flags;
+	struct cmd *cmd;
 	unsigned int i;
 	json_t *tmp;
 
@@ -4352,8 +4373,17 @@ static struct cmd *json_parse_cmd(struct json_ctx *ctx, json_t *root)
 
 		return parse_cb_table[i].cb(ctx, tmp, parse_cb_table[i].op);
 	}
-	/* to accept 'list ruleset' output 1:1, try add command */
-	return json_parse_cmd_add(ctx, root, CMD_ADD);
+	/* to accept 'list ruleset' output 1:1, try add command
+	 * Mark as implicit to distinguish from explicit add commands.
+	 * This allows explicit {"add": {"rule": ...}} to use handle for positioning
+	 * while implicit {"rule": ...} (export format) ignores handles.
+	 */
+	old_flags = ctx->flags;
+	ctx->flags |= CTX_F_IMPLICIT;
+	cmd = json_parse_cmd_add(ctx, root, CMD_ADD);
+	ctx->flags = old_flags;
+
+	return cmd;
 }
 
 static int json_verify_metainfo(struct json_ctx *ctx, json_t *root)
