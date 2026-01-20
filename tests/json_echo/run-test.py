@@ -290,6 +290,7 @@ add_quota["add"]["quota"]["name"] = "q"
 do_flush()
 
 print("doing multi add")
+del(add_rule["add"]["rule"]["handle"])
 add_multi = [ add_table, add_chain, add_set, add_rule ]
 out = do_command(add_multi)
 
