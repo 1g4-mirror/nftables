@@ -496,13 +496,7 @@ static int netlink_events_setelem_cb(const struct nlmsghdr *nlh, int type,
 		nft_mon_print(monh, "\n");
 		break;
 	case NFTNL_OUTPUT_JSON:
-		dummyset->handle.family = family;
-		dummyset->handle.set.name = setname;
-		dummyset->handle.table.name = table;
 		monitor_print_element_json(monh, cmd, dummyset);
-		/* prevent set_free() from trying to free those */
-		dummyset->handle.set.name = NULL;
-		dummyset->handle.table.name = NULL;
 		if (!nft_output_echo(&monh->ctx->nft->output))
 			nft_mon_print(monh, "\n");
 		break;
