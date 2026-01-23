@@ -97,6 +97,7 @@ noinst_HEADERS = \
 	include/owner.h \
 	include/parser.h \
 	include/payload.h \
+	include/profiling.h \
 	include/proto.h \
 	include/rt.h \
 	include/rule.h \
@@ -163,6 +164,10 @@ AM_CFLAGS = \
 	$(NULL)
 
 AM_YFLAGS = -d -Wno-yacc
+
+if BUILD_PROFILING
+AM_CFLAGS += --coverage
+endif
 
 ###############################################################################
 
@@ -263,6 +268,10 @@ src_libnftables_la_SOURCES += \
 	src/json.c \
 	src/parser_json.c \
 	$(NULL)
+endif
+
+if BUILD_PROFILING
+src_libnftables_la_SOURCES += src/profiling.c
 endif
 
 src_libnftables_la_LDFLAGS = \
@@ -454,3 +463,15 @@ TESTS = tests/build/run-tests.sh \
 	tests/py/nft-test.py \
 	tests/shell/run-tests.sh
 endif
+
+all_c_sources = $(filter %.c,$(src_libnftables_la_SOURCES)) $(src_nft_SOURCES)
+if BUILD_MINIGMP
+all_c_sources += $(src_libminigmp_la_SOURCES)
+endif
+if BUILD_AFL
+all_c_sources += $(tools_nft_afl_SOURCES)
+endif
+CLEANFILES += src/libparser_la-parser_bison.gcno
+CLEANFILES += src/libparser_la-scanner.gcno
+CLEANFILES += $(all_c_sources:.c=.gcno)
+CLEANFILES += $(src_nft_SOURCES:.c=.gcda)

@@ -156,6 +156,13 @@ AC_ARG_ENABLE([distcheck],
 	      [enable_distcheck=yes], [])
 AM_CONDITIONAL([BUILD_DISTCHECK], [test "x$enable_distcheck" = "xyes"])
 
+AC_ARG_ENABLE([profiling],
+	      AS_HELP_STRING([--enable-profiling], [build for use of gcov/gprof]),
+	      [enable_profiling="$enableval"], [enable_profiling="no"])
+AM_CONDITIONAL([BUILD_PROFILING], [test "x$enable_profiling" = xyes])
+AM_COND_IF([BUILD_PROFILING],
+	   [AC_DEFINE([BUILD_PROFILING], [1], [Define for profiling])])
+
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\
@@ -170,7 +177,8 @@ nft configuration:
   use mini-gmp:			${with_mini_gmp}
   enable man page:              ${enable_man_doc}
   libxtables support:		${with_xtables}
-  json output support:          ${with_json}"
+  json output support:          ${with_json}
+  collect profiling data:       ${enable_profiling}"
 
 if test "x$unitdir" != "x"; then
 AC_SUBST([unitdir])

@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <utils.h>
 #include <nftables.h>
+#include <profiling.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_arp.h>
 
@@ -2390,6 +2391,7 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock, unsigned int debug_mask,
 	unsigned int bufsiz = NFTABLES_NLEVENT_BUFSIZ;
 	int fd = mnl_socket_get_fd(nf_sock);
 	char buf[NFT_NLMSG_MAXSIZE];
+	int sigfd = get_signalfd();
 	fd_set readfds;
 	int ret;
 
@@ -2401,10 +2403,15 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock, unsigned int debug_mask,
 	while (1) {
 		FD_ZERO(&readfds);
 		FD_SET(fd, &readfds);
+		if (sigfd != -1)
+			FD_SET(sigfd, &readfds);
 
-		ret = select(fd + 1, &readfds, NULL, NULL, NULL);
+		ret = select(max(fd, sigfd) + 1, &readfds, NULL, NULL, NULL);
 		if (ret < 0)
 			return -1;
+
+		if (FD_ISSET(sigfd, &readfds))
+			check_signalfd(sigfd);
 
 		if (FD_ISSET(fd, &readfds)) {
 			ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
