@@ -149,7 +149,7 @@ AC_ARG_WITH([stable-release], [AS_HELP_STRING([--with-stable-release],
             [], [with_stable_release=0])
 AC_SUBST([STABLE_RELEASE],[$with_stable_release])
 AC_SUBST([NFT_VERSION], [$(echo "${VERSION}" | tr '.' ',')])
-AC_SUBST([BUILD_STAMP], [$(date +%s)])
+AC_SUBST([BUILD_STAMP], [${SOURCE_DATE_EPOCH:-$(date +%s)}])
 
 AC_ARG_ENABLE([distcheck],
 	      AS_HELP_STRING([--enable-distcheck], [Build for distcheck]),
