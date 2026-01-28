@@ -147,22 +147,8 @@ AM_CONDITIONAL([BUILD_SERVICE], [test "x$unitdir" != x])
 AC_ARG_WITH([stable-release], [AS_HELP_STRING([--with-stable-release],
             [Stable release number])],
             [], [with_stable_release=0])
-AC_CONFIG_COMMANDS([stable_release],
-                   [STABLE_RELEASE=$stable_release],
-                   [stable_release=$with_stable_release])
-AC_CONFIG_COMMANDS([nftversion.h], [
-(
-	echo "static char nftversion[[]] = {"
-	echo "	${VERSION}," | tr '.' ','
-	echo "	${STABLE_RELEASE}"
-	echo "};"
-	echo "static char nftbuildstamp[[]] = {"
-	for i in `seq 56 -8 0`; do
-		echo "	((uint64_t)MAKE_STAMP >> $i) & 0xff,"
-	done
-	echo "};"
-) >nftversion.h
-])
+AC_SUBST([STABLE_RELEASE],[$with_stable_release])
+AC_SUBST([NFT_VERSION], [$(echo "${VERSION}" | tr '.' ',')])
 # Current date should be fetched exactly once per build,
 # so have 'make' call date and pass the value to every 'gcc' call
 AC_SUBST([MAKE_STAMP], ["\$(shell date +%s)"])
@@ -175,6 +161,7 @@ AM_CONDITIONAL([BUILD_DISTCHECK], [test "x$enable_distcheck" = "xyes"])
 AC_CONFIG_FILES([					\
 		Makefile				\
 		libnftables.pc				\
+		nftversion.h                            \
 		])
 AC_OUTPUT
 
