@@ -198,16 +198,17 @@ static struct expr *__expr_to_set_elem(struct expr *low, struct expr *expr)
 static struct expr *expr_to_set_elem(struct expr *e)
 {
 	unsigned int len = div_round_up(e->len, BITS_PER_BYTE);
+	struct expr *expr, *key;
 	unsigned int str_len;
 	char data[len + 1];
-	struct expr *expr;
 
 	assert(e->etype == EXPR_SET_ELEM);
 
-	if (expr_basetype(expr_value(e))->type != TYPE_STRING)
+	key = expr_value(e);
+	if (expr_basetype(key)->type != TYPE_STRING)
 		return expr_clone(e);
 
-	mpz_export_data(data, expr_value(e)->value, BYTEORDER_BIG_ENDIAN, len);
+	mpz_export_data(data, key->value, BYTEORDER_BIG_ENDIAN, len);
 
 	str_len = strnlen(data, len);
 	if (str_len >= len || str_len == 0)
@@ -306,15 +307,18 @@ static int expr_value_cmp(const void *p1, const void *p2)
 {
 	struct expr *e1 = *(void * const *)p1;
 	struct expr *e2 = *(void * const *)p2;
+	struct expr *key_e1, *key_e2;
 	int ret;
 
 	assert(e1->etype == EXPR_SET_ELEM);
 	assert(e2->etype == EXPR_SET_ELEM);
 
-	if (expr_value(e1)->etype == EXPR_CONCAT)
+	key_e1 = expr_value(e1);
+	if (key_e1->etype == EXPR_CONCAT)
 		return -1;
 
-	ret = mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
+	key_e2 = expr_value(e2);
+	ret = mpz_cmp(key_e1->value, key_e2->value);
 	if (ret == 0) {
 		if (e1->key->flags & EXPR_F_INTERVAL_END)
 			return -1;
@@ -475,15 +479,17 @@ static struct expr *interval_to_prefix(struct expr *low, struct expr *i, const m
 {
 	unsigned int prefix_len;
 	struct expr *prefix;
+	struct expr *key;
 
 	assert(low->etype == EXPR_SET_ELEM);
 	assert(i->etype == EXPR_SET_ELEM);
 
-	prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
+	key = expr_value(i);
+	prefix_len = key->len - mpz_scan0(range, 0);
 	prefix = prefix_expr_alloc(&low->location,
 				   expr_clone(expr_value(low)),
 						   prefix_len);
-	prefix->len = expr_value(i)->len;
+	prefix->len = key->len;
 
 	return __expr_to_set_elem(low, prefix);
 }
@@ -494,11 +500,13 @@ static struct expr *interval_to_string(struct expr *low, struct expr *i, const m
 	unsigned int prefix_len, str_len;
 	char data[len + 2];
 	struct expr *expr;
+	struct expr *key;
 
 	assert(low->etype == EXPR_SET_ELEM);
 	assert(i->etype == EXPR_SET_ELEM);
 
-	prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
+	key = expr_value(i);
+	prefix_len = key->len - mpz_scan0(range, 0);
 
 	if (prefix_len > i->len || prefix_len % BITS_PER_BYTE)
 		return interval_to_prefix(low, i, range);
@@ -520,21 +528,20 @@ static struct expr *interval_to_string(struct expr *low, struct expr *i, const m
 
 static struct expr *interval_to_range(struct expr *low, struct expr *i, mpz_t range)
 {
-	struct expr *tmp;
+	struct expr *tmp, *key;
 
 	assert(low->etype == EXPR_SET_ELEM);
 	assert(i->etype == EXPR_SET_ELEM);
 
+	key = expr_value(low);
 	tmp = constant_expr_alloc(&low->location, low->dtype,
-				  low->byteorder, expr_value(low)->len,
+				  low->byteorder, key->len,
 				  NULL);
 
-	mpz_add(range, range, expr_value(low)->value);
+	mpz_add(range, range, key->value);
 	mpz_set(tmp->value, range);
 
-	tmp = range_expr_alloc(&low->location,
-			       expr_clone(expr_value(low)),
-			       tmp);
+	tmp = range_expr_alloc(&low->location, expr_clone(key), tmp);
 
 	return __expr_to_set_elem(low, tmp);
 }
@@ -542,7 +549,7 @@ static struct expr *interval_to_range(struct expr *low, struct expr *i, mpz_t ra
 static void
 add_interval(struct expr *set, struct expr *low, struct expr *i, bool closed)
 {
-	struct expr *expr;
+	struct expr *expr, *key;
 	mpz_t range, p;
 
 	assert(low->etype == EXPR_SET_ELEM);
@@ -551,16 +558,17 @@ add_interval(struct expr *set, struct expr *low, struct expr *i, bool closed)
 	mpz_init(range);
 	mpz_init(p);
 
-	mpz_sub(range, expr_value(i)->value, expr_value(low)->value);
+	key = expr_value(low);
+	mpz_sub(range, expr_value(i)->value, key->value);
 	if (closed)
 		mpz_sub_ui(range, range, 1);
 
-	mpz_and(p, expr_value(low)->value, range);
+	mpz_and(p, key->value, range);
 
 	if (!mpz_cmp_ui(range, 0)) {
 		if (expr_basetype(low)->type == TYPE_STRING)
-			mpz_switch_byteorder(expr_value(low)->value,
-					     expr_value(low)->len / BITS_PER_BYTE);
+			mpz_switch_byteorder(key->value,
+					     key->len / BITS_PER_BYTE);
 		low->key->flags |= EXPR_F_KERNEL;
 		expr = expr_get(low);
 	} else if (range_is_prefix(range) && !mpz_cmp_ui(p, 0)) {
@@ -664,12 +672,13 @@ void interval_map_decompose(struct expr *set)
 	if (!low) /* no unclosed interval at end */
 		goto out;
 
+	key = expr_value(low);
 	i = constant_expr_alloc(&low->location, low->dtype,
-				low->byteorder, expr_value(low)->len, NULL);
+				low->byteorder, key->len, NULL);
 	mpz_bitmask(i->value, i->len);
 	i = set_elem_expr_alloc(&low->location, i);
 
-	if (!mpz_cmp(i->key->value, expr_value(low)->value)) {
+	if (!mpz_cmp(i->key->value, key->value)) {
 		set_expr_add(set, low);
 	} else {
 		add_interval(set, low, i, false);
