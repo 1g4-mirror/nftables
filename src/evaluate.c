@@ -2070,7 +2070,8 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 	const struct expr *elem;
 
 	list_for_each_entry_safe(i, next, &expr_set(set)->expressions, list) {
-		/* recursive EXPR_SET are merged here. */
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 

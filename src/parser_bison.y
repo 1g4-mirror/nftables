@@ -4556,7 +4556,7 @@ set_list_expr		:	set_list_member_expr
 
 set_list_member_expr	:	opt_newline	set_expr	opt_newline
 			{
-				$$ = $2;
+				$$ = set_elem_expr_alloc(&@$, $2);
 			}
 			|	opt_newline	set_elem_expr	opt_newline
 			{
