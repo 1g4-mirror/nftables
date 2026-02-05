@@ -351,7 +351,7 @@ static int range_mask_len(const mpz_t start, const mpz_t end, unsigned int len)
  */
 void concat_range_aggregate(struct expr *set)
 {
-	struct expr *i, *start = NULL, *end, *r1, *r2, *next, *r1_next, *tmp;
+	struct expr *i, *start, *end, *prev = NULL, *r1, *r2, *next, *r1_next, *tmp;
 	struct list_head *r2_next;
 	int prefix_len, free_r1;
 	mpz_t range, p;
@@ -359,21 +359,22 @@ void concat_range_aggregate(struct expr *set)
 	list_for_each_entry_safe(i, next, &expr_set(set)->expressions, list) {
 		assert(i->etype == EXPR_SET_ELEM);
 
-		if (!start) {
-			start = i;
+		if (!prev) {
+			prev = i;
 			continue;
 		}
-		end = i;
+		start = expr_value(prev);
+		end = expr_value(i);
 
 		/* Walk over r1 (start expression) and r2 (end) in parallel,
 		 * form ranges between corresponding r1 and r2 expressions,
 		 * store them by replacing r2 expressions, and free r1
 		 * expressions.
 		 */
-		r2 = list_first_entry(&expr_concat(expr_value(end))->expressions,
+		r2 = list_first_entry(&expr_concat(end)->expressions,
 				      struct expr, list);
 		list_for_each_entry_safe(r1, r1_next,
-					 &expr_concat(expr_value(start))->expressions,
+					 &expr_concat(start)->expressions,
 					 list) {
 			bool string_type = false;
 
@@ -452,15 +453,15 @@ next:
 			mpz_clear(range);
 
 			r2 = list_entry(r2_next, typeof(*r2), list);
-			concat_expr_remove(expr_value(start), r1);
+			concat_expr_remove(start, r1);
 
 			if (free_r1)
 				expr_free(r1);
 		}
 
-		set_expr_remove(set, start);
-		expr_free(start);
-		start = NULL;
+		set_expr_remove(set, prev);
+		expr_free(prev);
+		prev = NULL;
 	}
 }
 
