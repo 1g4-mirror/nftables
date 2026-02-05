@@ -43,6 +43,9 @@ static enum byteorder get_key_byteorder(const struct expr *e)
 
 static void interval_expr_copy(struct expr *dst, struct expr *src)
 {
+	assert(dst->etype == EXPR_SET_ELEM);
+	assert(src->etype == EXPR_SET_ELEM);
+
 	if (src->comment)
 		dst->comment = xstrdup(src->comment);
 	if (src->timeout)
@@ -131,6 +134,9 @@ static struct expr *get_set_interval_find(const struct set *cache_set,
 	struct expr *i, *key;
 	mpz_t val;
 
+	assert(left->etype == EXPR_SET_ELEM);
+	assert(!right || right->etype == EXPR_SET_ELEM);
+
 	mpz_init2(val, set->key->len);
 
 	list_for_each_entry(i, &expr_set(set->init)->expressions, list) {
@@ -169,6 +175,8 @@ static struct expr *__expr_to_set_elem(struct expr *low, struct expr *expr)
 {
 	struct expr *elem;
 
+	assert(low->etype == EXPR_SET_ELEM);
+
 	if (low->key->etype == EXPR_MAPPING) {
 		expr = mapping_expr_alloc(&low->location, expr,
 					  expr_clone(low->key->right));
@@ -187,6 +195,8 @@ static struct expr *expr_to_set_elem(struct expr *e)
 	unsigned int str_len;
 	char data[len + 1];
 	struct expr *expr;
+
+	assert(e->etype == EXPR_SET_ELEM);
 
 	if (expr_basetype(expr_value(e))->type != TYPE_STRING)
 		return expr_clone(e);
@@ -209,6 +219,9 @@ static struct expr *expr_to_set_elem(struct expr *e)
 static void set_expr_add_splice(struct expr *compound, struct expr *expr, struct expr *orig)
 {
 	struct expr *elem;
+
+	assert(expr->etype == EXPR_SET_ELEM);
+	assert(orig->etype == EXPR_SET_ELEM);
 
 	switch (expr->etype) {
 	case EXPR_SET_ELEM:
@@ -303,6 +316,9 @@ static int expr_value_cmp(const void *p1, const void *p2)
 	struct expr *e1 = *(void * const *)p1;
 	struct expr *e2 = *(void * const *)p2;
 	int ret;
+
+	assert(e1->etype == EXPR_SET_ELEM);
+	assert(e2->etype == EXPR_SET_ELEM);
 
 	if (expr_value(e1)->etype == EXPR_CONCAT)
 		return -1;
@@ -468,6 +484,9 @@ static struct expr *interval_to_prefix(struct expr *low, struct expr *i, const m
 	unsigned int prefix_len;
 	struct expr *prefix;
 
+	assert(low->etype == EXPR_SET_ELEM);
+	assert(i->etype == EXPR_SET_ELEM);
+
 	prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
 	prefix = prefix_expr_alloc(&low->location,
 				   expr_clone(expr_value(low)),
@@ -483,6 +502,9 @@ static struct expr *interval_to_string(struct expr *low, struct expr *i, const m
 	unsigned int prefix_len, str_len;
 	char data[len + 2];
 	struct expr *expr;
+
+	assert(low->etype == EXPR_SET_ELEM);
+	assert(i->etype == EXPR_SET_ELEM);
 
 	prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
 
@@ -508,6 +530,9 @@ static struct expr *interval_to_range(struct expr *low, struct expr *i, mpz_t ra
 {
 	struct expr *tmp;
 
+	assert(low->etype == EXPR_SET_ELEM);
+	assert(i->etype == EXPR_SET_ELEM);
+
 	tmp = constant_expr_alloc(&low->location, low->dtype,
 				  low->byteorder, expr_value(low)->len,
 				  NULL);
@@ -527,6 +552,9 @@ add_interval(struct expr *set, struct expr *low, struct expr *i, bool closed)
 {
 	struct expr *expr;
 	mpz_t range, p;
+
+	assert(low->etype == EXPR_SET_ELEM);
+	assert(i->etype == EXPR_SET_ELEM);
 
 	mpz_init(range);
 	mpz_init(p);
@@ -596,6 +624,8 @@ void interval_map_decompose(struct expr *set)
 	for (m = 0; m < size; m++) {
 		i = elements[m];
 
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (i->key->flags & EXPR_F_INTERVAL_END)
 			interval = false;
 		else if (interval) {
@@ -611,6 +641,8 @@ void interval_map_decompose(struct expr *set)
 
 	for (n = 0; n < size; n++) {
 		i = ranges[n];
+
+		assert(i->etype == EXPR_SET_ELEM);
 
 		if (low == NULL) {
 			if (i->key->flags & EXPR_F_INTERVAL_END) {

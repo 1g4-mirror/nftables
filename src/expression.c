@@ -1458,12 +1458,16 @@ void set_expr_add(struct expr *set, struct expr *elem)
 {
 	struct expr_set *expr_set = expr_set(set);
 
+	assert(elem->etype == EXPR_SET_ELEM);
+
 	list_add_tail(&elem->list, &expr_set->expressions);
 	expr_set->size++;
 }
 
 void set_expr_remove(struct expr *set, struct expr *expr)
 {
+	assert(expr->etype == EXPR_SET_ELEM);
+
 	expr_set(set)->size--;
 	list_del(&expr->list);
 }
