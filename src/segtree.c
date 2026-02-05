@@ -114,17 +114,12 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 
 static struct expr *expr_value(struct expr *expr)
 {
-	switch (expr->etype) {
-	case EXPR_SET_ELEM:
-		if (expr->key->etype == EXPR_MAPPING)
-			return expr->key->left;
+	assert(expr->etype == EXPR_SET_ELEM);
 
-		return expr->key;
-	case EXPR_VALUE:
-		return expr;
-	default:
-		BUG("invalid expression type %s", expr_name(expr));
-	}
+	if (expr->key->etype == EXPR_MAPPING)
+		return expr->key->left;
+
+	return expr->key;
 }
 
 static struct expr *get_set_interval_find(const struct set *cache_set,
@@ -528,7 +523,7 @@ static struct expr *interval_to_range(struct expr *low, struct expr *i, mpz_t ra
 }
 
 static void
-add_interval(struct expr *set, struct expr *low, struct expr *i)
+add_interval(struct expr *set, struct expr *low, struct expr *i, bool closed)
 {
 	struct expr *expr;
 	mpz_t range, p;
@@ -537,7 +532,7 @@ add_interval(struct expr *set, struct expr *low, struct expr *i)
 	mpz_init(p);
 
 	mpz_sub(range, expr_value(i)->value, expr_value(low)->value);
-	if (i->etype != EXPR_VALUE)
+	if (closed)
 		mpz_sub_ui(range, range, 1);
 
 	mpz_and(p, expr_value(low)->value, range);
@@ -633,7 +628,7 @@ void interval_map_decompose(struct expr *set)
 			}
 		}
 
-		add_interval(set, low, i);
+		add_interval(set, low, i, true);
 
 		if (i->key->flags & EXPR_F_INTERVAL_END) {
 			expr_free(low);
@@ -648,11 +643,12 @@ void interval_map_decompose(struct expr *set)
 	i = constant_expr_alloc(&low->location, low->dtype,
 				low->byteorder, expr_value(low)->len, NULL);
 	mpz_bitmask(i->value, i->len);
+	i = set_elem_expr_alloc(&low->location, i);
 
-	if (!mpz_cmp(i->value, expr_value(low)->value)) {
+	if (!mpz_cmp(i->key->value, expr_value(low)->value)) {
 		set_expr_add(set, low);
 	} else {
-		add_interval(set, low, i);
+		add_interval(set, low, i, false);
 		expr_free(low);
 	}
 
