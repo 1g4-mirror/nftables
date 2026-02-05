@@ -103,11 +103,11 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 		case EXPR_RANGE_VALUE:
 		case EXPR_MAPPING:
 			range_expr_value_low(low, i->key);
-			set_elem_expr_add(set, new_init, low, 0, i->byteorder);
+			set_elem_expr_add(set, new_init, low, 0, byteorder);
 			range_expr_value_high(high, i->key);
 			mpz_add_ui(high, high, 1);
 			set_elem_expr_add(set, new_init, high,
-					  EXPR_F_INTERVAL_END, i->byteorder);
+					  EXPR_F_INTERVAL_END, byteorder);
 			break;
 		default:
 			BUG("unexpected expression %s", expr_name(i->key));
