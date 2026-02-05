@@ -3673,28 +3673,28 @@ static int stmt_evaluate_meter(struct eval_ctx *ctx, struct stmt *stmt)
 	expr_set_context(&ctx->ectx, NULL, 0);
 	if (expr_evaluate(ctx, &stmt->meter.key) < 0)
 		return -1;
-	if (expr_is_constant(stmt->meter.key))
-		return expr_error(ctx->msgs, stmt->meter.key,
+	if (expr_is_constant(stmt->meter.key->key))
+		return expr_error(ctx->msgs, stmt->meter.key->key,
 				  "Meter key expression can not be constant");
 	if (stmt->meter.key->comment)
-		return expr_error(ctx->msgs, stmt->meter.key,
+		return expr_error(ctx->msgs, stmt->meter.key->key,
 				  "Meter key expression can not contain comments");
 
 	/* Declare an empty set */
 	key = stmt->meter.key;
 	if (existing_set) {
 		if ((existing_set->flags & NFT_SET_TIMEOUT) && !key->timeout)
-			return expr_error(ctx->msgs, stmt->meter.key,
+			return expr_error(ctx->msgs, stmt->meter.key->key,
 					  "existing set '%s' has timeout flag",
 					  stmt->meter.name);
 
 		if ((existing_set->flags & NFT_SET_TIMEOUT) == 0 && key->timeout)
-			return expr_error(ctx->msgs, stmt->meter.key,
+			return expr_error(ctx->msgs, stmt->meter.key->key,
 					  "existing set '%s' lacks timeout flag",
 					  stmt->meter.name);
 
 		if (stmt->meter.size > 0 && existing_set->desc.size != stmt->meter.size)
-			return expr_error(ctx->msgs, stmt->meter.key,
+			return expr_error(ctx->msgs, stmt->meter.key->key,
 					  "existing set '%s' has size %u, meter has %u",
 					  stmt->meter.name, existing_set->desc.size,
 					  stmt->meter.size);
@@ -4848,7 +4848,7 @@ static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
 			      &stmt->set.key->key) < 0)
 		return -1;
 	if (stmt->set.key->comment != NULL)
-		return expr_error(ctx->msgs, stmt->set.key,
+		return expr_error(ctx->msgs, stmt->set.key->key,
 				  "Key expression comments are not supported");
 	list_for_each_entry(this, &stmt->set.stmt_list, list) {
 		if (stmt_evaluate_stateful(ctx, this, "set") < 0)
@@ -4889,7 +4889,7 @@ static int stmt_evaluate_map(struct eval_ctx *ctx, struct stmt *stmt)
 			      &stmt->map.key->key) < 0)
 		return -1;
 	if (stmt->map.key->comment != NULL)
-		return expr_error(ctx->msgs, stmt->map.key,
+		return expr_error(ctx->msgs, stmt->map.key->key,
 				  "Key expression comments are not supported");
 
 	if (stmt_evaluate_arg(ctx, stmt,
