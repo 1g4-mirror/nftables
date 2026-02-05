@@ -13,6 +13,11 @@
 #include <intervals.h>
 #include <rule.h>
 
+static void __set_expr_add(struct expr *set, struct expr *elem)
+{
+	list_add_tail(&elem->list, &expr_set(set)->expressions);
+}
+
 static void set_to_range(struct expr *init);
 
 static void __setelem_expr_to_range(struct expr **exprp)

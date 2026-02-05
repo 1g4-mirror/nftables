@@ -1454,11 +1454,6 @@ struct expr *set_expr_alloc(const struct location *loc, const struct set *set)
 	return set_expr;
 }
 
-void __set_expr_add(struct expr *set, struct expr *elem)
-{
-	list_add_tail(&elem->list, &expr_set(set)->expressions);
-}
-
 void set_expr_add(struct expr *set, struct expr *elem)
 {
 	struct expr_set *expr_set = expr_set(set);
