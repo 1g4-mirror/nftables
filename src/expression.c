@@ -1799,8 +1799,6 @@ void range_expr_value_low(mpz_t rop, const struct expr *expr)
 		return range_expr_value_low(rop, expr->left);
 	case EXPR_MAPPING:
 		return range_expr_value_low(rop, expr->left);
-	case EXPR_SET_ELEM:
-		return range_expr_value_low(rop, expr->key);
 	default:
 		BUG("invalid range expression type %s", expr_name(expr));
 	}
@@ -1826,8 +1824,6 @@ void range_expr_value_high(mpz_t rop, const struct expr *expr)
 		return range_expr_value_high(rop, expr->right);
 	case EXPR_MAPPING:
 		return range_expr_value_high(rop, expr->left);
-	case EXPR_SET_ELEM:
-		return range_expr_value_high(rop, expr->key);
 	default:
 		BUG("invalid range expression type %s", expr_name(expr));
 	}

@@ -96,9 +96,9 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 			set_expr_add(new_init, expr_clone(i));
 			break;
 		default:
-			range_expr_value_low(low, i);
+			range_expr_value_low(low, i->key);
 			set_elem_expr_add(set, new_init, low, 0, i->byteorder);
-			range_expr_value_high(high, i);
+			range_expr_value_high(high, i->key);
 			mpz_add_ui(high, high, 1);
 			set_elem_expr_add(set, new_init, high,
 					  EXPR_F_INTERVAL_END, i->byteorder);
@@ -150,11 +150,11 @@ static struct expr *get_set_interval_find(const struct set *cache_set,
 			/* fall-through */
 		case EXPR_PREFIX:
 		case EXPR_RANGE:
-			range_expr_value_low(val, i);
+			range_expr_value_low(val, i->key);
 			if (left && mpz_cmp(expr_value(left)->value, val))
 				break;
 
-			range_expr_value_high(val, i);
+			range_expr_value_high(val, i->key);
 			if (right && mpz_cmp(expr_value(right)->value, val))
 				break;
 

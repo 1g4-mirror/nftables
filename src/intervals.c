@@ -191,8 +191,8 @@ static void setelem_automerge(struct set_automerge_ctx *ctx)
 		if (expr_type_catchall(i->key))
 			continue;
 
-		range_expr_value_low(range.low, i);
-		range_expr_value_high(range.high, i);
+		range_expr_value_low(range.low, i->key);
+		range_expr_value_high(range.high, i->key);
 
 		if (!prev) {
 			set_prev_elem(&prev, i, &prev_range, &range);
@@ -439,8 +439,8 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 			mpz_bitmask(range.low, len);
 			mpz_bitmask(range.high, len);
 		} else {
-			range_expr_value_low(range.low, i);
-			range_expr_value_high(range.high, i);
+			range_expr_value_low(range.low, i->key);
+			range_expr_value_high(range.high, i->key);
 		}
 
 		if (!prev && elem->key->flags & EXPR_F_REMOVE) {
@@ -603,8 +603,8 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 		if (expr_type_catchall(i->key))
 			continue;
 
-		range_expr_value_low(range.low, i);
-		range_expr_value_high(range.high, i);
+		range_expr_value_low(range.low, i->key);
+		range_expr_value_high(range.high, i->key);
 
 		if (!prev) {
 			prev = elem;
