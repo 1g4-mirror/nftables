@@ -218,26 +218,11 @@ static struct expr *expr_to_set_elem(struct expr *e)
 
 static void set_expr_add_splice(struct expr *compound, struct expr *expr, struct expr *orig)
 {
-	struct expr *elem;
-
 	assert(expr->etype == EXPR_SET_ELEM);
 	assert(orig->etype == EXPR_SET_ELEM);
 
-	switch (expr->etype) {
-	case EXPR_SET_ELEM:
-		list_splice_init(&orig->stmt_list, &expr->stmt_list);
-		set_expr_add(compound, expr);
-		break;
-	case EXPR_MAPPING:
-		list_splice_init(&orig->left->stmt_list, &expr->left->stmt_list);
-		set_expr_add(compound, expr);
-		break;
-	default:
-		elem = set_elem_expr_alloc(&orig->location, expr);
-		list_splice_init(&orig->stmt_list, &elem->stmt_list);
-		set_expr_add(compound, elem);
-		break;
-	}
+	list_splice_init(&orig->stmt_list, &expr->stmt_list);
+	set_expr_add(compound, expr);
 }
 
 int get_set_decompose(struct set *cache_set, struct set *set)
