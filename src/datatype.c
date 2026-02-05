@@ -1525,6 +1525,7 @@ const struct datatype boolean_type = {
 	.name		= "boolean",
 	.desc		= "boolean type",
 	.size		= 1,
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.parse		= boolean_type_parse,
 	.basetype	= &integer_type,
 	.sym_tbl	= &boolean_tbl,

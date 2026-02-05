@@ -1480,7 +1480,7 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 	}
 
 	json_array_foreach(root, index, value) {
-		struct expr *expr;
+		struct expr *expr, *elem;
 		json_t *jleft, *jright;
 
 		if (!json_unpack(value, "[o, o!]", &jleft, &jright)) {
@@ -1492,8 +1492,13 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 				expr_free(set_expr);
 				return NULL;
 			}
-			if (expr->etype != EXPR_SET_ELEM)
-				expr = set_elem_expr_alloc(int_loc, expr);
+
+			if (expr->etype != EXPR_SET_ELEM) {
+				elem = set_elem_expr_alloc(int_loc, expr);
+			} else {
+				elem = expr;
+				expr = expr->key;
+			}
 
 			expr2 = json_parse_set_rhs_expr(ctx, jright);
 			if (!expr2) {
@@ -1503,7 +1508,8 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 				return NULL;
 			}
 			expr2 = mapping_expr_alloc(int_loc, expr, expr2);
-			expr = expr2;
+			elem->key = expr2;
+			expr = elem;
 		} else {
 			expr = json_parse_rhs_expr(ctx, value);
 

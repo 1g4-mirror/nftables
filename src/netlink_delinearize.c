@@ -2493,6 +2493,8 @@ static void binop_adjust(const struct expr *binop, struct expr *right,
 			break;
 
 		list_for_each_entry(i, &expr_set(right->set->init)->expressions, list) {
+			assert(i->etype == EXPR_SET_ELEM);
+
 			switch (i->key->etype) {
 			case EXPR_VALUE:
 				binop_adjust_one(binop, i->key, shift);
@@ -2501,8 +2503,11 @@ static void binop_adjust(const struct expr *binop, struct expr *right,
 				binop_adjust_one(binop, i->key->left, shift);
 				binop_adjust_one(binop, i->key->right, shift);
 				break;
-			case EXPR_SET_ELEM:
-				binop_adjust(binop, i->key->key, shift);
+			case EXPR_MAPPING:
+				if (i->key->left->etype == EXPR_RANGE)
+					binop_adjust(binop, i->key->left, shift);
+				else
+					binop_adjust_one(binop, i->key->left, shift);
 				break;
 			default:
 				BUG("unknown expression type %s",

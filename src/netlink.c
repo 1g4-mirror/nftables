@@ -103,7 +103,7 @@ static void __netlink_gen_data(const struct expr *expr,
 struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 					   const struct expr *expr)
 {
-	const struct expr *elem, *data;
+	const struct expr *data, *elem;
 	struct nftnl_set_elem *nlse;
 	struct nft_data_linearize nld;
 	struct nftnl_udata_buf *udbuf = NULL;
@@ -116,18 +116,20 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 	if (nlse == NULL)
 		memory_allocation_error();
 
-	data = NULL;
-	if (expr->etype == EXPR_MAPPING) {
-		elem = expr->left;
-		if (!(expr->flags & EXPR_F_INTERVAL_END))
-			data = expr->right;
-	} else {
-		elem = expr;
-	}
-	if (elem->etype != EXPR_SET_ELEM)
-		BUG("Unexpected expression type: got %d", elem->etype);
+	if (expr->etype != EXPR_SET_ELEM)
+		BUG("Unexpected expression type: got %d\n", expr->etype);
 
-	key = elem->key;
+	data = NULL;
+	if (expr->key->etype == EXPR_MAPPING) {
+		if (!(expr->key->flags & EXPR_F_INTERVAL_END))
+			data = expr->key->right;
+
+		key = expr->key->left;
+	} else {
+		key = expr->key;
+	}
+
+	elem = expr;
 
 	switch (key->etype) {
 	case EXPR_SET_ELEM_CATCHALL:
@@ -627,6 +629,8 @@ static void netlink_gen_key(const struct expr *expr,
 		return netlink_gen_range(expr, data);
 	case EXPR_PREFIX:
 		return netlink_gen_prefix(expr, data);
+	case EXPR_MAPPING:
+		return netlink_gen_key(expr->left, data);
 	default:
 		BUG("invalid data expression type %s", expr_name(expr));
 	}
@@ -1599,6 +1603,53 @@ key_end:
 		return 0;
 	}
 
+	if (set_is_datamap(set->flags)) {
+		if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_DATA)) {
+			nld.value = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_DATA,
+						       &nld.len);
+		} else if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_CHAIN)) {
+			nld.chain = nftnl_set_elem_get_str(nlse, NFTNL_SET_ELEM_CHAIN);
+			nld.verdict = nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_VERDICT);
+		} else if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_VERDICT)) {
+			nld.verdict = nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_VERDICT);
+		} else
+			goto out;
+
+		data = netlink_alloc_data(&netlink_location, &nld,
+					  set->data->dtype->type == TYPE_VERDICT ?
+					  NFT_REG_VERDICT : NFT_REG_1);
+
+		if (set->data->dtype->is_typeof)
+			datatype_set(data, set->data->dtype->basetype);
+		else
+			datatype_set(data, set->data->dtype);
+		data->byteorder = set->data->byteorder;
+
+		if (set->data->dtype->subtypes) {
+			data = netlink_parse_concat_elem(set, data);
+		} else if (set->data->flags & EXPR_F_INTERVAL)
+			data = netlink_parse_interval_elem(set, data);
+
+		if (data->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
+
+		key = mapping_expr_alloc(&netlink_location, key, data);
+	}
+	if (set_is_objmap(set->flags)) {
+		if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_OBJREF)) {
+			nld.value = nftnl_set_elem_get(nlse,
+						       NFTNL_SET_ELEM_OBJREF,
+						       &nld.len);
+		} else
+			goto out;
+
+		data = netlink_alloc_value(&netlink_location, &nld);
+		data->dtype = &string_type;
+		data->byteorder = BYTEORDER_HOST_ENDIAN;
+		mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
+		key = mapping_expr_alloc(&netlink_location, key, data);
+	}
+out:
 	expr = set_elem_expr_alloc(&netlink_location, key);
 	expr->flags |= EXPR_F_KERNEL;
 
@@ -1633,54 +1684,6 @@ key_end:
 		if (mpz_cmp_ui(set->key->value, 0) == 0)
 			set->root = true;
 	}
-
-	if (set_is_datamap(set->flags)) {
-		if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_DATA)) {
-			nld.value = nftnl_set_elem_get(nlse, NFTNL_SET_ELEM_DATA,
-						       &nld.len);
-		} else if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_CHAIN)) {
-			nld.chain = nftnl_set_elem_get_str(nlse, NFTNL_SET_ELEM_CHAIN);
-			nld.verdict = nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_VERDICT);
-		} else if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_VERDICT)) {
-			nld.verdict = nftnl_set_elem_get_u32(nlse, NFTNL_SET_ELEM_VERDICT);
-		} else
-			goto out;
-
-		data = netlink_alloc_data(&netlink_location, &nld,
-					  set->data->dtype->type == TYPE_VERDICT ?
-					  NFT_REG_VERDICT : NFT_REG_1);
-
-		if (set->data->dtype->is_typeof)
-			datatype_set(data, set->data->dtype->basetype);
-		else
-			datatype_set(data, set->data->dtype);
-		data->byteorder = set->data->byteorder;
-
-		if (set->data->dtype->subtypes) {
-			data = netlink_parse_concat_elem(set, data);
-		} else if (set->data->flags & EXPR_F_INTERVAL)
-			data = netlink_parse_interval_elem(set, data);
-
-		if (data->byteorder == BYTEORDER_HOST_ENDIAN)
-			mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
-
-		expr = mapping_expr_alloc(&netlink_location, expr, data);
-	}
-	if (set_is_objmap(set->flags)) {
-		if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_OBJREF)) {
-			nld.value = nftnl_set_elem_get(nlse,
-						       NFTNL_SET_ELEM_OBJREF,
-						       &nld.len);
-		} else
-			goto out;
-
-		data = netlink_alloc_value(&netlink_location, &nld);
-		data->dtype = &string_type;
-		data->byteorder = BYTEORDER_HOST_ENDIAN;
-		mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
-		expr = mapping_expr_alloc(&netlink_location, expr, data);
-	}
-out:
 	set_expr_add(set->init, expr);
 
 	if (!(flags & NFT_SET_ELEM_INTERVAL_END) &&

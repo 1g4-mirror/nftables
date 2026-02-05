@@ -1515,14 +1515,16 @@ struct expr *mapping_expr_alloc(const struct location *loc,
 
 static bool __set_expr_is_vmap(const struct expr *mappings)
 {
-	const struct expr *mapping;
+	const struct expr *elem;
 
 	if (list_empty(&expr_set(mappings)->expressions))
 		return false;
 
-	mapping = list_first_entry(&expr_set(mappings)->expressions, struct expr, list);
-	if (mapping->etype == EXPR_MAPPING &&
-	    mapping->right->etype == EXPR_VERDICT)
+	elem = list_first_entry(&expr_set(mappings)->expressions, struct expr, list);
+	assert(elem->etype == EXPR_SET_ELEM);
+
+	if (elem->key->etype == EXPR_MAPPING &&
+	    elem->key->right->etype == EXPR_VERDICT)
 		return true;
 
 	return false;
@@ -1653,7 +1655,17 @@ static void set_elem_expr_print(const struct expr *expr,
 {
 	struct stmt *stmt;
 
-	expr_print(expr->key, octx);
+	/* The mapping output needs to print lhs first, then timeout, expires,
+	 * comment and list of statements and finally rhs.
+	 *
+	 * Because EXPR_SET_ELEM always comes before EXPR_MAPPING, add this
+	 * special handling to print the output accordingly.
+	 */
+	if (expr->key->etype == EXPR_MAPPING)
+		expr_print(expr->key->left, octx);
+	else
+		expr_print(expr->key, octx);
+
 	list_for_each_entry(stmt, &expr->stmt_list, list) {
 		nft_print(octx, " ");
 		stmt_print(stmt, octx);
@@ -1673,6 +1685,11 @@ static void set_elem_expr_print(const struct expr *expr,
 	}
 	if (expr->comment)
 		nft_print(octx, " comment \"%s\"", expr->comment);
+
+	if (expr->key->etype == EXPR_MAPPING) {
+		nft_print(octx, " : ");
+		expr_print(expr->key->right, octx);
+	}
 }
 
 static void set_elem_expr_destroy(struct expr *expr)

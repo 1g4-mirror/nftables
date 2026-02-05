@@ -113,9 +113,10 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 static struct expr *expr_value(struct expr *expr)
 {
 	switch (expr->etype) {
-	case EXPR_MAPPING:
-		return expr->left->key;
 	case EXPR_SET_ELEM:
+		if (expr->key->etype == EXPR_MAPPING)
+			return expr->key->left;
+
 		return expr->key;
 	case EXPR_VALUE:
 		return expr;
@@ -167,17 +168,16 @@ out:
 
 static struct expr *__expr_to_set_elem(struct expr *low, struct expr *expr)
 {
-	struct expr *elem = set_elem_expr_alloc(&low->location, expr);
+	struct expr *elem;
 
-	if (low->etype == EXPR_MAPPING) {
-		interval_expr_copy(elem, low->left);
-
-		elem = mapping_expr_alloc(&low->location, elem,
-						    expr_clone(low->right));
-	} else {
-		interval_expr_copy(elem, low);
+	if (low->key->etype == EXPR_MAPPING) {
+		expr = mapping_expr_alloc(&low->location, expr,
+					  expr_clone(low->key->right));
 	}
+
+	elem = set_elem_expr_alloc(&low->location, expr);
 	elem->flags |= EXPR_F_KERNEL;
+	interval_expr_copy(elem, low);
 
 	return elem;
 }
@@ -237,6 +237,8 @@ int get_set_decompose(struct set *cache_set, struct set *set)
 	new_init = set_expr_alloc(&internal_location, set);
 
 	list_for_each_entry_safe(i, next, &expr_set(set->init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (i->flags & EXPR_F_INTERVAL_END && left) {
 			list_del(&left->list);
 			list_del(&i->list);
@@ -573,13 +575,10 @@ void interval_map_decompose(struct expr *set)
 	/* Sort elements */
 	n = 0;
 	list_for_each_entry_safe(i, next, &expr_set(set)->expressions, list) {
-		key = NULL;
-		if (i->etype == EXPR_SET_ELEM)
-			key = i->key;
-		else if (i->etype == EXPR_MAPPING)
-			key = i->left->key;
+		assert(i->etype == EXPR_SET_ELEM);
 
-		if (key && expr_type_catchall(key)) {
+		key = i->key;
+		if (expr_type_catchall(key)) {
 			list_del(&i->list);
 			catchall = i;
 			continue;

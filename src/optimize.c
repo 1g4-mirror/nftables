@@ -756,29 +756,31 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 	switch (expr->etype) {
 	case EXPR_LIST:
 		list_for_each_entry(item, &expr_list(expr)->expressions, list) {
-			elem = set_elem_expr_alloc(&internal_location, expr_get(item));
+			mapping = mapping_expr_alloc(&internal_location, expr_get(item),
+						     expr_get(verdict->expr));
+
+			elem = set_elem_expr_alloc(&internal_location, mapping);
 			if (counter) {
 				counter_elem = counter_stmt_alloc(&counter->location);
 				list_add_tail(&counter_elem->list, &elem->stmt_list);
 			}
 
-			mapping = mapping_expr_alloc(&internal_location, elem,
-						     expr_get(verdict->expr));
-			set_expr_add(set, mapping);
+			set_expr_add(set, elem);
 		}
 		stmt_free(counter);
 		break;
 	case EXPR_SET:
 		list_for_each_entry(item, &expr_set(expr)->expressions, list) {
-			elem = set_elem_expr_alloc(&internal_location, expr_get(item->key));
+			mapping = mapping_expr_alloc(&internal_location, expr_get(item->key),
+						     expr_get(verdict->expr));
+
+			elem = set_elem_expr_alloc(&internal_location, mapping);
 			if (counter) {
 				counter_elem = counter_stmt_alloc(&counter->location);
 				list_add_tail(&counter_elem->list, &elem->stmt_list);
 			}
 
-			mapping = mapping_expr_alloc(&internal_location, elem,
-						     expr_get(verdict->expr));
-			set_expr_add(set, mapping);
+			set_expr_add(set, elem);
 		}
 		stmt_free(counter);
 		break;
@@ -789,13 +791,14 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 	case EXPR_VALUE:
 	case EXPR_SYMBOL:
 	case EXPR_CONCAT:
-		elem = set_elem_expr_alloc(&internal_location, expr_get(expr));
+		mapping = mapping_expr_alloc(&internal_location, expr_get(expr),
+					     expr_get(verdict->expr));
+
+		elem = set_elem_expr_alloc(&internal_location, mapping);
 		if (counter)
 			list_add_tail(&counter->list, &elem->stmt_list);
 
-		mapping = mapping_expr_alloc(&internal_location, elem,
-					     expr_get(verdict->expr));
-		set_expr_add(set, mapping);
+		set_expr_add(set, elem);
 		break;
 	default:
 		assert(0);
@@ -895,15 +898,17 @@ static void __merge_concat_stmts_vmap(const struct optimize_ctx *ctx,
 
 	list_for_each_entry_safe(concat, next, &concat_list, list) {
 		list_del(&concat->list);
-		elem = set_elem_expr_alloc(&internal_location, concat);
+
+		mapping = mapping_expr_alloc(&internal_location, concat,
+					     expr_get(verdict->expr));
+
+		elem = set_elem_expr_alloc(&internal_location, mapping);
 		if (counter) {
 			counter_elem = counter_stmt_alloc(&counter->location);
 			list_add_tail(&counter_elem->list, &elem->stmt_list);
 		}
 
-		mapping = mapping_expr_alloc(&internal_location, elem,
-					     expr_get(verdict->expr));
-		set_expr_add(set, mapping);
+		set_expr_add(set, elem);
 	}
 	stmt_free(counter);
 }
@@ -1064,9 +1069,9 @@ static void merge_nat(const struct optimize_ctx *ctx,
 		nat_stmt = ctx->stmt_matrix[i][k];
 		nat_expr = stmt_nat_expr(nat_stmt);
 
-		elem = set_elem_expr_alloc(&internal_location, expr_get(expr));
-		mapping = mapping_expr_alloc(&internal_location, elem, nat_expr);
-		set_expr_add(set, mapping);
+		mapping = mapping_expr_alloc(&internal_location, expr_get(expr), nat_expr);
+		elem = set_elem_expr_alloc(&internal_location, mapping);
+		set_expr_add(set, elem);
 	}
 
 	stmt = ctx->stmt_matrix[from][merge->stmt[0]];
@@ -1121,9 +1126,9 @@ static void merge_concat_nat(const struct optimize_ctx *ctx,
 		nat_stmt = ctx->stmt_matrix[i][k];
 		nat_expr = stmt_nat_expr(nat_stmt);
 
-		elem = set_elem_expr_alloc(&internal_location, concat);
-		mapping = mapping_expr_alloc(&internal_location, elem, nat_expr);
-		set_expr_add(set, mapping);
+		mapping = mapping_expr_alloc(&internal_location, concat, nat_expr);
+		elem = set_elem_expr_alloc(&internal_location, mapping);
+		set_expr_add(set, elem);
 	}
 
 	concat = concat_expr_alloc(&internal_location);

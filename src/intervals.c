@@ -15,63 +15,71 @@
 
 static void set_to_range(struct expr *init);
 
-static void setelem_expr_to_range(struct expr *expr)
+static void __setelem_expr_to_range(struct expr **exprp)
 {
-	struct expr *key;
+	struct expr *key, *expr = *exprp;
 	mpz_t rop;
 
-	assert(expr->etype == EXPR_SET_ELEM);
-
-	switch (expr->key->etype) {
+	switch (expr->etype) {
 	case EXPR_SET_ELEM_CATCHALL:
 	case EXPR_RANGE_VALUE:
 		break;
 	case EXPR_RANGE:
 		key = constant_range_expr_alloc(&expr->location,
-						expr->key->dtype,
-						expr->key->byteorder,
-						expr->key->len,
-						expr->key->left->value,
-						expr->key->right->value);
-		expr_free(expr->key);
-		expr->key = key;
+						expr->dtype,
+						expr->byteorder,
+						expr->len,
+						expr->left->value,
+						expr->right->value);
+		expr_free(*exprp);
+		*exprp = key;
 		break;
 	case EXPR_PREFIX:
-		if (expr->key->prefix->etype != EXPR_VALUE)
-			BUG("Prefix for unexpected type %d", expr->key->prefix->etype);
+		if (expr->prefix->etype != EXPR_VALUE)
+			BUG("Prefix for unexpected type %d", expr->prefix->etype);
 
 		mpz_init(rop);
-		mpz_bitmask(rop, expr->key->len - expr->key->prefix_len);
+		mpz_bitmask(rop, expr->len - expr->prefix_len);
 		if (expr_basetype(expr)->type == TYPE_STRING)
-			mpz_switch_byteorder(expr->key->prefix->value, expr->len / BITS_PER_BYTE);
+			mpz_switch_byteorder(expr->prefix->value, expr->len / BITS_PER_BYTE);
 
-		mpz_ior(rop, rop, expr->key->prefix->value);
+		mpz_ior(rop, rop, expr->prefix->value);
 		key = constant_range_expr_alloc(&expr->location,
-						expr->key->dtype,
-						expr->key->byteorder,
-						expr->key->len,
-						expr->key->prefix->value,
+						expr->dtype,
+						expr->byteorder,
+						expr->len,
+						expr->prefix->value,
 						rop);
 		mpz_clear(rop);
-		expr_free(expr->key);
-		expr->key = key;
+		expr_free(*exprp);
+		*exprp = key;
 		break;
 	case EXPR_VALUE:
 		if (expr_basetype(expr)->type == TYPE_STRING)
-			mpz_switch_byteorder(expr->key->value, expr->len / BITS_PER_BYTE);
+			mpz_switch_byteorder(expr->value, expr->len / BITS_PER_BYTE);
 
 		key = constant_range_expr_alloc(&expr->location,
-						expr->key->dtype,
-						expr->key->byteorder,
-						expr->key->len,
-						expr->key->value,
-						expr->key->value);
-		expr_free(expr->key);
-		expr->key = key;
+						expr->dtype,
+						expr->byteorder,
+						expr->len,
+						expr->value,
+						expr->value);
+		expr_free(*exprp);
+		*exprp = key;
 		break;
 	default:
 		BUG("unhandled key type %s", expr_name(expr->key));
 	}
+}
+
+static void setelem_expr_to_range(struct expr *expr)
+{
+	assert(expr->etype == EXPR_SET_ELEM);
+
+	if (expr->key->etype == EXPR_MAPPING)
+		__setelem_expr_to_range(&expr->key->left);
+	else
+		__setelem_expr_to_range(&expr->key);
 }
 
 struct set_automerge_ctx {
@@ -219,9 +227,6 @@ static struct expr *interval_expr_key(struct expr *i)
 	struct expr *elem;
 
 	switch (i->etype) {
-	case EXPR_MAPPING:
-		elem = i->left;
-		break;
 	case EXPR_SET_ELEM:
 		elem = i;
 		break;
@@ -411,9 +416,17 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 		i = interval_expr_key(elem);
 
 		if (expr_type_catchall(i->key)) {
+			uint32_t len;
+
 			/* Assume max value to simplify handling. */
-			mpz_bitmask(range.low, i->len);
-			mpz_bitmask(range.high, i->len);
+			if (i->key->etype == EXPR_SET_ELEM_CATCHALL)
+				len = i->key->len;
+			else if (i->key->etype == EXPR_MAPPING &&
+				 i->key->left->etype == EXPR_SET_ELEM_CATCHALL)
+				len = i->key->left->len;
+
+			mpz_bitmask(range.low, len);
+			mpz_bitmask(range.high, len);
 		} else {
 			range_expr_value_low(range.low, i);
 			range_expr_value_high(range.high, i);
@@ -677,6 +690,20 @@ static bool segtree_needs_first_segment(const struct set *set,
 	return false;
 }
 
+static bool range_low_is_non_zero(const struct expr *expr)
+{
+	switch (expr->etype) {
+	case EXPR_RANGE_VALUE:
+		return mpz_cmp_ui(expr->range.low, 0);
+	case EXPR_MAPPING:
+		return range_low_is_non_zero(expr->left);
+	default:
+		BUG("unexpected expression %s\n", expr_name(expr));
+		break;
+	}
+	return false;
+}
+
 int set_to_intervals(const struct set *set, struct expr *init, bool add)
 {
 	struct expr *i, *n, *prev = NULL, *elem, *root, *expr;
@@ -693,7 +720,7 @@ int set_to_intervals(const struct set *set, struct expr *init, bool add)
 			break;
 
 		if (segtree_needs_first_segment(set, init, add) &&
-		    mpz_cmp_ui(elem->key->range.low, 0)) {
+		    range_low_is_non_zero(elem->key)) {
 			mpz_init2(p, set->key->len);
 			mpz_set_ui(p, 0);
 			expr = constant_range_expr_alloc(&internal_location,
@@ -703,11 +730,7 @@ int set_to_intervals(const struct set *set, struct expr *init, bool add)
 			mpz_clear(p);
 
 			root = set_elem_expr_alloc(&internal_location, expr);
-			if (i->etype == EXPR_MAPPING) {
-				root = mapping_expr_alloc(&internal_location,
-							  root,
-							  expr_get(i->right));
-			}
+
 			root->flags |= EXPR_F_INTERVAL_END;
 			list_add(&root->list, &intervals);
 			break;
@@ -749,12 +772,11 @@ static struct expr *setelem_key(struct expr *expr)
 	struct expr *key;
 
 	switch (expr->etype) {
-	case EXPR_MAPPING:
-		key = expr->left->key;
-		break;
 	case EXPR_SET_ELEM:
-		key = expr->key;
-		break;
+		if (expr->key->etype == EXPR_MAPPING)
+			return expr->key->left;
+
+		return expr->key;
 	default:
 		BUG("unhandled expression type %d", expr->etype);
 		return NULL;
@@ -801,12 +823,12 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 				  BYTEORDER_BIG_ENDIAN, set->key->len, NULL);
 	mpz_set(low->value, key->range.low);
 
+	if (elem->key->etype == EXPR_MAPPING)
+		low = mapping_expr_alloc(&elem->location,
+					 low, expr_get(elem->key->right));
+
 	low = set_elem_expr_alloc(&key->location, low);
 	set_elem_expr_copy(low, interval_expr_key(elem));
-
-	if (elem->etype == EXPR_MAPPING)
-		low = mapping_expr_alloc(&elem->location,
-					 low, expr_get(elem->right));
 
 	list_add_tail(&low->list, intervals);
 
