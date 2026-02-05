@@ -227,31 +227,14 @@ static void setelem_automerge(struct set_automerge_ctx *ctx)
 	mpz_clear(rop);
 }
 
-static struct expr *interval_expr_key(struct expr *i)
-{
-	struct expr *elem;
-
-	switch (i->etype) {
-	case EXPR_SET_ELEM:
-		elem = i;
-		break;
-	default:
-		BUG("unhandled expression type %d", i->etype);
-		return NULL;
-	}
-
-	return elem;
-}
-
 static void set_to_range(struct expr *init)
 {
-	struct expr *i, *elem;
+	struct expr *i;
 
 	list_for_each_entry(i, &expr_set(init)->expressions, list) {
 		assert(i->etype == EXPR_SET_ELEM);
 
-		elem = interval_expr_key(i);
-		setelem_expr_to_range(elem);
+		setelem_expr_to_range(i);
 	}
 }
 
@@ -410,7 +393,7 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 			  struct expr *purge, struct expr *elems,
 			  unsigned int debug_mask)
 {
-	struct expr *i, *next, *elem, *prev = NULL;
+	struct expr *i, *next, *prev = NULL;
 	struct range range, prev_range;
 	int err = 0;
 	mpz_t rop;
@@ -421,10 +404,8 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 	mpz_init(range.high);
 	mpz_init(rop);
 
-	list_for_each_entry_safe(elem, next, &expr_set(elems)->expressions, list) {
-		assert(elem->etype == EXPR_SET_ELEM);
-
-		i = interval_expr_key(elem);
+	list_for_each_entry_safe(i, next, &expr_set(elems)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
 
 		if (expr_type_catchall(i->key)) {
 			uint32_t len;
@@ -443,14 +424,14 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 			range_expr_value_high(range.high, i->key);
 		}
 
-		if (!prev && elem->key->flags & EXPR_F_REMOVE) {
+		if (!prev && i->key->flags & EXPR_F_REMOVE) {
 			expr_error(msgs, i->key, "element does not exist");
 			err = -1;
 			goto err;
 		}
 
-		if (!(elem->key->flags & EXPR_F_REMOVE)) {
-			prev = elem;
+		if (!(i->key->flags & EXPR_F_REMOVE)) {
+			prev = i;
 			mpz_set(prev_range.low, range.low);
 			mpz_set(prev_range.high, range.high);
 			continue;
@@ -458,14 +439,14 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 
 		if (mpz_cmp(prev_range.low, range.low) == 0 &&
 		    mpz_cmp(prev_range.high, range.high) == 0) {
-			if (elem->key->flags & EXPR_F_REMOVE) {
+			if (i->key->flags & EXPR_F_REMOVE) {
 				if (prev->key->flags & EXPR_F_KERNEL) {
-					prev->key->location = elem->key->location;
+					prev->key->location = i->key->location;
 					list_move_tail(&prev->list, &expr_set(purge)->expressions);
 				}
 
-				list_del(&elem->list);
-				expr_free(elem);
+				list_del(&i->list);
+				expr_free(i);
 			}
 		} else if (set->automerge) {
 			if (setelem_adjust(set, purge, &prev_range, &range, prev, i) < 0) {
@@ -473,7 +454,7 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 				err = -1;
 				goto err;
 			}
-		} else if (elem->key->flags & EXPR_F_REMOVE) {
+		} else if (i->key->flags & EXPR_F_REMOVE) {
 			expr_error(msgs, i->key, "element does not exist");
 			err = -1;
 			goto err;
@@ -584,7 +565,7 @@ int set_delete(struct list_head *msgs, struct cmd *cmd, struct set *set,
 static int setelem_overlap(struct list_head *msgs, struct set *set,
 			   struct expr *init)
 {
-	struct expr *i, *next, *elem, *prev = NULL;
+	struct expr *i, *next, *prev = NULL;
 	struct range range, prev_range;
 	int err = 0;
 	mpz_t rop;
@@ -595,10 +576,8 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 	mpz_init(range.high);
 	mpz_init(rop);
 
-	list_for_each_entry_safe(elem, next, &expr_set(init)->expressions, list) {
-		assert(elem->etype == EXPR_SET_ELEM);
-
-		i = interval_expr_key(elem);
+	list_for_each_entry_safe(i, next, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
 
 		if (expr_type_catchall(i->key))
 			continue;
@@ -607,7 +586,7 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 		range_expr_value_high(range.high, i->key);
 
 		if (!prev) {
-			prev = elem;
+			prev = i;
 			mpz_set(prev_range.low, range.low);
 			mpz_set(prev_range.high, range.high);
 			continue;
@@ -621,7 +600,7 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 		    mpz_cmp(prev_range.high, range.high) >= 0) {
 			if (prev->key->flags & EXPR_F_KERNEL)
 				expr_error(msgs, i->key, "interval overlaps with an existing one");
-			else if (elem->key->flags & EXPR_F_KERNEL)
+			else if (i->key->flags & EXPR_F_KERNEL)
 				expr_error(msgs, prev->key, "interval overlaps with an existing one");
 			else
 				expr_binary_error(msgs, i->key, prev->key,
@@ -631,7 +610,7 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 		} else if (mpz_cmp(range.low, prev_range.high) <= 0) {
 			if (prev->key->flags & EXPR_F_KERNEL)
 				expr_error(msgs, i->key, "interval overlaps with an existing one");
-			else if (elem->key->flags & EXPR_F_KERNEL)
+			else if (i->key->flags & EXPR_F_KERNEL)
 				expr_error(msgs, prev->key, "interval overlaps with an existing one");
 			else
 				expr_binary_error(msgs, i->key, prev->key,
@@ -640,7 +619,7 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 			goto err_out;
 		}
 next:
-		prev = elem;
+		prev = i;
 		mpz_set(prev_range.low, range.low);
 		mpz_set(prev_range.high, range.high);
 	}
@@ -721,23 +700,20 @@ static bool range_low_is_non_zero(const struct expr *expr)
 
 int set_to_intervals(const struct set *set, struct expr *init, bool add)
 {
-	struct expr *i, *n, *prev = NULL, *elem, *root, *expr;
+	struct expr *i, *n, *prev = NULL, *root, *expr;
 	LIST_HEAD(intervals);
 	mpz_t p;
 
 	list_for_each_entry_safe(i, n, &expr_set(init)->expressions, list) {
-		assert(i->etype == EXPR_SET_ELEM);
 
-		elem = interval_expr_key(i);
-
-		if (expr_type_catchall(elem->key))
+		if (expr_type_catchall(i->key))
 			continue;
 
 		if (prev)
 			break;
 
 		if (segtree_needs_first_segment(set, init, add) &&
-		    range_low_is_non_zero(elem->key)) {
+		    range_low_is_non_zero(i->key)) {
 			mpz_init2(p, set->key->len);
 			mpz_set_ui(p, 0);
 			expr = constant_range_expr_alloc(&internal_location,
@@ -845,7 +821,7 @@ int setelem_to_interval(const struct set *set, struct expr *elem,
 					 low, expr_get(elem->key->right));
 
 	low = set_elem_expr_alloc(&key->location, low);
-	set_elem_expr_copy(low, interval_expr_key(elem));
+	set_elem_expr_copy(low, elem);
 
 	list_add_tail(&low->list, intervals);
 
