@@ -232,8 +232,11 @@ static json_t *set_print_json(struct output_ctx *octx, const struct set *set)
 		json_t *array = json_array();
 		const struct expr *i;
 
-		list_for_each_entry(i, &expr_set(set->init)->expressions, list)
+		list_for_each_entry(i, &expr_set(set->init)->expressions, list) {
+			assert(i->etype == EXPR_SET_ELEM);
+
 			json_array_append_new(array, expr_print_json(i, octx));
+		}
 
 		json_object_set_new(root, "elem", array);
 	}
@@ -768,8 +771,11 @@ json_t *set_expr_json(const struct expr *expr, struct output_ctx *octx)
 	json_t *array = json_array();
 	const struct expr *i;
 
-	list_for_each_entry(i, &expr_set(expr)->expressions, list)
+	list_for_each_entry(i, &expr_set(expr)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		json_array_append_new(array, expr_print_json(i, octx));
+	}
 
 	return nft_json_pack("{s:o}", "set", array);
 }

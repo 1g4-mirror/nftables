@@ -2206,9 +2206,9 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 				struct expr *elem;
 
 				elem = list_first_entry(&expr_set(set->init)->expressions, struct expr, list);
+				assert(elem->etype == EXPR_SET_ELEM);
 
-				if (elem->etype == EXPR_SET_ELEM &&
-				    elem->key->etype == EXPR_VALUE)
+				if (elem->key->etype == EXPR_VALUE)
 					payload_icmp_check(ctx, payload, elem->key);
 			}
 		}
@@ -2883,8 +2883,11 @@ static void expr_postprocess(struct rule_pp_ctx *ctx, struct expr **exprp)
 		expr_postprocess(ctx, &expr->right);
 		break;
 	case EXPR_SET:
-		list_for_each_entry(i, &expr_set(expr)->expressions, list)
+		list_for_each_entry(i, &expr_set(expr)->expressions, list) {
+			assert(i->etype == EXPR_SET_ELEM);
+
 			expr_postprocess(ctx, &i);
+		}
 		break;
 	case EXPR_CONCAT:
 		expr_postprocess_concat(ctx, exprp);

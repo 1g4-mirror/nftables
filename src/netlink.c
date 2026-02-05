@@ -1309,6 +1309,8 @@ void alloc_setelem_cache(const struct expr *set, struct nftnl_set *nls)
 	const struct expr *expr;
 
 	list_for_each_entry(expr, &expr_set(set)->expressions, list) {
+		assert(expr->etype == EXPR_SET_ELEM);
+
 		nlse = alloc_nftnl_setelem(set, expr);
 		nftnl_set_elem_add(nls, nlse);
 	}

@@ -183,6 +183,8 @@ static void setelem_automerge(struct set_automerge_ctx *ctx)
 	mpz_init(rop);
 
 	list_for_each_entry_safe(i, next, &expr_set(ctx->init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (expr_type_catchall(i->key))
 			continue;
 
@@ -243,6 +245,8 @@ static void set_to_range(struct expr *init)
 	struct expr *i, *elem;
 
 	list_for_each_entry(i, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		elem = interval_expr_key(i);
 		setelem_expr_to_range(elem);
 	}
@@ -274,6 +278,8 @@ int set_automerge(struct list_head *msgs, struct cmd *cmd, struct set *set,
 	setelem_automerge(&ctx);
 
 	list_for_each_entry_safe(i, next, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (i->flags & EXPR_F_KERNEL) {
 			list_move_tail(&i->list, &expr_set(existing_set->init)->expressions);
 		} else if (existing_set) {
@@ -413,6 +419,8 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 	mpz_init(rop);
 
 	list_for_each_entry_safe(elem, next, &expr_set(elems)->expressions, list) {
+		assert(elem->etype == EXPR_SET_ELEM);
+
 		i = interval_expr_key(elem);
 
 		if (expr_type_catchall(i->key)) {
@@ -585,6 +593,8 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 	mpz_init(rop);
 
 	list_for_each_entry_safe(elem, next, &expr_set(init)->expressions, list) {
+		assert(elem->etype == EXPR_SET_ELEM);
+
 		i = interval_expr_key(elem);
 
 		if (expr_type_catchall(i->key))
@@ -654,6 +664,8 @@ int set_overlap(struct list_head *msgs, struct set *set, struct expr *init)
 	err = setelem_overlap(msgs, set, init);
 
 	list_for_each_entry_safe(i, n, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (i->flags & EXPR_F_KERNEL)
 			list_move_tail(&i->list, &expr_set(existing_set->init)->expressions);
 		else if (existing_set) {
@@ -711,6 +723,8 @@ int set_to_intervals(const struct set *set, struct expr *init, bool add)
 	mpz_t p;
 
 	list_for_each_entry_safe(i, n, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		elem = interval_expr_key(i);
 
 		if (expr_type_catchall(elem->key))

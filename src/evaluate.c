@@ -2080,6 +2080,8 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			struct expr *new, *j;
 
 			list_for_each_entry(j, &expr_set(i->key->left)->expressions, list) {
+				assert(j->etype == EXPR_SET_ELEM);
+
 				new = mapping_expr_alloc(&i->location,
 							 expr_get(j->key),
 							 expr_get(i->key->right));
@@ -2781,9 +2783,9 @@ static void optimize_singleton_set(struct expr *rel, struct expr **expr)
 	struct expr *set = rel->right, *i;
 
 	i = list_first_entry(&expr_set(set)->expressions, struct expr, list);
-	if (i->etype == EXPR_SET_ELEM &&
-	    list_empty(&i->stmt_list)) {
+	assert (i->etype == EXPR_SET_ELEM);
 
+	if (list_empty(&i->stmt_list)) {
 		switch (i->key->etype) {
 		case EXPR_PREFIX:
 		case EXPR_RANGE:
@@ -5488,19 +5490,12 @@ static struct expr *expr_set_to_list(struct eval_ctx *ctx, struct expr *dev_expr
 	LIST_HEAD(tmp);
 
 	list_for_each_entry_safe(expr, next, &expr_set(dev_expr)->expressions, list) {
+		assert(expr->etype == EXPR_SET_ELEM);
+
 		list_del(&expr->list);
-
-		switch (expr->etype) {
-		case EXPR_SET_ELEM:
-			key = expr_clone(expr->key);
-			expr_free(expr);
-			expr = key;
-			break;
-		default:
-			BUG("invalid expression type %s", expr_name(expr));
-			break;
-		}
-
+		key = expr_clone(expr->key);
+		expr_free(expr);
+		expr = key;
 		list_add(&expr->list, &tmp);
 	}
 

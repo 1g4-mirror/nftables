@@ -80,6 +80,8 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 	new_init = set_expr_alloc(&internal_location, NULL);
 
 	list_for_each_entry(i, &expr_set(init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		switch (i->key->etype) {
 		case EXPR_VALUE:
 			set_elem_add(set, new_init, i->key->value,
@@ -137,6 +139,8 @@ static struct expr *get_set_interval_find(const struct set *cache_set,
 	mpz_init2(val, set->key->len);
 
 	list_for_each_entry(i, &expr_set(set->init)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		key = expr_value(i);
 		switch (key->etype) {
 		case EXPR_VALUE:
@@ -357,6 +361,8 @@ void concat_range_aggregate(struct expr *set)
 	mpz_t range, p;
 
 	list_for_each_entry_safe(i, next, &expr_set(set)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		if (!start) {
 			start = i;
 			continue;

@@ -594,6 +594,7 @@ static void merge_vmap(const struct optimize_ctx *ctx,
 
 	mappings = stmt_b->expr->mappings;
 	list_for_each_entry(expr, &expr_set(mappings)->expressions, list) {
+		assert(expr->etype == EXPR_SET_ELEM);
 		mapping = expr_clone(expr);
 		set_expr_add(stmt_a->expr->mappings, mapping);
 	}
@@ -660,6 +661,7 @@ static void __merge_concat(const struct optimize_ctx *ctx, uint32_t i,
 			switch (stmt_a->expr->right->etype) {
 			case EXPR_SET:
 				list_for_each_entry(expr, &expr_set(stmt_a->expr->right)->expressions, list) {
+					assert(expr->etype == EXPR_SET_ELEM);
 					concat_clone = expr_clone(concat);
 					clone = expr_clone(expr->key);
 					concat_expr_add(concat_clone, clone);
@@ -771,6 +773,7 @@ static void build_verdict_map(struct expr *expr, struct stmt *verdict,
 		break;
 	case EXPR_SET:
 		list_for_each_entry(item, &expr_set(expr)->expressions, list) {
+			assert(item->etype == EXPR_SET_ELEM);
 			mapping = mapping_expr_alloc(&internal_location, expr_get(item->key),
 						     expr_get(verdict->expr));
 

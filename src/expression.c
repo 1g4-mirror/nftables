@@ -946,8 +946,9 @@ void relational_expr_pctx_update(struct proto_ctx *ctx,
 			ops->pctx_update(ctx, &expr->location, left, right);
 		else if (right->etype == EXPR_SET) {
 			list_for_each_entry(i, &expr_set(right)->expressions, list) {
-				if (i->etype == EXPR_SET_ELEM &&
-				    i->key->etype == EXPR_VALUE)
+				assert(i->etype == EXPR_SET_ELEM);
+
+				if (i->key->etype == EXPR_VALUE)
 					ops->pctx_update(ctx, &expr->location, left, i->key);
 			}
 		} else if (ops == &meta_expr_ops &&
@@ -1384,6 +1385,8 @@ static void set_expr_print(const struct expr *expr, struct output_ctx *octx)
 	nft_print(octx, "{ ");
 
 	list_for_each_entry(i, &expr_set(expr)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		nft_print(octx, "%s", d);
 		expr_print(i, octx);
 		count++;
@@ -1406,8 +1409,10 @@ static void set_expr_destroy(struct expr *expr)
 {
 	struct expr *i, *next;
 
-	list_for_each_entry_safe(i, next, &expr_set(expr)->expressions, list)
+	list_for_each_entry_safe(i, next, &expr_set(expr)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
 		expr_free(i);
+	}
 }
 
 static void set_expr_set_type(const struct expr *expr,
@@ -1416,8 +1421,11 @@ static void set_expr_set_type(const struct expr *expr,
 {
 	struct expr *i;
 
-	list_for_each_entry(i, &expr_set(expr)->expressions, list)
+	list_for_each_entry(i, &expr_set(expr)->expressions, list) {
+		assert(i->etype == EXPR_SET_ELEM);
+
 		expr_set_type(i, dtype, byteorder);
+	}
 }
 
 static const struct expr_ops set_expr_ops = {
