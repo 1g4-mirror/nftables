@@ -2067,7 +2067,6 @@ static void expr_evaluate_set_ref(struct eval_ctx *ctx, struct expr *expr)
 static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *set = *expr, *i, *next;
-	const struct expr *elem;
 
 	list_for_each_entry_safe(i, next, &expr_set(set)->expressions, list) {
 		assert(i->etype == EXPR_SET_ELEM);
@@ -2094,10 +2093,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			continue;
 		}
 
-		elem = i;
-
-		if (elem->etype == EXPR_SET_ELEM &&
-		    elem->key->etype == EXPR_SET_REF)
+		if (i->key->etype == EXPR_SET_REF)
 			return expr_error(ctx->msgs, i,
 					  "Set reference cannot be part of another set");
 
@@ -2105,8 +2101,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			return expr_error(ctx->msgs, i,
 					  "Set member is not constant");
 
-		if (i->etype == EXPR_SET_ELEM &&
-		    i->key->etype == EXPR_SET) {
+		if (i->key->etype == EXPR_SET) {
 			/* Merge recursive set definitions */
 			list_splice_tail_init(&expr_set(i->key)->expressions, &i->list);
 			list_del(&i->list);
@@ -2115,9 +2110,9 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			expr_free(i);
 		} else if (!expr_is_singleton(i)) {
 			expr_set(set)->set_flags |= NFT_SET_INTERVAL;
-			if ((elem->key->etype == EXPR_MAPPING &&
-			     elem->key->left->etype == EXPR_CONCAT) ||
-			    elem->key->etype == EXPR_CONCAT)
+			if ((i->key->etype == EXPR_MAPPING &&
+			     i->key->left->etype == EXPR_CONCAT) ||
+			    i->key->etype == EXPR_CONCAT)
 				expr_set(set)->set_flags |= NFT_SET_CONCAT;
 		}
 	}
