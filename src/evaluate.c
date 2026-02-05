@@ -2101,27 +2101,17 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			return expr_error(ctx->msgs, i,
 					  "Set reference cannot be part of another set");
 
-		if (elem->etype == EXPR_SET_ELEM &&
-		    elem->key->etype == EXPR_SET) {
-			struct expr *new = expr_get(elem->key);
-
-			expr_set(set)->set_flags |= expr_set(elem->key)->set_flags;
-			list_replace(&i->list, &new->list);
-			expr_free(i);
-			i = new;
-			elem = i;
-		}
-
 		if (!expr_is_constant(i))
 			return expr_error(ctx->msgs, i,
 					  "Set member is not constant");
 
-		if (i->etype == EXPR_SET) {
+		if (i->etype == EXPR_SET_ELEM &&
+		    i->key->etype == EXPR_SET) {
 			/* Merge recursive set definitions */
-			list_splice_tail_init(&expr_set(i)->expressions, &i->list);
+			list_splice_tail_init(&expr_set(i->key)->expressions, &i->list);
 			list_del(&i->list);
-			expr_set(set)->size      += expr_set(i)->size - 1;
-			expr_set(set)->set_flags |= expr_set(i)->set_flags;
+			expr_set(set)->size      += expr_set(i->key)->size - 1;
+			expr_set(set)->set_flags |= expr_set(i->key)->set_flags;
 			expr_free(i);
 		} else if (!expr_is_singleton(i)) {
 			expr_set(set)->set_flags |= NFT_SET_INTERVAL;
