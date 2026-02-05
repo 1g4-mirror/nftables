@@ -186,7 +186,7 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 						netlink_gen_stmt_stateful(stmt));
 		}
 	}
-	if (elem->comment || expr->flags & EXPR_F_INTERVAL_OPEN) {
+	if (elem->comment || expr->key->flags & EXPR_F_INTERVAL_OPEN) {
 		udbuf = nftnl_udata_buf_alloc(NFT_USERDATA_MAXLEN);
 		if (!udbuf)
 			memory_allocation_error();
@@ -196,7 +196,7 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 					  elem->comment))
 			memory_allocation_error();
 	}
-	if (expr->flags & EXPR_F_INTERVAL_OPEN) {
+	if (expr->key->flags & EXPR_F_INTERVAL_OPEN) {
 		if (!nftnl_udata_put_u32(udbuf, NFTNL_UDATA_SET_ELEM_FLAGS,
 					 NFTNL_SET_ELEM_F_INTERVAL_OPEN))
 			memory_allocation_error();
@@ -239,7 +239,7 @@ struct nftnl_set_elem *alloc_nftnl_setelem(const struct expr *set,
 				   nld.value, nld.len);
 	}
 
-	if (expr->flags & EXPR_F_INTERVAL_END)
+	if (expr->key->flags & EXPR_F_INTERVAL_END)
 		flags |= NFT_SET_ELEM_INTERVAL_END;
 	if (key->etype == EXPR_SET_ELEM_CATCHALL)
 		flags |= NFT_SET_ELEM_CATCHALL;
@@ -1556,7 +1556,7 @@ static void set_elem_parse_udata(struct nftnl_set_elem *nlse,
 		elem_flags =
 			nftnl_udata_get_u32(ud[NFTNL_UDATA_SET_ELEM_FLAGS]);
 		if (elem_flags & NFTNL_SET_ELEM_F_INTERVAL_OPEN)
-			expr->flags |= EXPR_F_INTERVAL_OPEN;
+			expr->key->flags |= EXPR_F_INTERVAL_OPEN;
 	}
 }
 
@@ -1653,7 +1653,7 @@ key_end:
 	}
 out:
 	expr = set_elem_expr_alloc(&netlink_location, key);
-	expr->flags |= EXPR_F_KERNEL;
+	expr->key->flags |= EXPR_F_KERNEL;
 
 	if (nftnl_set_elem_is_set(nlse, NFTNL_SET_ELEM_TIMEOUT)) {
 		expr->timeout	 = nftnl_set_elem_get_u64(nlse, NFTNL_SET_ELEM_TIMEOUT);
@@ -1682,7 +1682,7 @@ out:
 	list_splice_tail_init(&setelem_parse_ctx.stmt_list, &expr->stmt_list);
 
 	if (flags & NFT_SET_ELEM_INTERVAL_END) {
-		expr->flags |= EXPR_F_INTERVAL_END;
+		expr->key->flags |= EXPR_F_INTERVAL_END;
 		if (mpz_cmp_ui(set->key->value, 0) == 0)
 			set->root = true;
 	}

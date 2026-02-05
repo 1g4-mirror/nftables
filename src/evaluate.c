@@ -1896,7 +1896,7 @@ static int __expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr *elem)
 		struct stmt *set_stmt, *elem_stmt;
 
 		if (num_set_exprs > 0 && num_elem_exprs != num_set_exprs) {
-			return expr_error(ctx->msgs, elem,
+			return expr_error(ctx->msgs, elem->key,
 					  "number of statements mismatch, set expects %d "
 					  "but element has %d", num_set_exprs,
 					  num_elem_exprs);
@@ -1992,14 +1992,13 @@ static int expr_evaluate_set_elem(struct eval_ctx *ctx, struct expr **expr)
 	}
 
 	if (ctx->set && !elem_key_compatible(ctx->set->key, elem->key))
-		return expr_error(ctx->msgs, elem,
+		return expr_error(ctx->msgs, elem->key,
 				  "Element mismatches %s definition, expected %s, not '%s'",
 				  set_is_map(ctx->set->flags) ? "map" : "set",
 				  ctx->set->key->dtype->desc, elem->key->dtype->desc);
 
 	datatype_set(elem, elem->key->dtype);
 	elem->len   = elem->key->len;
-	elem->flags = elem->key->flags;
 
 	return 0;
 
@@ -2094,11 +2093,11 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 		}
 
 		if (i->key->etype == EXPR_SET_REF)
-			return expr_error(ctx->msgs, i,
+			return expr_error(ctx->msgs, i->key,
 					  "Set reference cannot be part of another set");
 
-		if (!expr_is_constant(i))
-			return expr_error(ctx->msgs, i,
+		if (!expr_is_constant(i->key))
+			return expr_error(ctx->msgs, i->key,
 					  "Set member is not constant");
 
 		if (i->key->etype == EXPR_SET) {
@@ -2108,7 +2107,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			expr_set(set)->size      += expr_set(i->key)->size - 1;
 			expr_set(set)->set_flags |= expr_set(i->key)->set_flags;
 			expr_free(i);
-		} else if (!expr_is_singleton(i)) {
+		} else if (!expr_is_singleton(i->key)) {
 			expr_set(set)->set_flags |= NFT_SET_INTERVAL;
 			if ((i->key->etype == EXPR_MAPPING &&
 			     i->key->left->etype == EXPR_CONCAT) ||

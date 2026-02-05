@@ -62,7 +62,7 @@ static void set_elem_expr_add(const struct set *set, struct expr *init,
 				   byteorder, set->key->len, NULL);
 	mpz_set(expr->value, value);
 	expr = set_elem_expr_alloc(&internal_location, expr);
-	expr->flags = flags;
+	expr->key->flags = flags;
 
 	set_expr_add(init, expr);
 }
@@ -85,11 +85,11 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 		switch (i->key->etype) {
 		case EXPR_VALUE:
 			set_elem_expr_add(set, new_init, i->key->value,
-					  i->flags, byteorder);
+					  i->key->flags, byteorder);
 			break;
 		case EXPR_CONCAT:
 			set_expr_add(new_init, expr_clone(i));
-			i->flags |= EXPR_F_INTERVAL_END;
+			i->key->flags |= EXPR_F_INTERVAL_END;
 			set_expr_add(new_init, expr_clone(i));
 			break;
 		case EXPR_SET_ELEM_CATCHALL:
@@ -180,7 +180,7 @@ static struct expr *__expr_to_set_elem(struct expr *low, struct expr *expr)
 	}
 
 	elem = set_elem_expr_alloc(&low->location, expr);
-	elem->flags |= EXPR_F_KERNEL;
+	elem->key->flags |= EXPR_F_KERNEL;
 	interval_expr_copy(elem, low);
 
 	return elem;
@@ -243,7 +243,7 @@ int get_set_decompose(struct set *cache_set, struct set *set)
 	list_for_each_entry_safe(i, next, &expr_set(set->init)->expressions, list) {
 		assert(i->etype == EXPR_SET_ELEM);
 
-		if (i->flags & EXPR_F_INTERVAL_END && left) {
+		if (i->key->flags & EXPR_F_INTERVAL_END && left) {
 			list_del(&left->list);
 			list_del(&i->list);
 			mpz_sub_ui(i->key->value, i->key->value, 1);
@@ -314,9 +314,9 @@ static int expr_value_cmp(const void *p1, const void *p2)
 
 	ret = mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
 	if (ret == 0) {
-		if (e1->flags & EXPR_F_INTERVAL_END)
+		if (e1->key->flags & EXPR_F_INTERVAL_END)
 			return -1;
-		else if (e2->flags & EXPR_F_INTERVAL_END)
+		else if (e2->key->flags & EXPR_F_INTERVAL_END)
 			return 1;
 	}
 
@@ -546,7 +546,7 @@ add_interval(struct expr *set, struct expr *low, struct expr *i)
 		if (expr_basetype(low)->type == TYPE_STRING)
 			mpz_switch_byteorder(expr_value(low)->value,
 					     expr_value(low)->len / BITS_PER_BYTE);
-		low->flags |= EXPR_F_KERNEL;
+		low->key->flags |= EXPR_F_KERNEL;
 		expr = expr_get(low);
 	} else if (range_is_prefix(range) && !mpz_cmp_ui(p, 0)) {
 
@@ -601,11 +601,11 @@ void interval_map_decompose(struct expr *set)
 	for (m = 0; m < size; m++) {
 		i = elements[m];
 
-		if (i->flags & EXPR_F_INTERVAL_END)
+		if (i->key->flags & EXPR_F_INTERVAL_END)
 			interval = false;
 		else if (interval) {
 			end = expr_clone(i);
-			end->flags |= EXPR_F_INTERVAL_END;
+			end->key->flags |= EXPR_F_INTERVAL_END;
 			ranges[n++] = end;
 		} else
 			interval = true;
@@ -618,7 +618,7 @@ void interval_map_decompose(struct expr *set)
 		i = ranges[n];
 
 		if (low == NULL) {
-			if (i->flags & EXPR_F_INTERVAL_END) {
+			if (i->key->flags & EXPR_F_INTERVAL_END) {
 				/*
 				 * End of interval mark
 				 */
@@ -635,7 +635,7 @@ void interval_map_decompose(struct expr *set)
 
 		add_interval(set, low, i);
 
-		if (i->flags & EXPR_F_INTERVAL_END) {
+		if (i->key->flags & EXPR_F_INTERVAL_END) {
 			expr_free(low);
 			low = NULL;
 		}
@@ -660,7 +660,7 @@ void interval_map_decompose(struct expr *set)
 
 out:
 	if (catchall) {
-		catchall->flags |= EXPR_F_KERNEL;
+		catchall->key->flags |= EXPR_F_KERNEL;
 		set_expr_add(set, catchall);
 	}
 
