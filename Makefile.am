@@ -23,7 +23,8 @@ libnftables_LIBVERSION = 2:0:1
 ###############################################################################
 
 ACLOCAL_AMFLAGS = -I m4
-AM_DISTCHECK_CONFIGURE_FLAGS = --enable-distcheck
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-distcheck \
+			       PKG_CONFIG_PATH=$(PKG_CONFIG_PATH)
 
 EXTRA_DIST =
 BUILT_SOURCES =
@@ -446,6 +447,7 @@ tools/nftables.service: tools/nftables.service.in ${top_builddir}/config.status
 endif
 
 if !BUILD_DISTCHECK
+AM_TESTS_ENVIRONMENT = PKG_CONFIG_PATH=$(PKG_CONFIG_PATH)
 TESTS = tests/build/run-tests.sh \
 	tests/json_echo/run-test.py \
 	tests/monitor/run-tests.sh \
