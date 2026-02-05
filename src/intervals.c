@@ -106,7 +106,7 @@ static void remove_overlapping_range(struct set_automerge_ctx *ctx,
 				     struct expr *prev, struct expr *i)
 {
 	if (i->key->flags & EXPR_F_KERNEL) {
-		i->location = prev->location;
+		i->key->location = prev->key->location;
 		purge_elem(ctx, i);
 		return;
 	}
@@ -125,13 +125,13 @@ static bool merge_ranges(struct set_automerge_ctx *ctx,
 			 struct range *prev_range, struct range *range)
 {
 	if (prev->key->flags & EXPR_F_KERNEL) {
-		prev->location = i->location;
+		prev->key->location = i->key->location;
 		purge_elem(ctx, prev);
 		mpz_set(i->key->range.low, prev->key->range.low);
 		mpz_set(prev_range->high, range->high);
 		return true;
 	} else if (i->key->flags & EXPR_F_KERNEL) {
-		i->location = prev->location;
+		i->key->location = prev->key->location;
 		purge_elem(ctx, i);
 		mpz_set(prev->key->range.high, i->key->range.high);
 		mpz_set(prev_range->high, range->high);
@@ -330,7 +330,7 @@ static void __adjust_elem_left(struct set *set, struct expr *prev, struct expr *
 static void adjust_elem_left(struct set *set, struct expr *prev, struct expr *i,
 			     struct expr *purge)
 {
-	prev->location = i->location;
+	prev->key->location = i->key->location;
 	remove_elem(prev, set, purge);
 	__adjust_elem_left(set, prev, i);
 
@@ -349,7 +349,7 @@ static void __adjust_elem_right(struct set *set, struct expr *prev, struct expr 
 static void adjust_elem_right(struct set *set, struct expr *prev, struct expr *i,
 			      struct expr *purge)
 {
-	prev->location = i->location;
+	prev->key->location = i->key->location;
 	remove_elem(prev, set, purge);
 	__adjust_elem_right(set, prev, i);
 
@@ -362,7 +362,7 @@ static void split_range(struct set *set, struct expr *prev, struct expr *i,
 {
 	struct expr *clone;
 
-	prev->location = i->location;
+	prev->key->location = i->key->location;
 
 	if (prev->key->flags & EXPR_F_KERNEL) {
 		clone = expr_clone(prev);
@@ -444,7 +444,7 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 		}
 
 		if (!prev && elem->key->flags & EXPR_F_REMOVE) {
-			expr_error(msgs, i, "element does not exist");
+			expr_error(msgs, i->key, "element does not exist");
 			err = -1;
 			goto err;
 		}
@@ -460,7 +460,7 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 		    mpz_cmp(prev_range.high, range.high) == 0) {
 			if (elem->key->flags & EXPR_F_REMOVE) {
 				if (prev->key->flags & EXPR_F_KERNEL) {
-					prev->location = elem->location;
+					prev->key->location = elem->key->location;
 					list_move_tail(&prev->list, &expr_set(purge)->expressions);
 				}
 
@@ -469,12 +469,12 @@ static int setelem_delete(struct list_head *msgs, struct set *set,
 			}
 		} else if (set->automerge) {
 			if (setelem_adjust(set, purge, &prev_range, &range, prev, i) < 0) {
-				expr_error(msgs, i, "element does not exist");
+				expr_error(msgs, i->key, "element does not exist");
 				err = -1;
 				goto err;
 			}
 		} else if (elem->key->flags & EXPR_F_REMOVE) {
-			expr_error(msgs, i, "element does not exist");
+			expr_error(msgs, i->key, "element does not exist");
 			err = -1;
 			goto err;
 		}
@@ -620,21 +620,21 @@ static int setelem_overlap(struct list_head *msgs, struct set *set,
 		if (mpz_cmp(prev_range.low, range.low) <= 0 &&
 		    mpz_cmp(prev_range.high, range.high) >= 0) {
 			if (prev->key->flags & EXPR_F_KERNEL)
-				expr_error(msgs, i, "interval overlaps with an existing one");
+				expr_error(msgs, i->key, "interval overlaps with an existing one");
 			else if (elem->key->flags & EXPR_F_KERNEL)
-				expr_error(msgs, prev, "interval overlaps with an existing one");
+				expr_error(msgs, prev->key, "interval overlaps with an existing one");
 			else
-				expr_binary_error(msgs, i, prev,
+				expr_binary_error(msgs, i->key, prev->key,
 						  "conflicting intervals specified");
 			err = -1;
 			goto err_out;
 		} else if (mpz_cmp(range.low, prev_range.high) <= 0) {
 			if (prev->key->flags & EXPR_F_KERNEL)
-				expr_error(msgs, i, "interval overlaps with an existing one");
+				expr_error(msgs, i->key, "interval overlaps with an existing one");
 			else if (elem->key->flags & EXPR_F_KERNEL)
-				expr_error(msgs, prev, "interval overlaps with an existing one");
+				expr_error(msgs, prev->key, "interval overlaps with an existing one");
 			else
-				expr_binary_error(msgs, i, prev,
+				expr_binary_error(msgs, i->key, prev->key,
 						  "conflicting intervals specified");
 			err = -1;
 			goto err_out;

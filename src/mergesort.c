@@ -30,8 +30,6 @@ static void concat_expr_msort_value(const struct expr *expr, mpz_t value)
 static mpz_srcptr expr_msort_value(const struct expr *expr, mpz_t value)
 {
 	switch (expr->etype) {
-	case EXPR_SET_ELEM:
-		return expr_msort_value(expr->key, value);
 	case EXPR_BINOP:
 	case EXPR_MAPPING:
 	case EXPR_RANGE:
@@ -68,10 +66,12 @@ static int expr_msort_cmp(const struct expr *e1, const struct expr *e2)
 	mpz_t value2_tmp;
 	int ret;
 
+	assert(e1->etype == EXPR_SET_ELEM && e2->etype == EXPR_SET_ELEM);
+
 	mpz_init(value1_tmp);
 	mpz_init(value2_tmp);
-	value1 = expr_msort_value(e1, value1_tmp);
-	value2 = expr_msort_value(e2, value2_tmp);
+	value1 = expr_msort_value(e1->key, value1_tmp);
+	value2 = expr_msort_value(e2->key, value2_tmp);
 	ret = mpz_cmp(value1, value2);
 	mpz_clear(value1_tmp);
 	mpz_clear(value2_tmp);
