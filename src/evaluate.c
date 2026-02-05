@@ -4847,9 +4847,6 @@ static int stmt_evaluate_set(struct eval_ctx *ctx, struct stmt *stmt)
 			      stmt->set.set->set->key->byteorder,
 			      &stmt->set.key->key) < 0)
 		return -1;
-	if (expr_is_constant(stmt->set.key))
-		return expr_error(ctx->msgs, stmt->set.key,
-				  "Key expression can not be constant");
 	if (stmt->set.key->comment != NULL)
 		return expr_error(ctx->msgs, stmt->set.key,
 				  "Key expression comments are not supported");
@@ -4891,9 +4888,6 @@ static int stmt_evaluate_map(struct eval_ctx *ctx, struct stmt *stmt)
 			      stmt->map.set->set->key->byteorder,
 			      &stmt->map.key->key) < 0)
 		return -1;
-	if (expr_is_constant(stmt->map.key))
-		return expr_error(ctx->msgs, stmt->map.key,
-				  "Key expression can not be constant");
 	if (stmt->map.key->comment != NULL)
 		return expr_error(ctx->msgs, stmt->map.key,
 				  "Key expression comments are not supported");
@@ -4904,9 +4898,6 @@ static int stmt_evaluate_map(struct eval_ctx *ctx, struct stmt *stmt)
 			      stmt->map.set->set->data->byteorder,
 			      &stmt->map.data->key) < 0)
 		return -1;
-	if (expr_is_constant(stmt->map.data))
-		return expr_error(ctx->msgs, stmt->map.data,
-				  "Data expression can not be constant");
 	if (stmt->map.data->comment != NULL)
 		return expr_error(ctx->msgs, stmt->map.data,
 				  "Data expression comments are not supported");
