@@ -53,8 +53,8 @@ static void interval_expr_copy(struct expr *dst, struct expr *src)
 	list_splice_init(&src->stmt_list, &dst->stmt_list);
 }
 
-static void set_elem_add(const struct set *set, struct expr *init, mpz_t value,
-			 uint32_t flags, enum byteorder byteorder)
+static void set_elem_expr_add(const struct set *set, struct expr *init,
+			      mpz_t value, uint32_t flags, enum byteorder byteorder)
 {
 	struct expr *expr;
 
@@ -84,8 +84,8 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 
 		switch (i->key->etype) {
 		case EXPR_VALUE:
-			set_elem_add(set, new_init, i->key->value,
-				     i->flags, byteorder);
+			set_elem_expr_add(set, new_init, i->key->value,
+					  i->flags, byteorder);
 			break;
 		case EXPR_CONCAT:
 			set_expr_add(new_init, expr_clone(i));
@@ -97,11 +97,11 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 			break;
 		default:
 			range_expr_value_low(low, i);
-			set_elem_add(set, new_init, low, 0, i->byteorder);
+			set_elem_expr_add(set, new_init, low, 0, i->byteorder);
 			range_expr_value_high(high, i);
 			mpz_add_ui(high, high, 1);
-			set_elem_add(set, new_init, high,
-				     EXPR_F_INTERVAL_END, i->byteorder);
+			set_elem_expr_add(set, new_init, high,
+					  EXPR_F_INTERVAL_END, i->byteorder);
 			break;
 		}
 	}
