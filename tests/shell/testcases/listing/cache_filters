@@ -22,6 +22,8 @@ table ip ip_t {
 	chain ip_t_c2 {
 	}
 }
+table ip ip_t2 {
+}
 EOF
 
 $NFT --debug=netlink list ruleset | \
@@ -38,6 +40,8 @@ $NFT --debug=netlink list sets | \
 	grep -q 'family 2 ip_t_s ip_t' || fail "broken list sets"
 $NFT --debug=netlink list sets ip6 | \
 	grep -q 'family 2 ip_t_s ip_t' && fail "broken list sets family filter"
+$NFT --debug=netlink list sets ip ip_t2 | \
+	grep -q 'family 2 ip_t_s ip_t' && fail "broken list sets table filter"
 
 $NFT --debug=netlink list flowtables | \
 	grep -q 'flow table ip_t ip_t_ft' || fail "broken list flowtables"
