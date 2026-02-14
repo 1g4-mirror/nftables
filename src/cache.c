@@ -246,10 +246,12 @@ static unsigned int evaluate_cache_list(struct nft_ctx *nft, struct cmd *cmd,
 			flags |= NFT_CACHE_FULL;
 		break;
 	case CMD_OBJ_CHAINS:
+		filter->list.family = cmd->handle.family;
 		flags |= NFT_CACHE_TABLE | NFT_CACHE_CHAIN;
 		break;
 	case CMD_OBJ_SETS:
 	case CMD_OBJ_MAPS:
+		filter->list.family = cmd->handle.family;
 		flags |= NFT_CACHE_TABLE | NFT_CACHE_SET;
 		if (!nft_output_terse(&nft->output))
 			flags |= NFT_CACHE_SETELEM;
@@ -257,12 +259,12 @@ static unsigned int evaluate_cache_list(struct nft_ctx *nft, struct cmd *cmd,
 	case CMD_OBJ_FLOWTABLE:
 		if (cmd->handle.table.name &&
 		    cmd->handle.flowtable.name) {
-			filter->list.family = cmd->handle.family;
 			filter->list.table = cmd->handle.table.name;
 			filter->list.ft = cmd->handle.flowtable.name;
 		}
 		/* fall through */
 	case CMD_OBJ_FLOWTABLES:
+		filter->list.family = cmd->handle.family;
 		flags |= NFT_CACHE_TABLE | NFT_CACHE_FLOWTABLE;
 		break;
 	case CMD_OBJ_COUNTER:
@@ -301,6 +303,8 @@ static unsigned int evaluate_cache_list(struct nft_ctx *nft, struct cmd *cmd,
 		obj_filter_setup(cmd, &flags, filter, NFT_OBJECT_TUNNEL);
 		break;
 	case CMD_OBJ_RULESET:
+		filter->list.family = cmd->handle.family;
+		/* fall through */
 	default:
 		flags |= NFT_CACHE_FULL;
 		break;
