@@ -821,8 +821,6 @@ static json_t *__set_elem_expr_json(const struct expr *expr,
 			/* XXX: detect and complain about clashes? */
 			json_object_update_missing(root, tmp);
 			json_decref(tmp);
-			/* TODO: only one statement per element. */
-			break;
 		}
 		return nft_json_pack("{s:o}", "elem", root);
 	}

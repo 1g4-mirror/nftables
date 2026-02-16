@@ -44,6 +44,10 @@
               "counter": {
                 "packets": 0,
                 "bytes": 0
+              },
+              "quota": {
+                "val": 500,
+                "val_unit": "bytes"
               }
             }
           },
@@ -53,6 +57,12 @@
               "counter": {
                 "packets": 9,
                 "bytes": 756
+              },
+              "quota": {
+                "val": 500,
+                "val_unit": "bytes",
+                "used": 500,
+                "used_unit": "bytes"
               }
             }
           },
@@ -62,6 +72,10 @@
               "counter": {
                 "packets": 0,
                 "bytes": 0
+              },
+              "quota": {
+                "val": 1000,
+                "val_unit": "bytes"
               }
             }
           }
