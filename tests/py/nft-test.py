@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # (C) 2014 by Ana Rey Botello <anarey@gmail.com>
 #
