@@ -17,7 +17,6 @@
 #include <getopt.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/auxv.h>
 
 #include <nftables/libnftables.h>
 #include <utils.h>
@@ -372,8 +371,8 @@ int main(int argc, char * const *argv)
 	char *filename = NULL;
 	unsigned int len;
 
-	/* nftables cannot be used with setuid/setcap in a safe way. */
-	if (getuid() != geteuid() || getauxval(AT_SECURE))
+	/* nftables cannot be used with setuid in a safe way. */
+	if (getuid() != geteuid())
 		_exit(111);
 
 	if (!nft_options_check(argc, argv))
