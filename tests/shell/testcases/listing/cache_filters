@@ -47,4 +47,7 @@ $NFT --debug=netlink list flowtables | \
 	grep -q 'flow table ip_t ip_t_ft' || fail "broken list flowtables"
 $NFT --debug=netlink list flowtables ip6 | \
 	grep -q 'flow table ip_t ip_t_ft' && fail "broken list flowtables family filter"
+$NFT --debug=netlink list flowtables ip ip_t2 | \
+	grep -q 'flow table ip_t ip_t_ft' && fail "broken list flowtables table filter"
+
 exit 0

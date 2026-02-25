@@ -266,6 +266,7 @@ static unsigned int evaluate_cache_list(struct nft_ctx *nft, struct cmd *cmd,
 		/* fall through */
 	case CMD_OBJ_FLOWTABLES:
 		filter->list.family = cmd->handle.family;
+		filter->list.table = cmd->handle.table.name;
 		flags |= NFT_CACHE_TABLE | NFT_CACHE_FLOWTABLE;
 		break;
 	case CMD_OBJ_COUNTER:
