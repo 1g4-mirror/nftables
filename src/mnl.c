@@ -2410,7 +2410,7 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock, unsigned int debug_mask,
 		if (ret < 0)
 			return -1;
 
-		if (FD_ISSET(sigfd, &readfds))
+		if (sigfd >= 0 && FD_ISSET(sigfd, &readfds))
 			check_signalfd(sigfd);
 
 		if (FD_ISSET(fd, &readfds)) {
