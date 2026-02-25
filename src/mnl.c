@@ -653,9 +653,15 @@ int mnl_nft_rule_del(struct netlink_ctx *ctx, struct cmd *cmd)
  * Rule
  */
 
+struct rule_cb_args {
+	struct netlink_ctx *ctx;
+	struct nftnl_rule_list *list;
+};
+
 static int rule_cb(const struct nlmsghdr *nlh, void *data)
 {
-	struct nftnl_rule_list *nlr_list = data;
+	struct rule_cb_args *args = data;
+	struct nftnl_rule_list *nlr_list = args->list;
 	struct nftnl_rule *r;
 
 	if (check_genid(nlh) < 0)
@@ -667,6 +673,8 @@ static int rule_cb(const struct nlmsghdr *nlh, void *data)
 
 	if (nftnl_rule_nlmsg_parse(nlh, r) < 0)
 		goto err_free;
+
+	netlink_dump_rule(r, args->ctx);
 
 	nftnl_rule_list_add_tail(r, nlr_list);
 	return MNL_CB_OK;
@@ -685,6 +693,7 @@ struct nftnl_rule_list *mnl_nft_rule_dump(struct netlink_ctx *ctx, int family,
 	char buf[MNL_SOCKET_BUFFER_SIZE];
 	struct nftnl_rule_list *nlr_list;
 	struct nftnl_rule *nlr = NULL;
+	struct rule_cb_args args;
 	struct nlmsghdr *nlh;
 	int msg_type, ret;
 
@@ -716,7 +725,9 @@ struct nftnl_rule_list *mnl_nft_rule_dump(struct netlink_ctx *ctx, int family,
 		nftnl_rule_free(nlr);
 	}
 
-	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, rule_cb, nlr_list);
+	args.list = nlr_list;
+	args.ctx  = ctx;
+	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, rule_cb, &args);
 	if (ret < 0)
 		goto err;
 
@@ -1036,9 +1047,15 @@ int mnl_nft_chain_del(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+struct chain_cb_args {
+	struct netlink_ctx *ctx;
+	struct nftnl_chain_list *list;
+};
+
 static int chain_cb(const struct nlmsghdr *nlh, void *data)
 {
-	struct nftnl_chain_list *nlc_list = data;
+	struct chain_cb_args *args = data;
+	struct nftnl_chain_list *nlc_list = args->list;
 	struct nftnl_chain *c;
 
 	if (check_genid(nlh) < 0)
@@ -1050,6 +1067,8 @@ static int chain_cb(const struct nlmsghdr *nlh, void *data)
 
 	if (nftnl_chain_nlmsg_parse(nlh, c) < 0)
 		goto err_free;
+
+	netlink_dump_chain(c, args->ctx);
 
 	nftnl_chain_list_add_tail(c, nlc_list);
 	return MNL_CB_OK;
@@ -1066,6 +1085,7 @@ struct nftnl_chain_list *mnl_nft_chain_dump(struct netlink_ctx *ctx,
 	char buf[MNL_SOCKET_BUFFER_SIZE];
 	struct nftnl_chain_list *nlc_list;
 	struct nftnl_chain *nlc = NULL;
+	struct chain_cb_args args;
 	struct nlmsghdr *nlh;
 	int ret;
 
@@ -1089,7 +1109,9 @@ struct nftnl_chain_list *mnl_nft_chain_dump(struct netlink_ctx *ctx,
 		nftnl_chain_free(nlc);
 	}
 
-	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, chain_cb, nlc_list);
+	args.list = nlc_list;
+	args.ctx  = ctx;
+	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, chain_cb, &args);
 	if (ret < 0 && errno != ENOENT)
 		goto err;
 
@@ -1797,9 +1819,15 @@ int mnl_nft_obj_del(struct netlink_ctx *ctx, struct cmd *cmd, int type)
 	return 0;
 }
 
+struct obj_cb_args {
+	struct netlink_ctx *ctx;
+	struct nftnl_obj_list *list;
+};
+
 static int obj_cb(const struct nlmsghdr *nlh, void *data)
 {
-	struct nftnl_obj_list *nln_list = data;
+	struct obj_cb_args *args = data;
+	struct nftnl_obj_list *nln_list = args->list;
 	struct nftnl_obj *n;
 
 	if (check_genid(nlh) < 0)
@@ -1811,6 +1839,8 @@ static int obj_cb(const struct nlmsghdr *nlh, void *data)
 
 	if (nftnl_obj_nlmsg_parse(nlh, n) < 0)
 		goto err_free;
+
+	netlink_dump_obj(n, args->ctx);
 
 	nftnl_obj_list_add_tail(n, nln_list);
 	return MNL_CB_OK;
@@ -1829,6 +1859,7 @@ mnl_nft_obj_dump(struct netlink_ctx *ctx, int family,
 	uint16_t nl_flags = dump ? NLM_F_DUMP : NLM_F_ACK;
 	struct nftnl_obj_list *nln_list;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct obj_cb_args args;
 	struct nlmsghdr *nlh;
 	struct nftnl_obj *n;
 	int msg_type, ret;
@@ -1857,7 +1888,9 @@ mnl_nft_obj_dump(struct netlink_ctx *ctx, int family,
 	if (nln_list == NULL)
 		memory_allocation_error();
 
-	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, obj_cb, nln_list);
+	args.list = nln_list;
+	args.ctx  = ctx;
+	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, obj_cb, &args);
 	if (ret < 0)
 		goto err;
 
@@ -2192,9 +2225,15 @@ int mnl_nft_setelem_get(struct netlink_ctx *ctx, struct nftnl_set *nls,
 	return nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, set_elem_cb, nls);
 }
 
+struct flowtable_cb_args {
+	struct netlink_ctx *ctx;
+	struct nftnl_flowtable_list *list;
+};
+
 static int flowtable_cb(const struct nlmsghdr *nlh, void *data)
 {
-	struct nftnl_flowtable_list *nln_list = data;
+	struct flowtable_cb_args *args = data;
+	struct nftnl_flowtable_list *nln_list = args->list;
 	struct nftnl_flowtable *n;
 
 	if (check_genid(nlh) < 0)
@@ -2206,6 +2245,8 @@ static int flowtable_cb(const struct nlmsghdr *nlh, void *data)
 
 	if (nftnl_flowtable_nlmsg_parse(nlh, n) < 0)
 		goto err_free;
+
+	netlink_dump_flowtable(n, args->ctx);
 
 	nftnl_flowtable_list_add_tail(n, nln_list);
 	return MNL_CB_OK;
@@ -2221,6 +2262,7 @@ mnl_nft_flowtable_dump(struct netlink_ctx *ctx, int family,
 {
 	struct nftnl_flowtable_list *nln_list;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct flowtable_cb_args args;
 	struct nftnl_flowtable *n;
 	int flags = NLM_F_DUMP;
 	struct nlmsghdr *nlh;
@@ -2245,7 +2287,9 @@ mnl_nft_flowtable_dump(struct netlink_ctx *ctx, int family,
 	if (nln_list == NULL)
 		memory_allocation_error();
 
-	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, flowtable_cb, nln_list);
+	args.list = nln_list;
+	args.ctx  = ctx;
+	ret = nft_mnl_talk(ctx, nlh, nlh->nlmsg_len, flowtable_cb, &args);
 	if (ret < 0 && errno != ENOENT)
 		goto err;
 
