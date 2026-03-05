@@ -1466,7 +1466,14 @@ def run_test_file(filename, force_all_family_option, specific_file):
     return [tests, passed, total_warning, total_error, total_unit_run]
 
 def spawn_netns():
-    # prefer unshare module
+    # prefer stdlib unshare function ...
+    try:
+        os.unshare(os.CLONE_NEWNET)
+        return True
+    except Exception as e:
+        pass
+
+    # ... or unshare module
     try:
         import unshare
         unshare.unshare(unshare.CLONE_NEWNET)
