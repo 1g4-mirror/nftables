@@ -625,7 +625,7 @@ chain_cache_dump(struct netlink_ctx *ctx,
 	const char *chain = NULL;
 	int family = NFPROTO_UNSPEC;
 
-	if (filter && filter->list.table && filter->list.chain) {
+	if (filter) {
 		family = filter->list.family;
 		table = filter->list.table;
 		chain = filter->list.chain;
