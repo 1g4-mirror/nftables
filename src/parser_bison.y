@@ -816,6 +816,7 @@ int nft_lex(void *, void *, void *);
 %destructor { flowtable_free($$); }	flowtable_block_alloc
 
 %type <obj>			obj_block_alloc counter_block quota_block ct_helper_block ct_timeout_block ct_expect_block limit_block secmark_block synproxy_block tunnel_block erspan_block erspan_block_alloc vxlan_block vxlan_block_alloc geneve_block geneve_block_alloc
+%type <val>			synproxy_wscale
 %destructor { obj_free($$); }	obj_block_alloc
 
 %type <list>			stmt_list stateful_stmt_list set_elem_stmt_list
@@ -3813,14 +3814,25 @@ synproxy_args		:	synproxy_arg
 			|	synproxy_args	synproxy_arg
 			;
 
+synproxy_wscale		:	WSCALE 	NUM
+			{
+				if ($2 > 14) {
+					erec_queue(error(&@2, "wscale must be in range 0-14"), state->msgs);
+					YYERROR;
+				}
+
+				$$ = $2;
+			}
+			;
+
 synproxy_arg		:	MSS	NUM
 			{
 				$<stmt>0->synproxy.mss = $2;
 				$<stmt>0->synproxy.flags |= NF_SYNPROXY_OPT_MSS;
 			}
-			|	WSCALE	NUM
+			|	synproxy_wscale
 			{
-				$<stmt>0->synproxy.wscale = $2;
+				$<stmt>0->synproxy.wscale = $1;
 				$<stmt>0->synproxy.flags |= NF_SYNPROXY_OPT_WSCALE;
 			}
 			|	TIMESTAMP
@@ -3833,7 +3845,7 @@ synproxy_arg		:	MSS	NUM
 			}
 			;
 
-synproxy_config		:	MSS	NUM	WSCALE	NUM	synproxy_ts	synproxy_sack
+synproxy_config		:	MSS	NUM	synproxy_wscale synproxy_ts	synproxy_sack
 			{
 				struct synproxy *synproxy;
 				uint32_t flags = 0;
@@ -3843,13 +3855,13 @@ synproxy_config		:	MSS	NUM	WSCALE	NUM	synproxy_ts	synproxy_sack
 				flags |= NF_SYNPROXY_OPT_MSS;
 				synproxy->wscale = $4;
 				flags |= NF_SYNPROXY_OPT_WSCALE;
+				if ($4)
+					flags |= $4;
 				if ($5)
 					flags |= $5;
-				if ($6)
-					flags |= $6;
 				synproxy->flags = flags;
 			}
-			|	MSS	NUM	stmt_separator	WSCALE	NUM	stmt_separator	synproxy_ts	synproxy_sack
+			|	MSS	NUM	stmt_separator	synproxy_wscale stmt_separator	synproxy_ts	synproxy_sack
 			{
 				struct synproxy *synproxy;
 				uint32_t flags = 0;
@@ -3857,12 +3869,12 @@ synproxy_config		:	MSS	NUM	WSCALE	NUM	synproxy_ts	synproxy_sack
 				synproxy = &$<obj>0->synproxy;
 				synproxy->mss = $2;
 				flags |= NF_SYNPROXY_OPT_MSS;
-				synproxy->wscale = $5;
+				synproxy->wscale = $4;
 				flags |= NF_SYNPROXY_OPT_WSCALE;
+				if ($6)
+					flags |= $6;
 				if ($7)
 					flags |= $7;
-				if ($8)
-					flags |= $8;
 				synproxy->flags = flags;
 			}
 			;
