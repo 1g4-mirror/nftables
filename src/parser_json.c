@@ -4140,6 +4140,7 @@ static struct cmd *json_parse_cmd_list_multiple(struct json_ctx *ctx,
 		}
 	}
 	switch (obj) {
+	case CMD_OBJ_CHAINS:
 	case CMD_OBJ_SETS:
 	case CMD_OBJ_COUNTERS:
 	case CMD_OBJ_CT_HELPERS:
