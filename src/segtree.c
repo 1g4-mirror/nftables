@@ -426,8 +426,9 @@ void concat_range_aggregate(struct expr *set)
 			    string_type) {
 				unsigned int r1len = div_round_up(r1->len, BITS_PER_BYTE);
 				unsigned int str_len = prefix_len / BITS_PER_BYTE;
-				char data[r1len + 1] = {};
+				char data[r1len + 1];
 
+				memset(data, 0, r1len + 1);
 				mpz_export_data(data, r1->value, BYTEORDER_HOST_ENDIAN, r1len);
 				data[str_len] = '*';
 
