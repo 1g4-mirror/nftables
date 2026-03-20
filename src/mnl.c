@@ -2520,7 +2520,7 @@ static void basehook_list_add_tail(struct basehook *b, struct list_head *head)
 			continue;
 		if (!basehook_eq(hook, b))
 			continue;
-		if (hook->prio < b->prio)
+		if (hook->prio <= b->prio)
 			continue;
 
 		list_add(&b->list, &hook->list);
