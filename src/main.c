@@ -548,6 +548,8 @@ int main(int argc, char * const *argv)
 		goto out_fail;
 	}
 
+	if (rc && errno == EPERM)
+		 fprintf(stderr, "Error: %s (perhaps you must be root?)\n", strerror(errno));
 out:
 	nft_ctx_free(nft);
 	return rc;
