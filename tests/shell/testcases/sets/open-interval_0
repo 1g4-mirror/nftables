@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 RULESET="table ip x {
 	set y {
