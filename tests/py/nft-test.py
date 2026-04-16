@@ -1595,7 +1595,7 @@ def main():
     try:
         log_file = tempfile.NamedTemporaryFile(prefix="nftables-test-py-", suffix=".log", mode='w', delete=auto_delete)
         if auto_delete:
-            print_info("Log file %s will not be retained.  Pass -k to keep it.")
+            print_info("Log file %s will not be retained.  Pass -k to keep it." % log_file.name)
         else:
             print_info("Log will be available at %s" % log_file.name)
     except IOError:
