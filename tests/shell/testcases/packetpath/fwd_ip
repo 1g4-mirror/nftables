@@ -152,4 +152,21 @@ echo "Egress ruleset loaded"
 ip netns exec "$ns3" $NFT "reset counter inet rxt rxc"
 ping_and_check
 
+ip netns exec "$ns2" $NFT -f /dev/stdin <<"EOF"
+flush ruleset
+table netdev fwd_test {
+	chain egress_veth3 {
+		type filter hook egress device veth3 priority 0; policy accept;
+		# Forward ICMP packets to 10.0.3.1 via neigh
+		ip protocol icmp counter fwd ip to 10.0.3.1 device "veth3"
+	}
+}
+EOF
+[ $? -ne 0 ] && exit 1
+
+# old kernels that lack
+# 1d47b55b36d2 ("netfilter: nft_fwd_netdev: use recursion counter in neigh egress path")
+# can crash here.
+ip netns exec "$ns1" ping -c 1 -W 1 10.0.3.1
+
 exit 0
