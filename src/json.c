@@ -203,6 +203,10 @@ static json_t *set_print_json(struct output_ctx *octx, const struct set *set)
 		if (set->desc.size) {
 			tmp = nft_json_pack("i", set->desc.size);
 			json_object_set_new(root, "size", tmp);
+			if (set->count) {
+				tmp = nft_json_pack("i", set->count);
+				json_object_set_new(root, "count", tmp);
+			}
 		}
 	}
 

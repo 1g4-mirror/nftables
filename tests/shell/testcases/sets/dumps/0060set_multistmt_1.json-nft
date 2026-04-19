@@ -34,6 +34,7 @@
         "type": "ipv4_addr",
         "handle": 0,
         "size": 65535,
+        "count": 3,
         "flags": [
           "dynamic"
         ],

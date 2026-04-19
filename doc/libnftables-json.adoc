@@ -346,6 +346,7 @@ ____
 	"timeout":* 'NUMBER'*,
 	"gc-interval":* 'NUMBER'*,
 	"size":* 'NUMBER'*,
+	"count":* 'NUMBER'*,
 	"auto-merge":* 'BOOLEAN'
 *}}*
 
@@ -362,6 +363,7 @@ ____
 	"timeout":* 'NUMBER'*,
 	"gc-interval":* 'NUMBER'*,
 	"size":* 'NUMBER'*,
+	"count":* 'NUMBER'*,
 	"auto-merge":* 'BOOLEAN'
 *}}*
 
@@ -402,6 +404,8 @@ that they translate a unique key to a value.
 	Garbage collector interval in seconds.
 *size*::
 	Maximum number of elements supported.
+*count*::
+	Current number of elements. Not used in input.
 *auto-merge*::
 	Automatic merging of adjacent/overlapping set elements in interval sets.
 
