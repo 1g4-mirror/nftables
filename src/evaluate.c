@@ -1454,6 +1454,12 @@ static int expr_evaluate_shift(struct eval_ctx *ctx, struct expr **expr)
 					 "shifts exceeding %u bits are not supported", UINT_MAX);
 
 	shift = mpz_get_uint32(right->value);
+	if (shift == 0) {
+		*expr = expr_get(left);
+		expr_free(op);
+		return 0;
+	}
+
 	if (ctx->stmt_len > left->len)
 		max_shift_len = ctx->stmt_len;
 	else
