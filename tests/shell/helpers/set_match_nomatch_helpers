@@ -305,7 +305,7 @@ test_nomatch()
 
 	if ip netns exec "$R" $NFT list set ip test s | grep -q 'counter packets 1' ; then
 		ip netns exec "$R" $NFT list set ip test s
-		exit_fatal "Unexpected entry listed as matching"
+		exit_fatal "Unexpected entry listed as matching, sent $psent packets."
 	fi
 
 	if ip netns exec "$R" $NFT list counter ip test nomatch | grep -q "packets $psent"; then
@@ -358,7 +358,7 @@ test_match_ranges()
 	test_match "rbtree" $rnd_addrs
 
 	echo Validate addresses outside range
-	test_nomatch $bad_addrs
+	[ -z "$bad_addrs" ] || test_nomatch $bad_addrs
 }
 
 test_match_ranges_rnd()
