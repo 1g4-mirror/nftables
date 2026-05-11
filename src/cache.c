@@ -516,7 +516,10 @@ int nft_cache_evaluate(struct nft_ctx *nft, struct list_head *cmds,
 			flags = evaluate_cache_get(cmd, flags);
 			break;
 		case CMD_RESET:
-			flags = evaluate_cache_reset(cmd, flags, filter);
+			if (nft->check)
+				flags = evaluate_cache_list(nft, cmd, flags, filter);
+			else
+				flags = evaluate_cache_reset(cmd, flags, filter);
 			break;
 		case CMD_LIST:
 			flags = evaluate_cache_list(nft, cmd, flags, filter);
