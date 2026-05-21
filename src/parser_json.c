@@ -2581,7 +2581,7 @@ static struct stmt *json_parse_map_stmt(struct json_ctx *ctx,
 	stmt->map.set = expr2;
 
 	if (!json_unpack(value, "{s:o}", "stmt", &stmt_json) &&
-	    json_parse_set_stmt_list(ctx, &stmt->set.stmt_list, stmt_json) < 0) {
+	    json_parse_set_stmt_list(ctx, &stmt->map.stmt_list, stmt_json) < 0) {
 		stmt_free(stmt);
 		return NULL;
 	}
