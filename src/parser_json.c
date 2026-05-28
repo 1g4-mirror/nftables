@@ -3703,6 +3703,80 @@ static int json_parse_tunnel_src_and_dst(struct json_ctx *ctx,
 	return 0;
 }
 
+static int json_parse_tunnel(struct json_ctx *ctx,
+			     json_t *root, struct obj *obj)
+{
+	struct tunnel_geneve *geneve;
+	json_t *tmp_json;
+	const char *tmp;
+	json_t *value;
+	size_t index;
+	int i, j;
+
+	if (json_parse_tunnel_src_and_dst(ctx, root, obj))
+		return 1;
+
+	json_unpack(root, "{s:i}", "id", &obj->tunnel.id);
+	json_unpack(root, "{s:i}", "sport", &i);
+	obj->tunnel.sport = i;
+	json_unpack(root, "{s:i}", "dport", &i);
+	obj->tunnel.sport = i;
+	json_unpack(root, "{s:i}", "ttl", &i);
+	obj->tunnel.ttl = i;
+	json_unpack(root, "{s:i}", "tos", &i);
+	obj->tunnel.tos = i;
+	json_unpack(root, "{s:s}", "type", &tmp);
+
+	obj->tunnel.type = json_parse_tunnel_type(ctx, tmp);
+	switch (obj->tunnel.type) {
+	case TUNNEL_UNSPEC:
+		break;
+	case TUNNEL_ERSPAN:
+		return json_parse_tunnel_erspan(ctx, root, obj);
+	case TUNNEL_VXLAN:
+		if (json_unpack_err(ctx, root,
+				    "{s:o}", "tunnel", &tmp_json))
+			return 1;
+
+		json_unpack(tmp_json, "{s:i}",
+			    "gbp", &obj->tunnel.vxlan.gbp);
+		break;
+	case TUNNEL_GENEVE:
+		if (json_unpack_err(ctx, root,
+				    "{s:o}", "tunnel", &tmp_json))
+			return 1;
+
+		init_list_head(&obj->tunnel.geneve_opts);
+
+		json_array_foreach(tmp_json, index, value) {
+			geneve = xmalloc(sizeof(struct tunnel_geneve));
+			if (!geneve)
+				memory_allocation_error();
+
+			if (json_unpack_err(ctx, value, "{s:i, s:i, s:s}",
+					    "class", &i,
+					    "opt-type", &j,
+					    "data", &tmp)) {
+				free(geneve);
+				return 1;
+			}
+			geneve->geneve_class = i;
+			geneve->type = j;
+
+			if (tunnel_geneve_data_str2array(tmp,
+							 geneve->data,
+							 &geneve->data_len)) {
+				free(geneve);
+				return 1;
+			}
+
+			list_add_tail(&geneve->list, &obj->tunnel.geneve_opts);
+		}
+		break;
+	}
+	return 0;
+}
+
 static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 					     json_t *root, enum cmd_ops op,
 					     enum cmd_obj cmd_obj)
@@ -3711,7 +3785,6 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 	uint32_t l3proto = NFPROTO_UNSPEC;
 	int inv = 0, flags = 0, i, j;
 	struct handle h = { 0 };
-	json_t *tmp_json;
 	struct obj *obj;
 
 	if (json_unpack_err(ctx, root, "{s:s, s:s}",
@@ -3902,73 +3975,8 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 	case NFT_OBJECT_TUNNEL:
 		cmd_obj = CMD_OBJ_TUNNEL;
 		obj->type = NFT_OBJECT_TUNNEL;
-
-		if (json_parse_tunnel_src_and_dst(ctx, root, obj))
+		if (json_parse_tunnel(ctx, root, obj))
 			goto err_free_obj;
-
-		json_unpack(root, "{s:i}", "id", &obj->tunnel.id);
-		json_unpack(root, "{s:i}", "sport", &i);
-		obj->tunnel.sport = i;
-		json_unpack(root, "{s:i}", "dport", &i);
-		obj->tunnel.sport = i;
-		json_unpack(root, "{s:i}", "ttl", &i);
-		obj->tunnel.ttl = i;
-		json_unpack(root, "{s:i}", "tos", &i);
-		obj->tunnel.tos = i;
-		json_unpack(root, "{s:s}", "type", &tmp);
-
-		obj->tunnel.type = json_parse_tunnel_type(ctx, tmp);
-		switch (obj->tunnel.type) {
-		case TUNNEL_UNSPEC:
-			break;
-		case TUNNEL_ERSPAN:
-			if (json_parse_tunnel_erspan(ctx, root, obj))
-				goto err_free_obj;
-			break;
-		case TUNNEL_VXLAN:
-			if (json_unpack_err(ctx, root,
-					    "{s:o}", "tunnel", &tmp_json))
-				goto err_free_obj;
-
-			json_unpack(tmp_json, "{s:i}",
-				    "gbp", &obj->tunnel.vxlan.gbp);
-			break;
-		case TUNNEL_GENEVE:
-			json_t *value;
-			size_t index;
-
-			if (json_unpack_err(ctx, root,
-					    "{s:o}", "tunnel", &tmp_json))
-				goto err_free_obj;
-
-			init_list_head(&obj->tunnel.geneve_opts);
-
-			json_array_foreach(tmp_json, index, value) {
-				struct tunnel_geneve *geneve = xmalloc(sizeof(struct tunnel_geneve));
-				if (!geneve)
-					memory_allocation_error();
-
-				if (json_unpack_err(ctx, value, "{s:i, s:i, s:s}",
-						    "class", &i,
-						    "opt-type", &j,
-						    "data", &tmp)) {
-					free(geneve);
-					goto err_free_obj;
-				}
-				geneve->geneve_class = i;
-				geneve->type = j;
-
-				if (tunnel_geneve_data_str2array(tmp,
-								 geneve->data,
-								 &geneve->data_len)) {
-					free(geneve);
-					goto err_free_obj;
-				}
-
-				list_add_tail(&geneve->list, &obj->tunnel.geneve_opts);
-			}
-			break;
-		}
 		break;
 	default:
 		BUG("Invalid CMD '%d'", cmd_obj);
