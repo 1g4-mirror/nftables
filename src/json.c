@@ -400,6 +400,67 @@ static json_t *tunnel_erspan_print_json(const struct obj *obj)
 	return tunnel;
 }
 
+static json_t *tunnel_obj_print_json(struct output_ctx *octx,
+				     const struct obj *obj)
+{
+	struct tunnel_geneve *geneve;
+	json_t *tmp, *opts;
+
+	tmp = json_pack("{s:i, s:o, s:o, s:i, s:i, s:i, s:i}",
+			"id", obj->tunnel.id,
+			obj->tunnel.src->dtype->type == TYPE_IPADDR ? "src-ipv4" : "src-ipv6",
+			expr_print_json(obj->tunnel.src, octx),
+			obj->tunnel.dst->dtype->type == TYPE_IPADDR ? "dst-ipv4" : "dst-ipv6",
+			expr_print_json(obj->tunnel.dst, octx),
+			"sport", obj->tunnel.sport,
+			"dport", obj->tunnel.dport,
+			"tos", obj->tunnel.tos,
+			"ttl", obj->tunnel.ttl);
+
+	switch (obj->tunnel.type) {
+	case TUNNEL_UNSPEC:
+		break;
+	case TUNNEL_ERSPAN:
+		json_object_set_new(tmp, "type", json_string("erspan"));
+		json_object_set_new(tmp, "tunnel",
+				    tunnel_erspan_print_json(obj));
+		break;
+	case TUNNEL_VXLAN:
+		json_object_set_new(tmp, "type", json_string("vxlan"));
+		json_object_set_new(tmp, "tunnel",
+				    json_pack("{s:i}",
+					      "gbp",
+					      obj->tunnel.vxlan.gbp));
+		break;
+	case TUNNEL_GENEVE:
+		opts = json_array();
+
+		list_for_each_entry(geneve, &obj->tunnel.geneve_opts, list) {
+			char data_str[256];
+			json_t *opt;
+			int offset;
+
+			data_str[0] = '0';
+			data_str[1] = 'x';
+			offset = 2;
+			for (uint32_t i = 0; i < geneve->data_len; i++)
+				offset += snprintf(data_str + offset,
+						   3, "%x", geneve->data[i]);
+
+			opt = json_pack("{s:i, s:i, s:s}",
+					"class", geneve->geneve_class,
+					"opt-type", geneve->type,
+					"data", data_str);
+			json_array_append_new(opts, opt);
+		}
+
+		json_object_set_new(tmp, "type", json_string("geneve"));
+		json_object_set_new(tmp, "tunnel", opts);
+		break;
+	}
+	return tmp;
+}
+
 static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj,
 			      bool delete)
 {
@@ -519,59 +580,7 @@ static json_t *obj_print_json(struct output_ctx *octx, const struct obj *obj,
 		json_decref(tmp);
 		break;
 	case NFT_OBJECT_TUNNEL:
-		tmp = json_pack("{s:i, s:o, s:o, s:i, s:i, s:i, s:i}",
-				"id", obj->tunnel.id,
-				obj->tunnel.src->dtype->type == TYPE_IPADDR ? "src-ipv4" : "src-ipv6",
-				expr_print_json(obj->tunnel.src, octx),
-				obj->tunnel.dst->dtype->type == TYPE_IPADDR ? "dst-ipv4" : "dst-ipv6",
-				expr_print_json(obj->tunnel.dst, octx),
-				"sport", obj->tunnel.sport,
-				"dport", obj->tunnel.dport,
-				"tos", obj->tunnel.tos,
-				"ttl", obj->tunnel.ttl);
-
-		switch (obj->tunnel.type) {
-		case TUNNEL_UNSPEC:
-			break;
-		case TUNNEL_ERSPAN:
-			json_object_set_new(tmp, "type", json_string("erspan"));
-			json_object_set_new(tmp, "tunnel",
-					    tunnel_erspan_print_json(obj));
-			break;
-		case TUNNEL_VXLAN:
-			json_object_set_new(tmp, "type", json_string("vxlan"));
-			json_object_set_new(tmp, "tunnel",
-					    json_pack("{s:i}",
-						      "gbp",
-						      obj->tunnel.vxlan.gbp));
-			break;
-		case TUNNEL_GENEVE:
-			struct tunnel_geneve *geneve;
-			json_t *opts = json_array();
-
-			list_for_each_entry(geneve, &obj->tunnel.geneve_opts, list) {
-				char data_str[256];
-				json_t *opt;
-				int offset;
-
-				data_str[0] = '0';
-				data_str[1] = 'x';
-				offset = 2;
-				for (uint32_t i = 0; i < geneve->data_len; i++)
-					offset += snprintf(data_str + offset,
-							   3, "%x", geneve->data[i]);
-
-				opt = json_pack("{s:i, s:i, s:s}",
-						"class", geneve->geneve_class,
-						"opt-type", geneve->type,
-						"data", data_str);
-				json_array_append_new(opts, opt);
-			}
-
-			json_object_set_new(tmp, "type", json_string("geneve"));
-			json_object_set_new(tmp, "tunnel", opts);
-			break;
-		}
+		tmp = tunnel_obj_print_json(octx, obj);
 		json_object_update(root, tmp);
 		json_decref(tmp);
 		break;
