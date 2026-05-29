@@ -1541,6 +1541,7 @@ static void obj_tunnel_add_opts(struct nftnl_obj *nlo, struct tunnel *tunnel)
 {
 	struct nftnl_tunnel_opts *opts;
 	struct nftnl_tunnel_opt *opt;
+	struct tunnel_geneve *geneve;
 
 	switch (tunnel->type) {
 	case TUNNEL_ERSPAN:
@@ -1591,8 +1592,6 @@ static void obj_tunnel_add_opts(struct nftnl_obj *nlo, struct tunnel *tunnel)
 		nftnl_obj_set_data(nlo, NFTNL_OBJ_TUNNEL_OPTS, &opts, sizeof(struct nftnl_tunnel_opts *));
 		break;
 	case TUNNEL_GENEVE:
-		struct tunnel_geneve *geneve;
-
 		opts = nftnl_tunnel_opts_alloc(NFTNL_TUNNEL_TYPE_GENEVE);
 		if (!opts)
 			memory_allocation_error();

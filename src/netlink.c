@@ -1905,7 +1905,9 @@ static int obj_parse_udata_cb(const struct nftnl_udata *attr, void *data)
 
 static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 
+	struct tunnel_geneve *geneve;
 	struct obj *obj = data;
+	const void *gnv_data;
 
 	switch (nftnl_tunnel_opt_get_type(opt)) {
 	case NFTNL_TUNNEL_TYPE_ERSPAN:
@@ -1939,9 +1941,6 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 		}
 		break;
 	case NFTNL_TUNNEL_TYPE_GENEVE:
-		struct tunnel_geneve *geneve;
-		const void *data;
-
 		if (!obj->tunnel.type) {
 			init_list_head(&obj->tunnel.geneve_opts);
 			obj->tunnel.type = TUNNEL_GENEVE;
@@ -1958,11 +1957,11 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 			geneve->geneve_class = nftnl_tunnel_opt_get_u16(opt, NFTNL_TUNNEL_GENEVE_CLASS);
 
 		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_DATA)) {
-			data = nftnl_tunnel_opt_get_data(opt, NFTNL_TUNNEL_GENEVE_DATA,
+			gnv_data = nftnl_tunnel_opt_get_data(opt, NFTNL_TUNNEL_GENEVE_DATA,
 							 &geneve->data_len);
-			if (!data)
+			if (!gnv_data)
 				return -1;
-			memcpy(&geneve->data, data, geneve->data_len);
+			memcpy(&geneve->data, gnv_data, geneve->data_len);
 		}
 
 		list_add_tail(&geneve->list, &obj->tunnel.geneve_opts);
