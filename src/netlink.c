@@ -1842,13 +1842,22 @@ void netlink_dump_obj(struct nftnl_obj *nln, struct netlink_ctx *ctx)
 static struct in6_addr all_zeroes;
 
 static struct expr *
-netlink_obj_tunnel_parse_addr(struct nftnl_obj *nlo, int attr)
+netlink_obj_tunnel_parse_addr(struct nftnl_obj *nlo,
+			      int ipv6_attr, int ipv4_attr)
 {
 	struct nft_data_delinearize nld;
 	const struct datatype *dtype;
 	const uint32_t *addr6;
 	struct expr *expr;
 	uint32_t addr;
+	int attr;
+
+	if (nftnl_obj_is_set(nlo, ipv6_attr))
+		attr = ipv6_attr;
+	else if (nftnl_obj_is_set(nlo, ipv4_attr))
+		attr = ipv4_attr;
+	else
+		return NULL;
 
 	memset(&nld, 0, sizeof(nld));
 
@@ -1912,33 +1921,23 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 	switch (nftnl_tunnel_opt_get_type(opt)) {
 	case NFTNL_TUNNEL_TYPE_ERSPAN:
 		obj->tunnel.type = TUNNEL_ERSPAN;
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_VERSION)) {
-			obj->tunnel.erspan.version =
-				nftnl_tunnel_opt_get_u32(opt,
-							 NFTNL_TUNNEL_ERSPAN_VERSION);
-		}
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V1_INDEX)) {
-			obj->tunnel.erspan.v1.index =
-				nftnl_tunnel_opt_get_u32(opt,
-							 NFTNL_TUNNEL_ERSPAN_V1_INDEX);
-		}
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V2_HWID)) {
-			obj->tunnel.erspan.v2.hwid =
-				nftnl_tunnel_opt_get_u8(opt,
-							NFTNL_TUNNEL_ERSPAN_V2_HWID);
-		}
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_ERSPAN_V2_DIR)) {
-			obj->tunnel.erspan.v2.direction =
-				nftnl_tunnel_opt_get_u8(opt,
-							NFTNL_TUNNEL_ERSPAN_V2_DIR);
-		}
+		obj->tunnel.erspan.version =
+			nftnl_tunnel_opt_get_u32(opt,
+						 NFTNL_TUNNEL_ERSPAN_VERSION);
+		obj->tunnel.erspan.v1.index =
+			nftnl_tunnel_opt_get_u32(opt,
+						 NFTNL_TUNNEL_ERSPAN_V1_INDEX);
+		obj->tunnel.erspan.v2.hwid =
+			nftnl_tunnel_opt_get_u8(opt,
+						NFTNL_TUNNEL_ERSPAN_V2_HWID);
+		obj->tunnel.erspan.v2.direction =
+			nftnl_tunnel_opt_get_u8(opt,
+						NFTNL_TUNNEL_ERSPAN_V2_DIR);
 		break;
 	case NFTNL_TUNNEL_TYPE_VXLAN:
 		obj->tunnel.type = TUNNEL_VXLAN;
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_VXLAN_GBP)) {
-			obj->tunnel.type = TUNNEL_VXLAN;
-			obj->tunnel.vxlan.gbp = nftnl_tunnel_opt_get_u32(opt, NFTNL_TUNNEL_VXLAN_GBP);
-		}
+		obj->tunnel.vxlan.gbp =
+			nftnl_tunnel_opt_get_u32(opt, NFTNL_TUNNEL_VXLAN_GBP);
 		break;
 	case NFTNL_TUNNEL_TYPE_GENEVE:
 		if (!obj->tunnel.type) {
@@ -1950,11 +1949,11 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 		if (!geneve)
 			memory_allocation_error();
 
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_TYPE))
-			geneve->type = nftnl_tunnel_opt_get_u8(opt, NFTNL_TUNNEL_GENEVE_TYPE);
-
-		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_CLASS))
-			geneve->geneve_class = nftnl_tunnel_opt_get_u16(opt, NFTNL_TUNNEL_GENEVE_CLASS);
+		geneve->type =
+			nftnl_tunnel_opt_get_u8(opt, NFTNL_TUNNEL_GENEVE_TYPE);
+		geneve->geneve_class =
+			nftnl_tunnel_opt_get_u16(opt,
+						 NFTNL_TUNNEL_GENEVE_CLASS);
 
 		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_DATA)) {
 			gnv_data = nftnl_tunnel_opt_get_data(opt, NFTNL_TUNNEL_GENEVE_DATA,
@@ -2069,40 +2068,21 @@ struct obj *netlink_delinearize_obj(struct netlink_ctx *ctx,
 			nftnl_obj_get_u32(nlo, NFTNL_OBJ_SYNPROXY_FLAGS);
 		break;
 	case NFT_OBJECT_TUNNEL:
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_ID))
-			obj->tunnel.id = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TUNNEL_ID);
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_SPORT)) {
-			obj->tunnel.sport =
-				nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_SPORT);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_DPORT)) {
-			obj->tunnel.dport =
-				nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_DPORT);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_TOS)) {
-			obj->tunnel.tos =
-				nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TOS);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_TTL)) {
-			obj->tunnel.ttl =
-				nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TTL);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV4_SRC)) {
-			obj->tunnel.src =
-				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV4_SRC);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV4_DST)) {
-			obj->tunnel.dst =
-				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV4_DST);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV6_SRC)) {
-			obj->tunnel.src =
-				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV6_SRC);
-		}
-		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST)) {
-			obj->tunnel.dst =
-				netlink_obj_tunnel_parse_addr(nlo, NFTNL_OBJ_TUNNEL_IPV6_DST);
-		}
+		obj->tunnel.id = nftnl_obj_get_u32(nlo, NFTNL_OBJ_TUNNEL_ID);
+		obj->tunnel.sport =
+			nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_SPORT);
+		obj->tunnel.dport =
+			nftnl_obj_get_u16(nlo, NFTNL_OBJ_TUNNEL_DPORT);
+		obj->tunnel.tos = nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TOS);
+		obj->tunnel.ttl = nftnl_obj_get_u8(nlo, NFTNL_OBJ_TUNNEL_TTL);
+		obj->tunnel.src =
+			netlink_obj_tunnel_parse_addr(nlo,
+						      NFTNL_OBJ_TUNNEL_IPV6_SRC,
+						      NFTNL_OBJ_TUNNEL_IPV4_SRC);
+		obj->tunnel.dst =
+			netlink_obj_tunnel_parse_addr(nlo,
+						      NFTNL_OBJ_TUNNEL_IPV6_DST,
+						      NFTNL_OBJ_TUNNEL_IPV4_DST);
 		if (nftnl_obj_is_set(nlo, NFTNL_OBJ_TUNNEL_OPTS)) {
 			nftnl_obj_tunnel_opts_foreach(nlo, tunnel_parse_opt_cb, obj);
 		}
