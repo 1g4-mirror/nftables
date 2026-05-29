@@ -1847,6 +1847,111 @@ static void obj_print_header(const struct obj *obj,
 			  obj->comment);
 }
 
+static void tunnel_obj_print_data(const struct obj *obj,
+				  struct print_fmt_options *opts,
+				  struct output_ctx *octx)
+{
+	struct tunnel_geneve *geneve;
+
+	obj_print_header(obj, opts, octx);
+
+	nft_print(octx, "%s%s%sid %u",
+		  opts->nl, opts->tab, opts->tab, obj->tunnel.id);
+
+	if (obj->tunnel.src) {
+		if (obj->tunnel.src->len == 32) {
+			nft_print(octx, "%s%s%sip saddr ",
+				  opts->nl, opts->tab, opts->tab);
+			expr_print(obj->tunnel.src, octx);
+		} else if (obj->tunnel.src->len == 128) {
+			nft_print(octx, "%s%s%sip6 saddr ",
+				  opts->nl, opts->tab, opts->tab);
+			expr_print(obj->tunnel.src, octx);
+		}
+	}
+	if (obj->tunnel.dst) {
+		if (obj->tunnel.dst->len == 32) {
+			nft_print(octx, "%s%s%sip daddr ",
+				  opts->nl, opts->tab, opts->tab);
+			expr_print(obj->tunnel.dst, octx);
+		} else if (obj->tunnel.dst->len == 128) {
+			nft_print(octx, "%s%s%sip6 daddr ",
+				  opts->nl, opts->tab, opts->tab);
+			expr_print(obj->tunnel.dst, octx);
+		}
+	}
+	if (obj->tunnel.sport) {
+		nft_print(octx, "%s%s%ssport %u",
+			  opts->nl, opts->tab, opts->tab,
+			  obj->tunnel.sport);
+	}
+	if (obj->tunnel.dport) {
+		nft_print(octx, "%s%s%sdport %u",
+			  opts->nl, opts->tab, opts->tab,
+			  obj->tunnel.dport);
+	}
+	if (obj->tunnel.tos) {
+		nft_print(octx, "%s%s%stos %u",
+			  opts->nl, opts->tab, opts->tab,
+			  obj->tunnel.tos);
+	}
+	if (obj->tunnel.ttl) {
+		nft_print(octx, "%s%s%sttl %u",
+			  opts->nl, opts->tab, opts->tab,
+			  obj->tunnel.ttl);
+	}
+	switch (obj->tunnel.type) {
+	case TUNNEL_ERSPAN:
+		nft_print(octx, "%s%s%serspan {",
+			  opts->nl, opts->tab, opts->tab);
+		nft_print(octx, "%s%s%s%sversion %u",
+			  opts->nl, opts->tab, opts->tab, opts->tab,
+			  obj->tunnel.erspan.version);
+		if (obj->tunnel.erspan.version == 1) {
+			nft_print(octx, "%s%s%s%sindex %u",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  obj->tunnel.erspan.v1.index);
+		} else {
+			nft_print(octx, "%s%s%s%sdirection %s",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  obj->tunnel.erspan.v2.direction ? "egress"
+								  : "ingress");
+			nft_print(octx, "%s%s%s%sid %u",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  obj->tunnel.erspan.v2.hwid);
+		}
+		break;
+	case TUNNEL_VXLAN:
+		nft_print(octx, "%s%s%svxlan {",
+			  opts->nl, opts->tab, opts->tab);
+		nft_print(octx, "%s%s%s%sgbp %u",
+			  opts->nl, opts->tab, opts->tab, opts->tab,
+			  obj->tunnel.vxlan.gbp);
+		break;
+	case TUNNEL_GENEVE:
+		nft_print(octx, "%s%s%sgeneve {", opts->nl, opts->tab, opts->tab);
+		list_for_each_entry(geneve, &obj->tunnel.geneve_opts, list) {
+			char data_str[256];
+			int offset = 0;
+
+			for (uint32_t i = 0; i < geneve->data_len; i++) {
+				offset += snprintf(data_str + offset,
+						   geneve->data_len,
+						   "%x",
+						   geneve->data[i]);
+			}
+			nft_print(octx, "%s%s%s%sclass 0x%x opt-type 0x%x data \"0x%s\"",
+				  opts->nl, opts->tab, opts->tab, opts->tab,
+				  geneve->geneve_class, geneve->type, data_str);
+
+		}
+		break;
+	default:
+		break;
+	}
+	nft_print(octx, "%s%s%s}", opts->nl, opts->tab, opts->tab);
+}
+
 static void obj_print_data(const struct obj *obj,
 			   struct print_fmt_options *opts,
 			   struct output_ctx *octx)
@@ -1988,110 +2093,7 @@ static void obj_print_data(const struct obj *obj,
 		}
 		break;
 	case NFT_OBJECT_TUNNEL:
-		obj_print_header(obj, opts, octx);
-
-		nft_print(octx, "%s%s%sid %u",
-			  opts->nl, opts->tab, opts->tab, obj->tunnel.id);
-
-		if (obj->tunnel.src) {
-			if (obj->tunnel.src->len == 32) {
-				nft_print(octx, "%s%s%sip saddr ",
-					  opts->nl, opts->tab, opts->tab);
-				expr_print(obj->tunnel.src, octx);
-			} else if (obj->tunnel.src->len == 128) {
-				nft_print(octx, "%s%s%sip6 saddr ",
-					  opts->nl, opts->tab, opts->tab);
-				expr_print(obj->tunnel.src, octx);
-			}
-		}
-		if (obj->tunnel.dst) {
-			if (obj->tunnel.dst->len == 32) {
-				nft_print(octx, "%s%s%sip daddr ",
-					  opts->nl, opts->tab, opts->tab);
-				expr_print(obj->tunnel.dst, octx);
-			} else if (obj->tunnel.dst->len == 128) {
-				nft_print(octx, "%s%s%sip6 daddr ",
-					  opts->nl, opts->tab, opts->tab);
-				expr_print(obj->tunnel.dst, octx);
-			}
-		}
-		if (obj->tunnel.sport) {
-			nft_print(octx, "%s%s%ssport %u",
-				  opts->nl, opts->tab, opts->tab,
-				  obj->tunnel.sport);
-		}
-		if (obj->tunnel.dport) {
-			nft_print(octx, "%s%s%sdport %u",
-				  opts->nl, opts->tab, opts->tab,
-				  obj->tunnel.dport);
-		}
-		if (obj->tunnel.tos) {
-			nft_print(octx, "%s%s%stos %u",
-				  opts->nl, opts->tab, opts->tab,
-				  obj->tunnel.tos);
-		}
-		if (obj->tunnel.ttl) {
-			nft_print(octx, "%s%s%sttl %u",
-				  opts->nl, opts->tab, opts->tab,
-				  obj->tunnel.ttl);
-		}
-		switch (obj->tunnel.type) {
-		case TUNNEL_ERSPAN:
-			nft_print(octx, "%s%s%serspan {",
-				  opts->nl, opts->tab, opts->tab);
-			nft_print(octx, "%s%s%s%sversion %u",
-				  opts->nl, opts->tab, opts->tab, opts->tab,
-				  obj->tunnel.erspan.version);
-			if (obj->tunnel.erspan.version == 1) {
-				nft_print(octx, "%s%s%s%sindex %u",
-					  opts->nl, opts->tab, opts->tab, opts->tab,
-					  obj->tunnel.erspan.v1.index);
-			} else {
-				nft_print(octx, "%s%s%s%sdirection %s",
-					  opts->nl, opts->tab, opts->tab, opts->tab,
-					  obj->tunnel.erspan.v2.direction ? "egress"
-									  : "ingress");
-				nft_print(octx, "%s%s%s%sid %u",
-					  opts->nl, opts->tab, opts->tab, opts->tab,
-					  obj->tunnel.erspan.v2.hwid);
-			}
-			nft_print(octx, "%s%s%s}",
-				  opts->nl, opts->tab, opts->tab);
-			break;
-		case TUNNEL_VXLAN:
-			nft_print(octx, "%s%s%svxlan {",
-				  opts->nl, opts->tab, opts->tab);
-			nft_print(octx, "%s%s%s%sgbp %u",
-				  opts->nl, opts->tab, opts->tab, opts->tab,
-				  obj->tunnel.vxlan.gbp);
-			nft_print(octx, "%s%s%s}",
-				  opts->nl, opts->tab, opts->tab);
-			break;
-		case TUNNEL_GENEVE:
-			struct tunnel_geneve *geneve;
-
-			nft_print(octx, "%s%s%sgeneve {", opts->nl, opts->tab, opts->tab);
-			list_for_each_entry(geneve, &obj->tunnel.geneve_opts, list) {
-				char data_str[256];
-				int offset = 0;
-
-				for (uint32_t i = 0; i < geneve->data_len; i++) {
-					offset += snprintf(data_str + offset,
-							   geneve->data_len,
-							   "%x",
-							   geneve->data[i]);
-				}
-				nft_print(octx, "%s%s%s%sclass 0x%x opt-type 0x%x data \"0x%s\"",
-					  opts->nl, opts->tab, opts->tab, opts->tab,
-					  geneve->geneve_class, geneve->type, data_str);
-
-			}
-			nft_print(octx, "%s%s%s}", opts->nl, opts->tab, opts->tab);
-			break;
-		default:
-			break;
-		}
-
+		tunnel_obj_print_data(obj, opts, octx);
 		nft_print(octx, "%s", opts->stmt_separator);
 		break;
 	default:
