@@ -32,7 +32,11 @@ AC_PROG_SED
 AC_PROG_LEX([noyywrap])
 AC_PROG_YACC
 
-if test -z "$ac_cv_prog_YACC" -a ! -f "${srcdir}/src/parser_bison.c"
+p_bison_pfx="${srcdir}/src/parser_bison"
+if test -f "${p_bison_pfx}.c" -a "${p_bison_pfx}.c" -nt "${p_bison_pfx}.y"
+then
+	have_prebuilt_bison="yes"
+elif test -z "$ac_cv_prog_YACC"
 then
         echo "*** Error: No suitable bison/yacc found. ***"
         echo "    Please install the 'bison' package."
@@ -44,6 +48,18 @@ then
         echo "    Please install the 'flex' package."
         exit 1
 fi
+
+AC_ARG_ENABLE([extended_parser_errors],
+	      AS_HELP_STRING([--disable-extended-parser-errors],
+			     [Disable use of parse.error=custom and LAC in Bison]),
+	      [], [
+			enable_extended_parser_errors=no
+			AC_SUBST([BISON], [$ac_cv_prog_YACC])
+			AX_PROG_BISON_VERSION([3.6],
+					      [enable_extended_parser_errors=yes])
+	      ])
+AM_CONDITIONAL([BISON_CUSTOM_ERROR],
+	       [test "x$enable_extended_parser_errors" != xno])
 
 AM_PROG_AR
 LT_INIT([disable-static])
@@ -179,6 +195,10 @@ nft configuration:
   libxtables support:		${with_xtables}
   json output support:          ${with_json}
   collect profiling data:       ${enable_profiling}"
+
+if test "x$have_prebuilt_bison" != "xyes"; then
+echo "  extended parser errors:       ${enable_extended_parser_errors}"
+fi
 
 if test "x$unitdir" != "x"; then
 AC_SUBST([unitdir])

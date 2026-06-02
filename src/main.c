@@ -237,7 +237,7 @@ static void show_help(const char *name)
 
 static void show_version(void)
 {
-	const char *cli, *minigmp, *json, *xt;
+	const char *cli, *minigmp, *json, *xt, *ext_bsn_err;
 
 #if defined(HAVE_LIBREADLINE)
 	cli = "readline";
@@ -266,14 +266,16 @@ static void show_version(void)
 #else
 	xt = "no";
 #endif
+	ext_bsn_err = nft_bison_have_extended_errors ? "yes" : "no";
 
 	printf("%s v%s (%s)\n"
-	       "  cli:		%s\n"
-	       "  json:		%s\n"
-	       "  minigmp:	%s\n"
-	       "  libxtables:	%s\n",
+	       "  cli:				%s\n"
+	       "  json:				%s\n"
+	       "  minigmp:			%s\n"
+	       "  libxtables:			%s\n"
+	       "  extended parser errors:	%s\n",
 	       PACKAGE_NAME, PACKAGE_VERSION, RELEASE_NAME,
-	       cli, json, minigmp, xt);
+	       cli, json, minigmp, xt, ext_bsn_err);
 
 }
 

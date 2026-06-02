@@ -221,8 +221,6 @@ int nft_lex(void *, void *, void *);
 %parse-param		{ void *scanner }
 %parse-param		{ struct parser_state *state }
 %lex-param		{ scanner }
-%define parse.error custom
-%define parse.lac full
 %locations
 
 %initial-action {
@@ -6537,6 +6535,7 @@ exthdr_key		:	HBH	close_scope_hbh	{ $$ = IPPROTO_HOPOPTS; }
 
 %%
 
+#ifdef YY_LAC_ESTABLISH
 static int
 yyreport_syntax_error(const yypcontext_t *yyctx, struct nft_ctx *nft,
                       void *scanner, struct parser_state *state)
@@ -6592,3 +6591,9 @@ yyreport_syntax_error(const yypcontext_t *yyctx, struct nft_ctx *nft,
 	free(msg);
 	return 0;
 }
+
+bool nft_bison_have_extended_errors = true;
+#else /* ! YY_LAC_ESTABLISH */
+bool nft_bison_have_extended_errors = false;
+#endif /* YY_LAC_ESTABLISH */
+EXPORT_SYMBOL(nft_bison_have_extended_errors);

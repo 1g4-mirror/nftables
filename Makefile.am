@@ -164,6 +164,11 @@ AM_CFLAGS = \
 	$(NULL)
 
 AM_YFLAGS = -d -Wno-yacc
+if BISON_CUSTOM_ERROR
+YACC += -D parse.error=custom -D parse.lac=full
+else
+YACC += -D parse.error=verbose
+endif
 
 if BUILD_PROFILING
 AM_CFLAGS += --coverage
