@@ -1,6 +1,8 @@
 #!/bin/bash
 # Test nftables connlimit functionality using network namespaces and socat
 
+# NFT_TEST_REQUIRES(NFT_TEST_HAVE_socat)
+
 . $NFT_TEST_LIBRARY_FILE
 
 set -e
