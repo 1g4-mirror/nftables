@@ -164,5 +164,11 @@ for stmt in "${netdev_stmts[@]}"; do
 		RC=1
 	}
 done
+
+# Delete the 'last' rule, because it has variable output ('last used 997ms') that breaks
+# dump-compare.
+HANDLE=$($NFT --handle list table ip t | grep last | cut -d \# -f 2)
+$NFT "delete rule ip t c $HANDLE" || RC=2
+
 exit $RC
 
