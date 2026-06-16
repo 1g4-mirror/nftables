@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# NFT_TEST_REQUIRES(NFT_TEST_HAVE_reset_tcp_options)
+
 stmts=()
 tcp_stmts=()
 udp_stmts=()
