@@ -73,7 +73,7 @@ table ip t {
 		limit rate 1/second burst 5 packets oifgroup "default"
 		limit rate 1/second burst 5 packets meta cgroup 0
 		limit rate 1/second burst 5 packets meta ipsec missing
-		limit rate 1/second burst 5 packets meta time "1970-01-01 01:00:00"
+		limit rate 1/second burst 5 packets meta time "1970-01-01 02:00:00"
 		limit rate 1/second burst 5 packets meta day "Sunday"
 		limit rate 1/second burst 5 packets meta hour "02:00"
 		limit rate 1/second burst 5 packets socket mark 0x00000000
