@@ -795,7 +795,7 @@ unsigned integer (16 bit)
 |==================
 |Flag | Description
 |bypass |
-Let packets go through if userspace application cannot back off. Before using
+Let packets go through if the userspace application cannot back off. Before using
 this flag, read libnetfilter_queue documentation for performance tuning recommendations.
 |fanout |
 Distribute packets between several queues.
