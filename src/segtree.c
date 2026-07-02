@@ -73,12 +73,13 @@ static void set_elem_expr_add(const struct set *set, struct expr *init,
 struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 {
 	enum byteorder byteorder = get_key_byteorder(set->key);
+	mpz_t low, high, mask;
 	struct expr *new_init;
-	mpz_t low, high;
 	struct expr *i;
 
 	mpz_init2(low, set->key->len);
 	mpz_init2(high, set->key->len);
+	mpz_init2(mask, set->key->len);
 
 	new_init = set_expr_alloc(&internal_location, NULL);
 
@@ -105,6 +106,11 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 			range_expr_value_low(low, i->key);
 			set_elem_expr_add(set, new_init, low, 0, byteorder);
 			range_expr_value_high(high, i->key);
+			mpz_bitmask(mask, i->len);
+			if (set_is_non_concat_range(set) &&
+			    !mpz_cmp(mask, high))
+				break;
+
 			mpz_add_ui(high, high, 1);
 			set_elem_expr_add(set, new_init, high,
 					  EXPR_F_INTERVAL_END, byteorder);
@@ -115,6 +121,7 @@ struct expr *get_set_intervals(const struct set *set, const struct expr *init)
 		}
 	}
 
+	mpz_clear(mask);
 	mpz_clear(low);
 	mpz_clear(high);
 
