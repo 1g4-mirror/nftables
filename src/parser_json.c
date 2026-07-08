@@ -3941,6 +3941,8 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 					    "{s:o}", "tunnel", &tmp_json))
 				goto err_free_obj;
 
+			init_list_head(&obj->tunnel.geneve_opts);
+
 			json_array_foreach(tmp_json, index, value) {
 				struct tunnel_geneve *geneve = xmalloc(sizeof(struct tunnel_geneve));
 				if (!geneve)
@@ -3962,9 +3964,6 @@ static struct cmd *json_parse_cmd_add_object(struct json_ctx *ctx,
 					free(geneve);
 					goto err_free_obj;
 				}
-
-				if (index == 0)
-					init_list_head(&obj->tunnel.geneve_opts);
 
 				list_add_tail(&geneve->list, &obj->tunnel.geneve_opts);
 			}
