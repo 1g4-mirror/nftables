@@ -34,6 +34,7 @@
 #include <intervals.h>
 #include <net/if.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -406,14 +407,13 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list,
 	const struct sockaddr_nl snl = {
 		.nl_family = AF_NETLINK
 	};
-	struct timeval tv = {
-		.tv_sec		= 0,
-		.tv_usec	= 0
-	};
 	struct iovec iov[iov_len];
 	struct msghdr msg = {};
 	unsigned int rcvbufsiz;
-	fd_set readfds;
+	struct pollfd pfd = {
+		.fd = fd,
+		.events = POLLIN,
+	};
 	static mnl_cb_t cb_ctl_array[NLMSG_MIN_TYPE] = {
 	        [NLMSG_ERROR] = mnl_batch_extack_cb,
 	};
@@ -440,14 +440,11 @@ int mnl_batch_talk(struct netlink_ctx *ctx, struct list_head *err_list,
 
 	/* receive and digest all the acknowledgments from the kernel. */
 	while (true) {
-		FD_ZERO(&readfds);
-		FD_SET(fd, &readfds);
-
-		ret = select(fd + 1, &readfds, NULL, NULL, &tv);
+		ret = poll(&pfd, 1, 0);
 		if (ret == -1)
 			return -1;
 
-		if (!FD_ISSET(fd, &readfds))
+		if (ret == 0)
 			break;
 
 		ret = mnl_socket_recvfrom(nl, rcv_buf, sizeof(rcv_buf));
@@ -2436,7 +2433,16 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock, unsigned int debug_mask,
 	int fd = mnl_socket_get_fd(nf_sock);
 	char buf[NFT_NLMSG_MAXSIZE];
 	int sigfd = get_signalfd();
-	fd_set readfds;
+	struct pollfd pfd[2] = {
+		{
+			.fd = fd,
+			.events = POLLIN,
+		},
+		{
+			.fd = sigfd,
+			.events = POLLIN,
+		},
+	};
 	int ret;
 
 	ret = mnl_set_rcvbuffer(nf_sock, bufsiz);
@@ -2445,19 +2451,14 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock, unsigned int debug_mask,
 			  NFTABLES_NLEVENT_BUFSIZ, bufsiz);
 
 	while (1) {
-		FD_ZERO(&readfds);
-		FD_SET(fd, &readfds);
-		if (sigfd != -1)
-			FD_SET(sigfd, &readfds);
-
-		ret = select(max(fd, sigfd) + 1, &readfds, NULL, NULL, NULL);
+		ret = poll(pfd, array_size(pfd), -1);
 		if (ret < 0)
 			return -1;
 
-		if (sigfd >= 0 && FD_ISSET(sigfd, &readfds))
+		if (sigfd >= 0 && (pfd[1].revents & POLLIN))
 			check_signalfd(sigfd);
 
-		if (FD_ISSET(fd, &readfds)) {
+		if (pfd[0].revents & POLLIN) {
 			ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
 			if (ret < 0) {
 				if (errno == ENOBUFS) {
