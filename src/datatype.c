@@ -1665,9 +1665,9 @@ static struct error_record *cgroupv2_type_parse(struct parse_ctx *ctx,
 		 SYSFS_CGROUPSV2_PATH, sym->identifier);
 	cgroupv2_path[sizeof(cgroupv2_path) - 1] = '\0';
 
+	/* the listing prints a raw id once the path is gone */
 	if (stat(cgroupv2_path, &st) < 0)
-		return error(&sym->location, "cgroupv2 path fails: %s",
-			     strerror(errno));
+		return integer_type_parse(ctx, sym, res);
 
 	ino = st.st_ino;
 	*res = constant_expr_alloc(&sym->location, &cgroupv2_type,
