@@ -12,16 +12,46 @@
 #include <gmputil.h>
 #include <list.h>
 
+static mpz_srcptr concat_expr_msort_value_one(const struct expr *expr,
+					      unsigned int *i_len)
+{
+	mpz_srcptr i_value;
+
+	switch (expr->etype) {
+	case EXPR_BINOP:
+	case EXPR_MAPPING:
+	case EXPR_RANGE:
+		i_value = expr->left->value;
+		*i_len = expr->left->len;
+		break;
+	case EXPR_VALUE:
+		i_value = expr->value;
+		*i_len = expr->len;
+		break;
+	case EXPR_RANGE_VALUE:
+		i_value = expr->range.low;
+		*i_len = expr->len;
+		break;
+	default:
+		BUG("Unknown expression %s", expr_name(expr));
+	}
+
+	*i_len = div_round_up(*i_len, BITS_PER_BYTE);
+
+	return i_value;
+}
+
 static void concat_expr_msort_value(const struct expr *expr, mpz_t value)
 {
-	unsigned int len = 0, ilen;
+	unsigned int len = 0, i_len;
 	const struct expr *i;
+	mpz_srcptr i_value;
 	char data[512];
 
 	list_for_each_entry(i, &expr_concat(expr)->expressions, list) {
-		ilen = div_round_up(i->len, BITS_PER_BYTE);
-		mpz_export_data(data + len, i->value, BYTEORDER_BIG_ENDIAN, ilen);
-		len += ilen;
+		i_value = concat_expr_msort_value_one(i, &i_len);
+		mpz_export_data(data + len, i_value, BYTEORDER_BIG_ENDIAN, i_len);
+		len += i_len;
 	}
 
 	mpz_import_data(value, data, BYTEORDER_BIG_ENDIAN, len);
