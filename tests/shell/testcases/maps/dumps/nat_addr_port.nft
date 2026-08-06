@@ -29,6 +29,7 @@ table ip ipfoo {
 		ip saddr 10.1.1.2 tcp dport 42 dnat to 10.2.3.4:4242
 		meta l4proto 6 dnat ip to ip saddr map @y
 		dnat ip to ip saddr . tcp dport map @z
+		meta l4proto 6 dnat to 10.2.3.4:4242
 		dnat to numgen inc mod 2 map @t1
 		meta l4proto 6 dnat ip to numgen inc mod 2 map @t2
 	}
@@ -62,6 +63,7 @@ table ip6 ip6foo {
 		ip6 saddr dead::2 tcp dport 42 dnat to [c0::1a]:4242
 		meta l4proto 6 dnat ip6 to ip6 saddr map @y
 		dnat ip6 to ip6 saddr . tcp dport map @z
+		meta l4proto 6 dnat to [fd00:10:244::4]:6443
 		dnat to numgen inc mod 2 map @t1
 		meta l4proto 6 dnat ip6 to numgen inc mod 2 map @t2
 	}

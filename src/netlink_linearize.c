@@ -1292,8 +1292,7 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 		nftnl_expr_set_u32(nle, nftnl_flag_attr, stmt->nat.flags);
 
 	if (stmt->nat.addr) {
-		amin_reg = get_register(ctx, NULL);
-		registers++;
+		amin_reg = get_register(ctx, stmt->nat.addr);
 
 		if (stmt->nat.addr->etype == EXPR_RANGE) {
 			amax_reg = get_register(ctx, NULL);
@@ -1373,6 +1372,9 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 		release_register(ctx, NULL);
 		registers--;
 	}
+
+	if (stmt->nat.addr)
+		release_register(ctx, stmt->nat.addr);
 
 	nft_rule_add_expr(ctx, nle, &stmt->location);
 }
