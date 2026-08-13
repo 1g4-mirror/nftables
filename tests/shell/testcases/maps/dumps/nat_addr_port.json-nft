@@ -262,7 +262,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -361,7 +361,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -612,7 +612,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -711,7 +711,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -1059,7 +1059,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -1159,7 +1159,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -1292,7 +1292,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {
@@ -1392,7 +1392,7 @@
                   "key": "l4proto"
                 }
               },
-              "right": "tcp"
+              "right": 6
             }
           },
           {

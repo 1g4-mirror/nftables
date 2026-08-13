@@ -83,9 +83,9 @@ table ip t {
 		limit rate 1/second burst 5 packets fib daddr . iif check exists
 		limit rate 1/second burst 5 packets osf name "foo"
 		limit rate 1/second burst 5 packets ipsec in spi 0
-		meta l4proto tcp limit rate 1/second burst 5 packets tproxy to 0.0.0.1
-		meta l4proto udp limit rate 1/second burst 5 packets vxlan vni 0
-		meta l4proto udp limit rate 1/second burst 5 packets geneve vni 0
+		meta l4proto 6 limit rate 1/second burst 5 packets tproxy to 0.0.0.1
+		meta l4proto 17 limit rate 1/second burst 5 packets vxlan vni 0
+		meta l4proto 17 limit rate 1/second burst 5 packets geneve vni 0
 	}
 
 	chain c2 {
@@ -93,35 +93,35 @@ table ip t {
 }
 table ip6 t {
 	chain c {
-		meta l4proto tcp limit rate 1/second burst 5 packets ip6 saddr ::
-		meta l4proto tcp limit rate 1/second burst 5 packets hbh nexthdr ip
-		meta l4proto tcp limit rate 1/second burst 5 packets rt nexthdr ip
-		meta l4proto tcp limit rate 1/second burst 5 packets srh last-entry 0
-		meta l4proto tcp limit rate 1/second burst 5 packets srh sid[1] ::
-		meta l4proto tcp limit rate 1/second burst 5 packets srh tag 0
-		meta l4proto tcp limit rate 1/second burst 5 packets frag nexthdr ip
-		meta l4proto tcp limit rate 1/second burst 5 packets dst nexthdr ip
-		meta l4proto tcp limit rate 1/second burst 5 packets mh nexthdr ip
-		meta l4proto tcp limit rate 1/second burst 5 packets exthdr hbh missing
+		meta l4proto 6 limit rate 1/second burst 5 packets ip6 saddr ::
+		meta l4proto 6 limit rate 1/second burst 5 packets hbh nexthdr 0
+		meta l4proto 6 limit rate 1/second burst 5 packets rt nexthdr 0
+		meta l4proto 6 limit rate 1/second burst 5 packets srh last-entry 0
+		meta l4proto 6 limit rate 1/second burst 5 packets srh sid[1] ::
+		meta l4proto 6 limit rate 1/second burst 5 packets srh tag 0
+		meta l4proto 6 limit rate 1/second burst 5 packets frag nexthdr 0
+		meta l4proto 6 limit rate 1/second burst 5 packets dst nexthdr 0
+		meta l4proto 6 limit rate 1/second burst 5 packets mh nexthdr 0
+		meta l4proto 6 limit rate 1/second burst 5 packets exthdr hbh missing
 	}
 }
 table arp t {
 	chain c {
-		meta l4proto tcp limit rate 1/second burst 5 packets arp htype 0
+		meta l4proto 6 limit rate 1/second burst 5 packets arp htype 0
 	}
 }
 table bridge t {
 	chain c {
-		meta l4proto tcp limit rate 1/second burst 5 packets meta ibrname "foo"
-		meta l4proto tcp limit rate 1/second burst 5 packets meta ibrname "foo"
-		meta l4proto tcp limit rate 1/second burst 5 packets meta obrname "foo"
-		meta l4proto tcp limit rate 1/second burst 5 packets meta obrname "foo"
+		meta l4proto 6 limit rate 1/second burst 5 packets meta ibrname "foo"
+		meta l4proto 6 limit rate 1/second burst 5 packets meta ibrname "foo"
+		meta l4proto 6 limit rate 1/second burst 5 packets meta obrname "foo"
+		meta l4proto 6 limit rate 1/second burst 5 packets meta obrname "foo"
 	}
 }
 table netdev t {
 	chain c {
-		meta l4proto tcp limit rate 1/second burst 5 packets dup to "lo"
-		meta l4proto tcp limit rate 1/second burst 5 packets fwd to "lo"
-		meta l4proto tcp limit rate 1/second burst 5 packets tunnel id 0
+		meta l4proto 6 limit rate 1/second burst 5 packets dup to "lo"
+		meta l4proto 6 limit rate 1/second burst 5 packets fwd to "lo"
+		meta l4proto 6 limit rate 1/second burst 5 packets tunnel id 0
 	}
 }

@@ -53,8 +53,8 @@ table inet testifsets {
 
 	chain input {
 		type filter hook input priority filter; policy accept;
-		ip protocol icmp jump v4icmp
-		ip protocol icmp goto v4icmpc
+		ip protocol 1 jump v4icmp
+		ip protocol 1 goto v4icmpc
 	}
 
 	chain do_nothing {
