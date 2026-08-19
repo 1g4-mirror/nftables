@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! command -v arping >/dev/null 2>&1; then
+	echo "arping is not installed, skipping"
+	exit 77
+fi
+
 # Test case for nftables fwd expression with bridge
 # Tests that packets are forwarded to the correct device using "fwd to"
 # Setup: ns1 (sender) -> ns2 (bridge) -> ns3/ns4 (receivers)
