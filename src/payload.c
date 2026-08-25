@@ -239,6 +239,9 @@ static struct expr *payload_expr_parse_udata(const struct nftnl_udata *attr)
 
 	expr = payload_expr_alloc(&internal_location, desc, type);
 
+	if (desc == &proto_th)
+		expr->payload.is_raw = true;
+
 	if (len)
 		expr->len = len;
 
