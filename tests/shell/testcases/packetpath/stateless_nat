@@ -170,11 +170,28 @@ check_server_response()
 	fi
 }
 
+check_server_icmp()
+{
+	local addr4="$1"
+	local addr6="$2"
+
+	if ! ip netns exec "$ns_client" ping -c 1 "$addr4" ; then
+		echo "FAIL: ping $addr4 failed"
+		exit 1
+	fi
+
+	if ! ip netns exec "$ns_client" ping -c 1 "$addr6" ; then
+		echo "FAIL: ping $addr6 failed"
+		exit 1
+	fi
+}
+
 echo "=== Phase 1: no NAT, client contacts server2 and gets server2 response ==="
 check_server_response TCP4 $s2_ip4 "server 2" "ipv4 tcp no-nat: client gets server 2"
 check_server_response UDP4 $s2_ip4 "server 2" "ipv4 udp no-nat: client gets server 2"
 check_server_response TCP6 $s2_ip6 "server 2" "ipv6 tcp no-nat: client gets server 2"
 check_server_response UDP6 $s2_ip6 "server 2" "ipv6 udp no-nat: client gets server 2"
+check_server_icmp "$s2_ip4" "$s2_ip6"
 
 echo "=== Phase 2: load stateless NAT ruleset on router ==="
 ip netns exec "$ns_router" $NFT -f - <<EOF
@@ -185,6 +202,8 @@ table ip stateless_nat_test {
 			meta iifname "veth_rc"  ip daddr set $s1_ip4
 			meta iifname "veth_rs1" ip saddr set $s2_ip4
 		}
+
+		icmp type echo-request meta iifname "veth_rc" icmp code set 42 counter
 	}
 }
 table ip6 stateless_nat_test {
@@ -194,6 +213,8 @@ table ip6 stateless_nat_test {
 			meta iifname "veth_rc"  ip6 daddr set $s1_ip6
 			meta iifname "veth_rs1" ip6 saddr set $s2_ip6
 		}
+
+		icmpv6 type echo-request meta iifname "veth_rc" icmpv6 code set 42 counter
 	}
 }
 EOF
@@ -204,5 +225,7 @@ check_server_response TCP4 $s2_ip4 "server 1" "ipv4 tcp nat: client gets server 
 check_server_response UDP4 $s2_ip4 "server 1" "ipv4 udp nat: client gets server 1 via server2 addr"
 check_server_response TCP6 $s2_ip6 "server 1" "ipv6 tcp nat: client gets server 1 via server2 addr"
 check_server_response UDP6 $s2_ip6 "server 1" "ipv6 udp nat: client gets server 1 via server2 addr"
+check_server_icmp "$s2_ip4" "$s2_ip6"
 
+ip netns exec "$ns_router" $NFT --debug=netlink list ruleset
 exit 0
