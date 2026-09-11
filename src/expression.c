@@ -338,21 +338,20 @@ struct expr *symbol_expr_alloc(const struct location *loc,
 static void variable_expr_print(const struct expr *expr,
 				struct output_ctx *octx)
 {
-	nft_print(octx, "$%s", expr->sym->identifier);
+	nft_print(octx, "$%s", expr->variable.sym->identifier);
 }
 
 static void variable_expr_clone(struct expr *new, const struct expr *expr)
 {
-	new->scope      = expr->scope;
-	new->sym	= expr->sym;
+	new->variable = expr->variable;
 
-	assert_refcount_safe(expr->sym->refcnt);
-	expr->sym->refcnt++;
+	assert_refcount_safe(expr->variable.sym->refcnt);
+	expr->variable.sym->refcnt++;
 }
 
 static void variable_expr_destroy(struct expr *expr)
 {
-	symbol_put(expr->sym);
+	symbol_put(expr->variable.sym);
 }
 
 static const struct expr_ops variable_expr_ops = {
@@ -363,15 +362,13 @@ static const struct expr_ops variable_expr_ops = {
 	.destroy	= variable_expr_destroy,
 };
 
-struct expr *variable_expr_alloc(const struct location *loc,
-				 struct scope *scope, struct symbol *sym)
+struct expr *variable_expr_alloc(const struct location *loc, struct symbol *sym)
 {
 	struct expr *expr;
 
 	expr = expr_alloc(loc, EXPR_VARIABLE, &invalid_type,
 			  BYTEORDER_INVALID, 0);
-	expr->scope	 = scope;
-	expr->sym	 = sym;
+	expr->variable.sym = sym;
 	return expr;
 }
 

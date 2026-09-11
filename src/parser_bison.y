@@ -2614,7 +2614,7 @@ flowtable_expr_member	:	string
 			}
 			|	variable_expr
 			{
-				datatype_set($1->sym->expr, &ifname_type);
+				datatype_set($1->variable.sym->expr, &ifname_type);
 				$$ = $1;
 			}
 			;
@@ -2938,7 +2938,7 @@ dev_spec		:	DEVICE	string
 			}
 			|	DEVICE	variable_expr
 			{
-				datatype_set($2->sym->expr, &ifname_type);
+				datatype_set($2->variable.sym->expr, &ifname_type);
 				$$ = list_expr_alloc(&@$);
 				list_expr_add($$, $2);
 			}
@@ -2971,7 +2971,7 @@ policy_spec		:	POLICY		policy_expr	close_scope_policy
 
 policy_expr		:	variable_expr
 			{
-				datatype_set($1->sym->expr, &policy_type);
+				datatype_set($1->variable.sym->expr, &policy_type);
 				$$ = $1;
 			}
 			|	chain_policy
@@ -4425,7 +4425,7 @@ variable_expr		:	'$'	identifier
 					YYERROR;
 				}
 
-				$$ = variable_expr_alloc(&@$, scope, sym);
+				$$ = variable_expr_alloc(&@$, sym);
 				free_const($2);
 			}
 			;

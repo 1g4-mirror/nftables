@@ -3073,7 +3073,7 @@ static int expr_evaluate_tunnel(struct eval_ctx *ctx, struct expr **exprp)
 
 static int expr_evaluate_variable(struct eval_ctx *ctx, struct expr **exprp)
 {
-	struct symbol *sym = (*exprp)->sym;
+	struct symbol *sym = (*exprp)->variable.sym;
 	struct expr *new;
 
 	/* If variable is reused from different locations in the ruleset, then

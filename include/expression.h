@@ -274,7 +274,7 @@ struct expr {
 		struct {
 			/* EXPR_VARIABLE */
 			struct symbol		*sym;
-		};
+		} variable;
 		struct {
 			/* EXPR_VERDICT */
 			int			verdict;
@@ -489,7 +489,7 @@ static inline void symbol_expr_set_type(struct expr *expr,
 }
 
 struct expr *variable_expr_alloc(const struct location *loc,
-				 struct scope *scope, struct symbol *sym);
+				 struct symbol *sym);
 
 extern struct expr *constant_expr_alloc(const struct location *loc,
 					const struct datatype *dtype,
