@@ -352,8 +352,7 @@ static void variable_expr_clone(struct expr *new, const struct expr *expr)
 
 static void variable_expr_destroy(struct expr *expr)
 {
-	assert_refcount_safe(expr->sym->refcnt);
-	expr->sym->refcnt--;
+	symbol_put(expr->sym);
 }
 
 static const struct expr_ops variable_expr_ops = {

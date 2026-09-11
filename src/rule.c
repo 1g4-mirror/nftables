@@ -576,11 +576,8 @@ void scope_release(const struct scope *scope)
 	struct symbol *sym, *next;
 
 	list_for_each_entry_safe(sym, next, &scope->symbols, list) {
-		assert(sym->refcnt == 1);
 		list_del(&sym->list);
-		free_const(sym->identifier);
-		expr_free(sym->expr);
-		free(sym);
+		symbol_put(sym);
 	}
 }
 
@@ -616,7 +613,7 @@ struct symbol *symbol_get(const struct scope *scope, const char *identifier)
 	return sym;
 }
 
-static void symbol_put(struct symbol *sym)
+void symbol_put(struct symbol *sym)
 {
 	assert_refcount_safe(sym->refcnt);
 	if (--sym->refcnt == 0) {

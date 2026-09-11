@@ -126,6 +126,7 @@ extern struct symbol *symbol_lookup(const struct scope *scope,
 struct symbol *symbol_lookup_fuzzy(const struct scope *scope,
 				   const char *identifier);
 struct symbol *symbol_get(const struct scope *scope, const char *identifier);
+void symbol_put(struct symbol *sym);
 
 enum table_flags {
 	TABLE_F_DORMANT		= (1 << 0),
