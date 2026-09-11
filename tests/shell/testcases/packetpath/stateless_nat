@@ -119,18 +119,18 @@ ip netns exec "$ns_server1" socat -6 TCP6-LISTEN:$PORT,fork,reuseaddr,ipv6only=1
 server_pids="$server_pids $!"
 ip netns exec "$ns_server1" socat -4 TCP4-LISTEN:$PORT,fork,reuseaddr SYSTEM:"echo server 1" &
 server_pids="$server_pids $!"
-ip netns exec "$ns_server1" socat UDP4-LISTEN:$PORT,fork SYSTEM:"echo server 1" &
+ip netns exec "$ns_server1" socat UDP4-LISTEN:$PORT,fork,shut-none SYSTEM:"echo server 1" &
 server_pids="$server_pids $!"
-ip netns exec "$ns_server1" socat UDP6-LISTEN:$PORT,fork,ipv6only=1 SYSTEM:"echo server 1" &
+ip netns exec "$ns_server1" socat UDP6-LISTEN:$PORT,fork,ipv6only=1,shut-none SYSTEM:"echo server 1" &
 server_pids="$server_pids $!"
 
 ip netns exec "$ns_server2" socat TCP6-LISTEN:$PORT,fork,reuseaddr,ipv6only=1 SYSTEM:"echo server 2" &
 server_pids="$server_pids $!"
 ip netns exec "$ns_server2" socat TCP4-LISTEN:$PORT,fork,reuseaddr SYSTEM:"echo server 2" &
 server_pids="$server_pids $!"
-ip netns exec "$ns_server2" socat UDP4-LISTEN:$PORT,fork SYSTEM:"echo server 2" &
+ip netns exec "$ns_server2" socat UDP4-LISTEN:$PORT,fork,shut-none SYSTEM:"echo server 2" &
 server_pids="$server_pids $!"
-ip netns exec "$ns_server2" socat UDP6-LISTEN:$PORT,fork,ipv6only=1 SYSTEM:"echo server 2" &
+ip netns exec "$ns_server2" socat UDP6-LISTEN:$PORT,fork,ipv6only=1,shut-none SYSTEM:"echo server 2" &
 server_pids="$server_pids $!"
 
 wait_local_port_listen "$ns_server1" $PORT tcp
