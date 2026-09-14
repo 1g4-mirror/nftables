@@ -303,7 +303,7 @@ static void remove_elem(struct expr *prev, struct set *set, struct expr *purge)
 
 	if (prev->key->flags & EXPR_F_KERNEL) {
 		clone = expr_clone(prev);
-		list_move_tail(&clone->list, &expr_set(purge)->expressions);
+		list_add_tail(&clone->list, &expr_set(purge)->expressions);
 	}
 }
 
@@ -354,7 +354,7 @@ static void split_range(struct set *set, struct expr *prev, struct expr *i,
 
 	if (prev->key->flags & EXPR_F_KERNEL) {
 		clone = expr_clone(prev);
-		list_move_tail(&clone->list, &expr_set(purge)->expressions);
+		list_add_tail(&clone->list, &expr_set(purge)->expressions);
 	}
 
 	prev->key->flags &= ~EXPR_F_KERNEL;
