@@ -56,13 +56,17 @@ struct expr *expr_alloc(const struct location *loc, enum expr_types etype,
 
 struct expr *expr_clone(const struct expr *expr)
 {
+	const struct expr_ops *ops = expr_ops(expr);
 	struct expr *new;
+
+	assert(ops);
+	assert(ops->clone);
 
 	new = expr_alloc(&expr->location, expr->etype,
 			 expr->dtype, expr->byteorder, expr->len);
 	new->flags = expr->flags;
 	new->op    = expr->op;
-	expr_ops(expr)->clone(new, expr);
+	ops->clone(new, expr);
 	return new;
 }
 
