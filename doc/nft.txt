@@ -1039,6 +1039,57 @@ These are some additional commands included in nft.
 
 include::additional-commands.txt[]
 
+TRANSACTIONAL RULESET UPDATES
+-----------------------------
+The nft tool accepts multiple commands at once, either on command-line
+(separated by semi-colon) or in a file. Even when restoring a dump in nested
+syntax it resolves into individual commands adding the various ruleset elements
+found in there. It collects these commands in a batch.
+
+The kernel treats a batch as a transaction, i.e. if one of the commands fails
+to apply, previous ones are unrolled and the transaction fails. Multiple
+transactions are serialized and thus won't interfere nondeterministically.
+
+.Trying to create a NAT chain
+---------------------
+# nft "add table t; add chain t c { type nat hook input priority 0; }"
+---------------------
+If nft_chain_nat.ko is unavailable, chain creation fails in above example. Due
+to the transactional behaviour the table won't be created, either.
+
+There are a few exceptions to the above rule though: list and reset commands
+are not integrated into the transaction system on kernel-side and "happen" in
+user space during cache population. The latter is a preparation step for other
+commands. For reference, here are the rough command processing steps in nft:
+
+. Parse input into list of commands
+. Gather cache requirements for each command
+. Fetch data from kernel and populate cache
+. Process each command (sanity checks, serialize into batch)
+. Submit batch to kernel
+. Receive response, report errors or echo updated input if requested
+
+Data for list command is fetched in step 3, output is printed in step 4. With
+reset command, the actual data reset happens in step 3 and printing of the old
+values happens in step 4.
+
+.Trying to create a NAT chain and list in between
+---------------------
+# nft "add table t; list table t; add chain t c { type nat hook input priority 0; }"
+---------------------
+The above command will list table t's (empty) contents irrespective of whether
+the transaction fails or not. In fact, it lists the table before even
+attempting to create it: The add table command populates nft's cache while
+being processed (in step 4 above) so following commands find it there.
+
+As a conclusion to the above:
+
+* Don't rely upon list command output alone to verify success of a ruleset
+  modification, at least not if in the same batch. At least make sure the batch
+  succeeds and nft returns zero.
+* Keep in mind that reset command won't unroll. Its effects will persist
+  despite the failing transaction which reverts all other commands.
+
 ERROR REPORTING
 ---------------
 When an error is detected, nft shows the line(s) containing the error, the
