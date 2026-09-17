@@ -5889,7 +5889,7 @@ payload_expr		:	payload_raw_expr
 payload_raw_len		:	NUM
 			{
 				if ($1 > NFT_MAX_EXPR_LEN_BITS) {
-					erec_queue(error(&@1, "raw payload length %lu exceeds upper limit of %lu",
+					erec_queue(error(&@1, "raw payload length %" PRIu64 " exceeds upper limit of %u",
 							 $1, NFT_MAX_EXPR_LEN_BITS),
 						 state->msgs);
 					YYERROR;

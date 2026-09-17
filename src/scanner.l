@@ -91,7 +91,7 @@ static void update_offset(struct parser_state *state, struct location *loc,
 	uint32_t line_offset;
 
 	state->indesc->token_offset	+= len;
-	if (state->indesc->line_offset > UINT32_MAX)
+	if (state->indesc->line_offset > (off_t)UINT32_MAX)
 		line_offset = UINT32_MAX;
 	else
 		line_offset = state->indesc->line_offset;

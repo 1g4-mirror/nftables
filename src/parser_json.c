@@ -673,7 +673,7 @@ static struct expr *json_parse_payload_expr(struct json_ctx *ctx,
 		}
 
 		if (len <= 0 || len > (int)NFT_MAX_EXPR_LEN_BITS) {
-			json_error(ctx, "Payload length must be between 0 and %lu, got %d",
+			json_error(ctx, "Payload length must be between 0 and %u, got %d",
 				   NFT_MAX_EXPR_LEN_BITS, len);
 			return NULL;
 		}
@@ -750,7 +750,7 @@ static struct expr *json_parse_tcp_option_expr(struct json_ctx *ctx,
 			return NULL;
 
 		if (len < 0 || len > (int)NFT_MAX_EXPR_LEN_BITS) {
-			json_error(ctx, "option length must be between 0 and %lu, got %d",
+			json_error(ctx, "option length must be between 0 and %u, got %d",
 				   NFT_MAX_EXPR_LEN_BITS, len);
 			return NULL;
 		}

@@ -31,7 +31,7 @@ struct nft_expr_loc *nft_expr_loc_find(const struct nftnl_expr *nle,
 	struct nft_expr_loc *eloc;
 	uint32_t hash;
 
-	hash = (uint64_t)nle % NFT_EXPR_LOC_HSIZE;
+	hash = (unsigned long)nle % NFT_EXPR_LOC_HSIZE;
 	list_for_each_entry(eloc, &ctx->expr_loc_htable[hash], hlist) {
 		if (eloc->nle == nle)
 			return eloc;
@@ -50,7 +50,7 @@ static void nft_expr_loc_add(const struct nftnl_expr *nle,
 	eloc = xmalloc(sizeof(*eloc));
 	eloc->nle = nle;
 	eloc->loc = loc;
-	hash = (uint64_t)nle % NFT_EXPR_LOC_HSIZE;
+	hash = (unsigned long)nle % NFT_EXPR_LOC_HSIZE;
 	list_add_tail(&eloc->hlist, &ctx->expr_loc_htable[hash]);
 }
 
