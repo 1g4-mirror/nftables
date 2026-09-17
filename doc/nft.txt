@@ -1090,6 +1090,52 @@ As a conclusion to the above:
 * Keep in mind that reset command won't unroll. Its effects will persist
   despite the failing transaction which reverts all other commands.
 
+MIXED USE
+---------
+A kernel ruleset created by nft may be read and modified by any other program.
+This practicaly constitutes a form of inter-process communication with the
+kernel as data channel. Nftables' flexible ruleset specification makes
+compatibility issues likely.
+
+WITH IPTABLES-NFT
+~~~~~~~~~~~~~~~~~
+In general, mixed use of iptables-nft and nft within the same host/netns is not
+advisable and may lead to obscure bugs in both tools. A ruleset created by
+iptables-nft should not be modified using nft and vice-versa.
+
+In order to replicate legacy behaviour, iptables-nft makes use of compat
+expressions in kernel. These allow nftables to call xtables kernel extensions.
+Content of compat expressions is extension-specific, nft requires libxtables to
+interpret the data. If available, it will use its xlate callbacks to print
+equivalent nftables statements, just like iptables-translate does.
+
+If a ruleset dump containing such (translated) compat expressions is restored
+again using nft, the resulting ruleset will not contain any compat expressions
+anymore. This may cause subtle changes in behaviour but will almost certainly
+break ruleset parsing in iptables-nft.
+
+If a translation is not possible, nft prints the well-known compat expression
+fields (type and name) in a format the parser will detect and reject with a
+verbose message. This is to make sure such an incomplete ruleset dump is not
+restored by accident.
+
+WITH OTHER VERSIONS OF NFT
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+While nft is supposed to be backwards-compatible, i.e. Rulesets created by any
+older version must parse correctly, the other direction is hard to even handle
+sanely. The result of parsing a ruleset "from the future" may vary from success
+to crash and from obviously broken rulesets to subtle bugs or minimal changes
+in behaviour.
+
+If a ruleset should remain readable by all involved versions, only the oldest
+version should make modifications and all others should limit themselves to
+read-only access.
+
+Starting with version 1.1.6, nft annotates created tables with its own version
+and warns if tables fetched from kernel are annotated with a newer version.
+While its absence is not a guarantee, its presence clearly indicates a
+problematic setup.
+
 ERROR REPORTING
 ---------------
 When an error is detected, nft shows the line(s) containing the error, the

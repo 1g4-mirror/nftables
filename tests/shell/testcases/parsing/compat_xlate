@@ -14,7 +14,7 @@ IPTABLES_RULESET='*filter
 -A FORWARD -p esp
 -A FORWARD -p ah
 COMMIT'
-IPTABLES_EXPECT='# Warning: table ip filter is managed by iptables-nft, do not touch!
+IPTABLES_EXPECT='# Warning: table ip filter is managed by iptables-nft, see MIXED USE in nft(8).
 table ip filter {
 	chain FORWARD {
 		type filter hook forward priority filter; policy accept;
@@ -35,7 +35,7 @@ IP6TABLES_RULESET='*filter
 -A FORWARD -p tcp -j TCPMSS --clamp-mss-to-pmtu
 COMMIT'
 IP6TABLES_EXPECT='
-# Warning: table ip6 filter is managed by iptables-nft, do not touch!
+# Warning: table ip6 filter is managed by iptables-nft, see MIXED USE in nft(8).
 table ip6 filter {
 	chain FORWARD {
 		type filter hook forward priority filter; policy accept;
@@ -66,7 +66,7 @@ ARPTABLES_RULESET='*filter
 -P OUTPUT DROP
 COMMIT'
 ARPTABLES_EXPECT='
-# Warning: table arp filter is managed by iptables-nft, do not touch!
+# Warning: table arp filter is managed by iptables-nft, see MIXED USE in nft(8).
 table arp filter {
 	chain INPUT {
 		type filter hook input priority filter; policy accept;
@@ -101,7 +101,7 @@ EBTABLES_RULESET='*filter
 -A FORWARD -p IPv6 -j mark --mark-set 2
 COMMIT'
 EBTABLES_EXPECT='
-# Warning: table bridge filter is managed by iptables-nft, do not touch!
+# Warning: table bridge filter is managed by iptables-nft, see MIXED USE in nft(8).
 table bridge filter {
 	chain FORWARD {
 		type filter hook forward priority filter; policy accept;

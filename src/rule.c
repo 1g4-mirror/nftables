@@ -1284,11 +1284,11 @@ static void table_print(const struct table *table, struct output_ctx *octx)
 
 	if (table->has_xt_stmts)
 		fprintf(octx->error_fp,
-			"# Warning: table %s %s is managed by iptables-nft, do not touch!\n",
+			"# Warning: Table %s %s is managed by iptables-nft, see MIXED USE in nft(8).\n",
 			family, table->handle.table.name);
 	if (table->is_from_future)
 		fprintf(octx->error_fp,
-			"# Warning: table %s %s was created by a newer version of nftables? Content may be incomplete!\n",
+			"# Warning: Table %s %s was created by a newer version of nft, see MIXED USE in nft(8).\n",
 			family, table->handle.table.name);
 
 	nft_print(octx, "table %s %s {", family, table->handle.table.name);
