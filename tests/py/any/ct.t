@@ -1,4 +1,4 @@
-:output;type filter hook output priority 0
+:output;type filter hook output priority -300
 
 *ip;test-ip4;output
 *ip6;test-ip6;output
