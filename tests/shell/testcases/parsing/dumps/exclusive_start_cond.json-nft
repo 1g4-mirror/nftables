@@ -2009,6 +2009,24 @@
         "table": "t",
         "chain": "c",
         "handle": 0,
+        "comment": "foobar",
+        "expr": [
+          {
+            "limit": {
+              "rate": 1,
+              "burst": 5,
+              "per": "second"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "t",
+        "chain": "c",
+        "handle": 0,
         "expr": [
           {
             "match": {

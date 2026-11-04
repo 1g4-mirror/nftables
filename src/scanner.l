@@ -378,7 +378,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "position"		{ return POSITION; }
 "index"			{ return INDEX; }
-"comment"		{ return COMMENT; }
+<*>"comment"		{ return COMMENT; }
 
 "constant"		{ return CONSTANT; }
 "interval"		{ return INTERVAL; }

@@ -95,6 +95,9 @@ stmts+=("osf name foo")
 # xfrm_expr
 stmts+=("ipsec in spi 0")
 
+# comment_spec
+stmts+=("comment foobar")
+
 $NFT -f - <<EOF
 table t {
 	flowtable ft {
