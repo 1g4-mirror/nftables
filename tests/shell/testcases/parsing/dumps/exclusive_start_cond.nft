@@ -84,6 +84,7 @@ table ip t {
 		limit rate 1/second burst 5 packets osf name "foo"
 		limit rate 1/second burst 5 packets ipsec in spi 0
 		limit rate 1/second burst 5 packets comment "foobar"
+		meta l4proto 6 limit rate 1/second burst 5 packets reject with tcp reset comment "x"
 		meta l4proto 6 limit rate 1/second burst 5 packets tproxy to 0.0.0.1
 		meta l4proto 17 limit rate 1/second burst 5 packets vxlan vni 0
 		meta l4proto 17 limit rate 1/second burst 5 packets geneve vni 0

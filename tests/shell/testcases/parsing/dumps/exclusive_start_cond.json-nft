@@ -2027,6 +2027,40 @@
         "table": "t",
         "chain": "c",
         "handle": 0,
+        "comment": "x",
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "l4proto"
+                }
+              },
+              "right": 6
+            }
+          },
+          {
+            "limit": {
+              "rate": 1,
+              "burst": 5,
+              "per": "second"
+            }
+          },
+          {
+            "reject": {
+              "type": "tcp reset"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "t",
+        "chain": "c",
+        "handle": 0,
         "expr": [
           {
             "match": {

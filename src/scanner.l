@@ -1404,17 +1404,14 @@ void scanner_pop_start_cond(void *scanner, enum startcond_type t)
 		return; /* Can't pop just yet! */
 	}
 
-	while (state->flex_state_pop) {
+	t = state->startcond_type = yy_top_state(scanner);
+	yy_pop_state(scanner);
+
+	while (state->flex_state_pop && !state->startcond_active[t]) {
 		state->flex_state_pop--;
 		state->startcond_type = yy_top_state(scanner);
 		yy_pop_state(scanner);
 
 		t = state->startcond_type;
-		if (state->startcond_active[t])
-			return;
 	}
-
-	state->startcond_type = yy_top_state(scanner);
-
-	yy_pop_state(scanner);
 }

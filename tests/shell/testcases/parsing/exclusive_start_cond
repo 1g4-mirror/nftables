@@ -98,6 +98,9 @@ stmts+=("ipsec in spi 0")
 # comment_spec
 stmts+=("comment foobar")
 
+# this revealed a bug in scanner_pop_start_cond() code
+stmts+=("reject with tcp reset comment x")
+
 $NFT -f - <<EOF
 table t {
 	flowtable ft {
