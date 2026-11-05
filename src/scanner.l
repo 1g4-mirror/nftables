@@ -1383,10 +1383,13 @@ void scanner_destroy(struct nft_ctx *nft)
 	yylex_destroy(nft->scanner);
 }
 
+#define sc_dbg(...) if (nft_get_debug(scanner)) fprintf(stderr, __VA_ARGS__)
+
 static void scanner_push_start_cond(void *scanner, enum startcond_type type)
 {
 	struct parser_state *state = yyget_extra(scanner);
 
+	sc_dbg("--pushing start condition %d\n", type);
 	state->startcond_type = type;
 	state->startcond_active[type]++;
 
@@ -1401,14 +1404,19 @@ void scanner_pop_start_cond(void *scanner, enum startcond_type t)
 
 	if (state->startcond_type != t) {
 		state->flex_state_pop++;
+		sc_dbg("--delay popping start condition %d\n", t);
 		return; /* Can't pop just yet! */
 	}
+
+	sc_dbg("--popping start condition %d\n", state->startcond_type);
 
 	t = state->startcond_type = yy_top_state(scanner);
 	yy_pop_state(scanner);
 
 	while (state->flex_state_pop && !state->startcond_active[t]) {
 		state->flex_state_pop--;
+		sc_dbg("--popping delayed start condition %d\n",
+		       state->startcond_type);
 		state->startcond_type = yy_top_state(scanner);
 		yy_pop_state(scanner);
 
