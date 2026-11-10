@@ -1493,13 +1493,6 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 				return NULL;
 			}
 
-			if (expr->etype != EXPR_SET_ELEM) {
-				elem = set_elem_expr_alloc(int_loc, expr);
-			} else {
-				elem = expr;
-				expr = expr->key;
-			}
-
 			expr2 = json_parse_set_rhs_expr(ctx, jright);
 			if (!expr2) {
 				json_error(ctx, "Invalid set elem at index %zu.", index);
@@ -1507,6 +1500,14 @@ static struct expr *json_parse_set_expr(struct json_ctx *ctx,
 				expr_free(set_expr);
 				return NULL;
 			}
+
+			if (expr->etype != EXPR_SET_ELEM) {
+				elem = set_elem_expr_alloc(int_loc, expr);
+			} else {
+				elem = expr;
+				expr = expr->key;
+			}
+
 			expr2 = mapping_expr_alloc(int_loc, expr, expr2);
 			elem->key = expr2;
 			expr = elem;
