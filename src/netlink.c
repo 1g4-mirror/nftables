@@ -1960,8 +1960,10 @@ static int tunnel_parse_opt_cb(struct nftnl_tunnel_opt *opt, void *data) {
 		if (nftnl_tunnel_opt_get_flags(opt) & (1 << NFTNL_TUNNEL_GENEVE_DATA)) {
 			gnv_data = nftnl_tunnel_opt_get_data(opt, NFTNL_TUNNEL_GENEVE_DATA,
 							 &geneve->data_len);
-			if (!gnv_data)
+			if (!gnv_data) {
+				free(geneve);
 				return -1;
+			}
 			memcpy(&geneve->data, gnv_data, geneve->data_len);
 		}
 
